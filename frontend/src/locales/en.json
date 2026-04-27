@@ -1,0 +1,63 @@
+{
+  "nav": {
+    "home": "Home",
+    "catalogue": "Catalogue",
+    "discovery": "Discovery",
+    "profile": "Profile",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "search": "Search films, series, actors..."
+  },
+  "home": {
+    "trending": "Trending This Week",
+    "popular": "Most Popular",
+    "recommendations": "Recommended for You"
+  },
+  "movie": {
+    "rating": "Rating",
+    "genres": "Genres",
+    "release": "Release Date",
+    "duration": "Duration",
+    "cast": "Cast",
+    "trailer": "Watch Trailer",
+    "similar": "Similar Titles",
+    "addFavorite": "Add to Favorites",
+    "removeFavorite": "Remove from Favorites",
+    "addToList": "Add to List"
+  },
+  "auth": {
+    "username": "Username",
+    "email": "Email",
+    "password": "Password",
+    "loginTitle": "Welcome back",
+    "registerTitle": "Create an account",
+    "loginBtn": "Sign In",
+    "registerBtn": "Sign Up",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?"
+  },
+  "catalogue": {
+    "title": "Catalogue",
+    "filters": "Filters",
+    "genre": "Genre",
+    "year": "Year",
+    "type": "Type",
+    "movies": "Movies",
+    "series": "Series",
+    "noResults": "No results found"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Retry",
+    "seeAll": "See all",
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "minutes": "min",
+    "seasons": "seasons",
+    "episodes": "episodes"
+  }
+}

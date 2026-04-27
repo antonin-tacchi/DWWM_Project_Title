@@ -1,0 +1,111 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8
+    container_name: cinescope_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - cinescope_net
+
+  gateway:
+    build: ./gateway
+    container_name: cinescope_gateway
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file: ./gateway/.env
+    depends_on:
+      - auth
+      - movies
+      - social
+      - notifications
+    networks:
+      - cinescope_net
+
+  auth:
+    build: ./services/auth
+    container_name: cinescope_auth
+    restart: always
+    ports:
+      - "3001:3001"
+    env_file: ./services/auth/.env
+    depends_on:
+      - mysql
+    networks:
+      - cinescope_net
+
+  movies:
+    build: ./services/movies
+    container_name: cinescope_movies
+    restart: always
+    ports:
+      - "3002:3002"
+    env_file: ./services/movies/.env
+    depends_on:
+      - mysql
+    networks:
+      - cinescope_net
+
+  social:
+    build: ./services/social
+    container_name: cinescope_social
+    restart: always
+    ports:
+      - "3003:3003"
+    env_file: ./services/social/.env
+    depends_on:
+      - mysql
+    networks:
+      - cinescope_net
+
+  notifications:
+    build: ./services/notifications
+    container_name: cinescope_notifications
+    restart: always
+    ports:
+      - "3004:3004"
+    env_file: ./services/notifications/.env
+    depends_on:
+      - mysql
+    networks:
+      - cinescope_net
+
+  adminer:
+    image: adminer
+    container_name: cinescope_adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+    networks:
+      - cinescope_net
+
+  frontend:
+    build: ./frontend
+    container_name: cinescope_frontend
+    restart: always
+    ports:
+      - "5173:5173"
+    env_file: ./frontend/.env
+    depends_on:
+      - gateway
+    networks:
+      - cinescope_net
+
+volumes:
+  mysql_data:
+
+networks:
+  cinescope_net:
+    driver: bridge

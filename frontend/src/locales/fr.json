@@ -1,0 +1,63 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "catalogue": "Catalogue",
+    "discovery": "Découverte",
+    "profile": "Profil",
+    "login": "Connexion",
+    "register": "Inscription",
+    "logout": "Déconnexion",
+    "search": "Rechercher films, séries, acteurs..."
+  },
+  "home": {
+    "trending": "Tendances de la semaine",
+    "popular": "Les plus populaires",
+    "recommendations": "Recommandés pour vous"
+  },
+  "movie": {
+    "rating": "Note",
+    "genres": "Genres",
+    "release": "Date de sortie",
+    "duration": "Durée",
+    "cast": "Casting",
+    "trailer": "Voir la bande-annonce",
+    "similar": "Titres similaires",
+    "addFavorite": "Ajouter aux favoris",
+    "removeFavorite": "Retirer des favoris",
+    "addToList": "Ajouter à une liste"
+  },
+  "auth": {
+    "username": "Pseudo",
+    "email": "Email",
+    "password": "Mot de passe",
+    "loginTitle": "Content de vous revoir",
+    "registerTitle": "Créer un compte",
+    "loginBtn": "Se connecter",
+    "registerBtn": "S'inscrire",
+    "noAccount": "Pas encore de compte ?",
+    "hasAccount": "Déjà un compte ?"
+  },
+  "catalogue": {
+    "title": "Catalogue",
+    "filters": "Filtres",
+    "genre": "Genre",
+    "year": "Année",
+    "type": "Type",
+    "movies": "Films",
+    "series": "Séries",
+    "noResults": "Aucun résultat"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "retry": "Réessayer",
+    "seeAll": "Voir tout",
+    "close": "Fermer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "minutes": "min",
+    "seasons": "saisons",
+    "episodes": "épisodes"
+  }
+}
