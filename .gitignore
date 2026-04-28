@@ -1,7 +1,65 @@
-node_modules/
-.env
-dist/
-build/
-.DS_Store
+# ===========================
+# JAVA / MAVEN
+# ===========================
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# ===========================
+# SPRING BOOT
+# ===========================
 *.log
-coverage/
+logs/
+application-local.yml
+application-local.properties
+
+# ===========================
+# SECRETS — ne jamais committer
+# ===========================
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.jks
+
+# ===========================
+# NODE / REACT (frontend)
+# ===========================
+node_modules/
+dist/
+.vite/
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# ===========================
+# DOCKER
+# ===========================
+docker-compose.override.yml
+
+# ===========================
+# IDES
+# ===========================
+.idea/
+*.iml
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+Claude/
+
+# ===========================
+# OS
+# ===========================
+.DS_Store
+Thumbs.db

@@ -3,8 +3,9 @@ CREATE DATABASE IF NOT EXISTS movies_db CHARACTER SET utf8mb4 COLLATE utf8mb4_un
 CREATE DATABASE IF NOT EXISTS social_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS notifs_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-GRANT ALL PRIVILEGES ON auth_db.* TO 'cinescope'@'%';
-GRANT ALL PRIVILEGES ON movies_db.* TO 'cinescope'@'%';
-GRANT ALL PRIVILEGES ON social_db.* TO 'cinescope'@'%';
-GRANT ALL PRIVILEGES ON notifs_db.* TO 'cinescope'@'%';
+GRANT ALL PRIVILEGES ON auth_db.* TO '${MYSQL_USER}'@'%';
+GRANT ALL PRIVILEGES ON movies_db.* TO '${MYSQL_USER}'@'%';
+GRANT ALL PRIVILEGES ON social_db.* TO '${MYSQL_USER}'@'%';
+GRANT ALL PRIVILEGES ON notifs_db.* TO '${MYSQL_USER}'@'%';
+
 FLUSH PRIVILEGES;
