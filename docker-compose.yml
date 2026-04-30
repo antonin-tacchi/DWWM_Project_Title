@@ -34,5 +34,22 @@ services:
       timeout: 5s
       retries: 5
 
+  auth-service:
+    build: ./Services/auth
+    container_name: auth-service
+    ports:
+      - "8090:8090"
+    environment:
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      consul:
+        condition: service_healthy
+
+
 volumes:
   mysql_data:
