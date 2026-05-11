@@ -47,7 +47,7 @@ public class AuthService {
 
         // 4. Génération du token et réponse
         AuthResponse response = userMapper.toAuthResponse(user);
-        response.setToken(jwtUtil.generateToken(user.getEmail()));
+        response.setToken(jwtUtil.generateToken(user.getEmail(), user.getId()));
 
         return response;
     }
@@ -75,7 +75,7 @@ public class AuthService {
 
         // 3. Génération du token et réponse
         AuthResponse response = userMapper.toAuthResponse(user);
-        response.setToken(jwtUtil.generateToken(user.getEmail()));
+        response.setToken(jwtUtil.generateToken(user.getEmail(), user.getId()));
 
         return response;
     }
