@@ -50,6 +50,21 @@ services:
       consul:
         condition: service_healthy
 
+  movies-service:
+    build: ./Services/movies
+    container_name: movies-service
+    ports:
+      - "9000:9000"
+    environment:
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TMDB_API_KEY: ${TMDB_API_KEY}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      consul:
+        condition: service_healthy
+
 
 volumes:
   mysql_data:
