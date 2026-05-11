@@ -57,6 +57,7 @@ docker-compose.override.yml
 *.sln
 *.sw?
 Claude/
+.claude
 
 # ===========================
 # OS
