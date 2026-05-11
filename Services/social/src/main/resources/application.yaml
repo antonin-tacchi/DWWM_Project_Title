@@ -1,0 +1,32 @@
+server:
+  port: 9010
+
+spring:
+  application:
+    name: social-service
+  datasource:
+    url: jdbc:mysql://mysql:3306/social_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  flyway:
+    locations: classpath:db/migration
+
+spring.cloud.consul:
+  host: consul
+  port: 8500
+  discovery:
+    service-name: social-service
+    health-check-path: /actuator/health
+    health-check-interval: 10s
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
