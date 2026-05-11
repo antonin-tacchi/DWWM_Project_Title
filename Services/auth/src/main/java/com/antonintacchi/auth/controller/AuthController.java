@@ -1,10 +1,8 @@
 package com.antonintacchi.auth.controller;
 
-import com.antonintacchi.auth.dto.AuthResponse;
-import com.antonintacchi.auth.dto.LoginRequest;
-import com.antonintacchi.auth.dto.RegisterRequest;
-import com.antonintacchi.auth.dto.UpdateProfileRequest;
+import com.antonintacchi.auth.dto.*;
 import com.antonintacchi.auth.service.AuthService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,6 +44,12 @@ public class AuthController {
     @DeleteMapping("/me")
     public ResponseEntity<Void> deleteProfile(@RequestHeader("X-User-Email")  String email) {
         authService.deleteAccount(email);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/me/password")
+    public ResponseEntity<Void> changePassword(@RequestHeader("X-User-Email") String email, @RequestBody @Valid ChangePasswordRequest request) {
+        authService.changePassword(email, request);
         return ResponseEntity.noContent().build();
     }
 
