@@ -1,26 +1,29 @@
 package com.antonintacchi.movies.service;
 
-import com.antonintacchi.movies.dto.tmdb.TmdbDetailResponse;
-import com.antonintacchi.movies.dto.tmdb.TmdbPageResponse;
-import com.antonintacchi.movies.dto.tmdb.TmdbPersonResponse;
-import com.antonintacchi.movies.dto.tmdb.TmdbVideoResponse;
+import com.antonintacchi.movies.dto.tmdb.*;
 import com.antonintacchi.movies.exception.ServiceUnavailableException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import java.util.List;
+import java.util.Random;
 
 @Service
 public class TmdbService {
 
     private final WebClient tmdbWebClient;
+    private final ResponseEntityExceptionHandler responseEntityExceptionHandler;
 
     @Value("${tmdb.api-key}")
     private String apiKey;
 
-    public TmdbService(WebClient tmdbWebClient) {
+    public TmdbService(WebClient tmdbWebClient, ResponseEntityExceptionHandler responseEntityExceptionHandler) {
         this.tmdbWebClient = tmdbWebClient;
+        this.responseEntityExceptionHandler = responseEntityExceptionHandler;
     }
 
     @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackPageResponse")
@@ -117,6 +120,37 @@ public class TmdbService {
                 .block();
     }
 
+    @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackProviderResponse")
+    @Cacheable("tmdb-provider")
+    public TmdbProviderResponse getProvider(Long tmdbId, String mediaType) {
+        return tmdbWebClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/{mediaType}/{tmdbId}/watch/providers")
+                        .queryParam("api_key", apiKey)
+                        .build(mediaType, tmdbId))
+                .retrieve()
+                .bodyToMono(TmdbProviderResponse.class)
+                .block();
+    }
+
+    @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackRandomResponse")
+    public TmdbResult getRandom(String mediaType) {
+        int page = new Random().nextInt(10) + 1;
+
+        TmdbPageResponse response = tmdbWebClient.get()
+                                        .uri(uriBuilder -> uriBuilder
+                                                .path("/discover/{mediaType}")
+                                                .queryParam("api_key", apiKey)
+                                                .queryParam("page", page)
+                                                .build(mediaType))
+                                        .retrieve()
+                                        .bodyToMono(TmdbPageResponse.class)
+                                        .block();
+
+        List<TmdbResult> results = response.getResults();
+        return results.get(new Random().nextInt(results.size()));
+    }
+
     private TmdbPageResponse fallbackPageResponse(Throwable ex) {
         throw new ServiceUnavailableException("TMDB service unavailable, please try again later.", ex);
     }
@@ -130,6 +164,14 @@ public class TmdbService {
     }
 
     private TmdbVideoResponse fallbackVideoResponse(Throwable ex) {
+        throw new ServiceUnavailableException("TMDB service unavailable, please try again later.", ex);
+    }
+
+    private TmdbProviderResponse fallbackProviderResponse(Throwable ex) {
+        throw new ServiceUnavailableException("Tmdb service unavailable, please try again later.", ex);
+    }
+
+    private TmdbResult fallbackRandomResponse(Throwable ex) {
         throw new ServiceUnavailableException("TMDB service unavailable, please try again later.", ex);
     }
 

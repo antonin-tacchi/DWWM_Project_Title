@@ -1,8 +1,6 @@
 package com.antonintacchi.movies.controller;
 
-import com.antonintacchi.movies.dto.tmdb.TmdbDetailResponse;
-import com.antonintacchi.movies.dto.tmdb.TmdbPageResponse;
-import com.antonintacchi.movies.dto.tmdb.TmdbVideoResponse;
+import com.antonintacchi.movies.dto.tmdb.*;
 import com.antonintacchi.movies.service.TmdbService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -54,6 +52,18 @@ public class MovieController {
     public ResponseEntity<TmdbVideoResponse> trailer(@PathVariable Long tmdbId, @RequestParam(defaultValue = "movie") String mediaType) {
         TmdbVideoResponse response = tmdbService.getTrailer(tmdbId, mediaType);
         return ResponseEntity.status(200).body(response);
+    }
+
+    @GetMapping("/{tmdbId}/providers")
+    public ResponseEntity<TmdbProviderResponse> providers(@PathVariable Long tmdbId, @RequestParam(defaultValue = "movie") String mediaType) {
+        TmdbProviderResponse response = tmdbService.getProvider(tmdbId, mediaType);
+        return ResponseEntity.status(200).body(response);
+    }
+
+    @GetMapping("/discover/random")
+    public ResponseEntity<TmdbResult> random(@RequestParam(defaultValue = "movie") String mediaType) {
+        TmdbResult result = tmdbService.getRandom(mediaType);
+        return ResponseEntity.status(200).body(result);
     }
 
 }
