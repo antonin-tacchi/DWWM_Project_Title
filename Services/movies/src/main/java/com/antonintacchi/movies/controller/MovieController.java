@@ -36,4 +36,17 @@ public class MovieController {
         return ResponseEntity.status(200).body(response);
 
     }
+
+    @GetMapping("/popular")
+    public ResponseEntity<TmdbPageResponse> popular(@RequestParam(defaultValue = "movie") String mediaType) {
+        TmdbPageResponse response = tmdbService.getPopular(mediaType);
+        return ResponseEntity.status(200).body(response);
+    }
+
+    @GetMapping("/{tmdbId}/similar")
+    public ResponseEntity<TmdbPageResponse>  similar(@PathVariable Long tmdbId, @RequestParam(defaultValue = "movie") String mediaType) {
+        TmdbPageResponse response = tmdbService.getSimilar(mediaType, tmdbId);
+        return ResponseEntity.status(200).body(response);
+    }
+
 }

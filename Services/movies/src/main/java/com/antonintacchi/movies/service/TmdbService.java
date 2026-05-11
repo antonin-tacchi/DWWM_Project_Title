@@ -63,6 +63,32 @@ public class TmdbService {
                 .block();
     }
 
+    @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackPageResponse")
+    @Cacheable("tmdb-popular")
+    public TmdbPageResponse getPopular(String mediaType) {
+        return tmdbWebClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/{mediaType}/popular")
+                        .queryParam("api_key", apiKey)
+                        .build(mediaType))
+                .retrieve()
+                .bodyToMono(TmdbPageResponse.class)
+                .block();
+    }
+
+    @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackPageResponse")
+    @Cacheable("tmdb-similar")
+    public TmdbPageResponse getSimilar(String mediaType, Long tmdbId) {
+        return tmdbWebClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/{mediaType}/{tmdbId}/similar")
+                        .queryParam("api_key", apiKey)
+                        .build(mediaType, tmdbId))
+                .retrieve()
+                .bodyToMono(TmdbPageResponse.class)
+                .block();
+    }
+
     private TmdbPageResponse fallbackPageResponse(Throwable ex) {
         throw new ServiceUnavailableException("TMDB service unavailable, please try again later.", ex);
     }
