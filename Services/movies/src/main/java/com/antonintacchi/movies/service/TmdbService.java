@@ -1,5 +1,6 @@
 package com.antonintacchi.movies.service;
 
+import com.antonintacchi.movies.dto.tmdb.TmdbDetailResponse;
 import com.antonintacchi.movies.dto.tmdb.TmdbPageResponse;
 import com.antonintacchi.movies.exception.ServiceUnavailableException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -49,20 +50,24 @@ public class TmdbService {
                 .block();
     }
 
-    @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackPageResponse")
+    @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackDetailResponse")
     @Cacheable("tmdb-detail")
-    public TmdbPageResponse getDetail(Long tmdbId, String mediaType) {
+    public TmdbDetailResponse getDetail(Long tmdbId, String mediaType) {
         return tmdbWebClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/{mediaType}/{tmdbId}")
                         .queryParam("api_key", apiKey)
                         .build(mediaType, tmdbId))
                 .retrieve()
-                .bodyToMono(TmdbPageResponse.class)
+                .bodyToMono(TmdbDetailResponse.class)
                 .block();
     }
 
     private TmdbPageResponse fallbackPageResponse(Throwable ex) {
+        throw new ServiceUnavailableException("TMDB service unavailable, please try again later.", ex);
+    }
+
+    private TmdbDetailResponse fallbackDetailResponse(Throwable ex) {
         throw new ServiceUnavailableException("TMDB service unavailable, please try again later.", ex);
     }
 

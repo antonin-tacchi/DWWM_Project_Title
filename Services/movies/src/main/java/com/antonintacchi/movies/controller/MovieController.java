@@ -1,5 +1,6 @@
 package com.antonintacchi.movies.controller;
 
+import com.antonintacchi.movies.dto.tmdb.TmdbDetailResponse;
 import com.antonintacchi.movies.dto.tmdb.TmdbPageResponse;
 import com.antonintacchi.movies.service.TmdbService;
 import lombok.RequiredArgsConstructor;
@@ -29,9 +30,9 @@ public class MovieController {
     }
 
     @GetMapping("/{tmdbId}")
-    public ResponseEntity<TmdbPageResponse> details(@PathVariable Long tmdbId, @RequestParam(defaultValue = "movie") String mediaType) {
+    public ResponseEntity<TmdbDetailResponse> details(@PathVariable Long tmdbId, @RequestParam(defaultValue = "movie") String mediaType) {
 
-        TmdbPageResponse response = tmdbService.getDetail(tmdbId, mediaType);
+        TmdbDetailResponse response = tmdbService.getDetail(tmdbId, mediaType);
         return ResponseEntity.status(200).body(response);
 
     }
