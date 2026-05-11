@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.List;
 import java.util.Random;
@@ -16,14 +15,12 @@ import java.util.Random;
 public class TmdbService {
 
     private final WebClient tmdbWebClient;
-    private final ResponseEntityExceptionHandler responseEntityExceptionHandler;
 
     @Value("${tmdb.api-key}")
     private String apiKey;
 
-    public TmdbService(WebClient tmdbWebClient, ResponseEntityExceptionHandler responseEntityExceptionHandler) {
+    public TmdbService(WebClient tmdbWebClient) {
         this.tmdbWebClient = tmdbWebClient;
-        this.responseEntityExceptionHandler = responseEntityExceptionHandler;
     }
 
     @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackPageResponse")
