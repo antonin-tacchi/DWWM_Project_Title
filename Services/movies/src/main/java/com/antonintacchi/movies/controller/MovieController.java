@@ -2,6 +2,7 @@ package com.antonintacchi.movies.controller;
 
 import com.antonintacchi.movies.dto.tmdb.TmdbDetailResponse;
 import com.antonintacchi.movies.dto.tmdb.TmdbPageResponse;
+import com.antonintacchi.movies.dto.tmdb.TmdbVideoResponse;
 import com.antonintacchi.movies.service.TmdbService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -46,6 +47,12 @@ public class MovieController {
     @GetMapping("/{tmdbId}/similar")
     public ResponseEntity<TmdbPageResponse>  similar(@PathVariable Long tmdbId, @RequestParam(defaultValue = "movie") String mediaType) {
         TmdbPageResponse response = tmdbService.getSimilar(mediaType, tmdbId);
+        return ResponseEntity.status(200).body(response);
+    }
+
+    @GetMapping("/{tmdbId}/trailer")
+    public ResponseEntity<TmdbVideoResponse> trailer(@PathVariable Long tmdbId, @RequestParam(defaultValue = "movie") String mediaType) {
+        TmdbVideoResponse response = tmdbService.getTrailer(tmdbId, mediaType);
         return ResponseEntity.status(200).body(response);
     }
 

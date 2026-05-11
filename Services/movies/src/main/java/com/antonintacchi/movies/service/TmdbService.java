@@ -2,6 +2,8 @@ package com.antonintacchi.movies.service;
 
 import com.antonintacchi.movies.dto.tmdb.TmdbDetailResponse;
 import com.antonintacchi.movies.dto.tmdb.TmdbPageResponse;
+import com.antonintacchi.movies.dto.tmdb.TmdbPersonResponse;
+import com.antonintacchi.movies.dto.tmdb.TmdbVideoResponse;
 import com.antonintacchi.movies.exception.ServiceUnavailableException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.beans.factory.annotation.Value;
@@ -89,11 +91,45 @@ public class TmdbService {
                 .block();
     }
 
+    @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackPersonResponse")
+    @Cacheable("tmdb-person")
+    public TmdbPersonResponse getPerson(Long personId) {
+        return tmdbWebClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/person/{personId}")
+                        .queryParam("api_key", apiKey)
+                        .build(personId))
+                .retrieve()
+                .bodyToMono(TmdbPersonResponse.class)
+                .block();
+    }
+
+    @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackVideoResponse")
+    @Cacheable("tmdb-trailer")
+    public TmdbVideoResponse getTrailer(Long tmdbId, String mediaType) {
+        return tmdbWebClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/{mediaType}/{tmdbId}/videos")
+                        .queryParam("api_key", apiKey)
+                        .build(mediaType, tmdbId))
+                .retrieve()
+                .bodyToMono(TmdbVideoResponse.class)
+                .block();
+    }
+
     private TmdbPageResponse fallbackPageResponse(Throwable ex) {
         throw new ServiceUnavailableException("TMDB service unavailable, please try again later.", ex);
     }
 
     private TmdbDetailResponse fallbackDetailResponse(Throwable ex) {
+        throw new ServiceUnavailableException("TMDB service unavailable, please try again later.", ex);
+    }
+
+    private TmdbPersonResponse fallbackPersonResponse(Throwable ex) {
+        throw new ServiceUnavailableException("TMDB service unavailable, please try again later.", ex);
+    }
+
+    private TmdbVideoResponse fallbackVideoResponse(Throwable ex) {
         throw new ServiceUnavailableException("TMDB service unavailable, please try again later.", ex);
     }
 
