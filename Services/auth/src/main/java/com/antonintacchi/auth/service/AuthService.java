@@ -1,9 +1,6 @@
 package com.antonintacchi.auth.service;
 
-import com.antonintacchi.auth.dto.AuthResponse;
-import com.antonintacchi.auth.dto.LoginRequest;
-import com.antonintacchi.auth.dto.RegisterRequest;
-import com.antonintacchi.auth.dto.UpdateProfileRequest;
+import com.antonintacchi.auth.dto.*;
 import com.antonintacchi.auth.entity.User;
 import com.antonintacchi.auth.mapper.UserMapper;
 import com.antonintacchi.auth.repository.UserRepository;
@@ -123,6 +120,20 @@ public class AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         userRepository.delete(user);
+    }
+
+    public void changePassword(String email, ChangePasswordRequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash()))
+            throw new RuntimeException("Wrong current password");
+
+        if (!request.getNewPassword().equals(request.getConfirmNewPassword()))
+            throw new RuntimeException("Passwords don't match");
+
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
     }
 
 }
