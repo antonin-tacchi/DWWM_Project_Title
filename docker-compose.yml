@@ -65,6 +65,20 @@ services:
       consul:
         condition: service_healthy
 
+  social-service:
+    build: ./Services/social
+    container_name: social-service
+    ports:
+      - "8083:8083"
+    environment:
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      consul:
+        condition: service_healthy
+
 
 volumes:
   mysql_data:
