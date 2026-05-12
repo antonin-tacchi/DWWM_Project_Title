@@ -39,4 +39,16 @@ public class CommentController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/{commentId}/like")
+    public ResponseEntity<Void> addLike(@RequestHeader("X-User-Id") Long userId,  @PathVariable Long commentId) {
+        commentService.likeComment(userId, commentId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{commentId}/like")
+    public ResponseEntity<Void> unlikeComment(@RequestHeader("X-User-Id") Long userId,  @PathVariable Long commentId) {
+        commentService.unlikeComment(userId, commentId);
+        return ResponseEntity.noContent().build();
+    }
+
 }

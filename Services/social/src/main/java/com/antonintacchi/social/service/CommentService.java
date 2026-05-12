@@ -4,6 +4,8 @@ import com.antonintacchi.social.dto.comment.CommentDto;
 import com.antonintacchi.social.dto.comment.CreateCommentRequest;
 import com.antonintacchi.social.dto.comment.UpdateCommentRequest;
 import com.antonintacchi.social.entity.Comment;
+import com.antonintacchi.social.entity.CommentLike;
+import com.antonintacchi.social.repository.CommentLikeRepository;
 import com.antonintacchi.social.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,8 @@ import java.util.stream.Collectors;
 public class CommentService {
 
     private final CommentRepository commentRepository;
+
+    private final CommentLikeRepository commentLikeRepository;
 
     public List<CommentDto> getComments(Long tmdbId, String mediaType) {
         return commentRepository.findByTmdbIdAndMediaType(tmdbId, mediaType)
@@ -67,6 +71,26 @@ public class CommentService {
                 .updatedAt(comment.getUpdatedAt())
                 .build();
     }
+
+    public void likeComment(Long userId, Long commentId) {
+        commentRepository.findById(commentId)
+                .orElseThrow(() -> new NoSuchElementException("Comment not found"));
+        if (commentLikeRepository.existsByUserIdAndCommentId(userId, commentId)) {
+            throw new IllegalStateException("Comment Already Liked");
+        }
+
+        CommentLike like = CommentLike.builder()
+                .commentId(commentId)
+                .userId(userId)
+                .build();
+
+        commentLikeRepository.save(like);
+    }
+
+    public void unlikeComment(Long userId, Long commentId) {
+        commentLikeRepository.deleteByUserIdAndCommentId(userId, commentId);
+    }
+
 }
 
 
