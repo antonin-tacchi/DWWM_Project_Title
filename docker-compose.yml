@@ -112,6 +112,14 @@ services:
       notifications-service:
         condition: service_started
 
+  frontend:
+    build: ./frontend
+    container_name: clap-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - gateway
+
 
 volumes:
   mysql_data:
