@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS notifications (
+    CREATE TABLE IF NOT EXISTS notifications (
     id         BIGINT PRIMARY KEY AUTO_INCREMENT,
     user_id    BIGINT NOT NULL,
     type       VARCHAR(50) NOT NULL,
