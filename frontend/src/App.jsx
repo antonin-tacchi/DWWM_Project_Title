@@ -11,6 +11,7 @@ import TvDetail from './pages/TvDetail';
 import ActorProfile from './pages/ActorProfile';
 import UserProfile from './pages/UserProfile';
 import Discovery from './pages/Discovery';
+import LogoDemo from './pages/LogoDemo';
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="/actors/:id"    element={<ActorProfile />} />
           <Route path="/discover"      element={<Discovery />} />
           <Route path="/profile"       element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+          <Route path="/logo-demo"     element={<LogoDemo />} />
         </Routes>
       </main>
       <Footer />
