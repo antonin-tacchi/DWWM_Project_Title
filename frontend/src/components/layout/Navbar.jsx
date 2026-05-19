@@ -4,13 +4,22 @@ import { motion, AnimatePresence } from 'framer-motion';
 import useAuthStore from '../../store/authStore';
 import Logo3D from '../ui/Logo3D';
 
-/* ─── SVG Icons ─────────────────────────────────────────────── */
-const HamburgerIcon = () => (
+/* ─── Icons ──────────────────────────────────────────────────── */
+const HamburgerDesktop = () => (
   <svg width="26" height="18" viewBox="0 0 26 18" fill="none">
     <rect y="0"    width="26" height="2.5" rx="1.25" fill="#C9A96E" />
     <rect y="7.75" width="26" height="2.5" rx="1.25" fill="#C9A96E" />
     <rect y="15.5" width="26" height="2.5" rx="1.25" fill="#C9A96E" />
   </svg>
+);
+
+/* Mobile hamburger — thick golden pills like the mockup */
+const HamburgerMobile = () => (
+  <div className="flex flex-col gap-[5px]">
+    {[0, 1, 2].map((i) => (
+      <div key={i} className="w-9 h-[10px] bg-clap-gold rounded-full" />
+    ))}
+  </div>
 );
 
 const SearchIcon = () => (
@@ -22,10 +31,7 @@ const SearchIcon = () => (
 
 const BellIcon = () => (
   <svg width="20" height="24" viewBox="0 0 20 24" fill="none">
-    <path
-      d="M10 0C10 0 2 4.5 2 12V18H18V12C18 4.5 10 0 10 0Z"
-      fill="#C9A96E"
-    />
+    <path d="M10 0C10 0 2 4.5 2 12V18H18V12C18 4.5 10 0 10 0Z" fill="#C9A96E" />
     <rect x="7.5" y="18" width="5" height="3" rx="1.5" fill="#C9A96E" />
     <circle cx="10" cy="1.5" r="1.5" fill="#C9A96E" />
   </svg>
@@ -33,12 +39,7 @@ const BellIcon = () => (
 
 const CloseIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-    <path
-      d="M6 6L18 18M6 18L18 6"
-      stroke="#C9A96E"
-      strokeWidth="2"
-      strokeLinecap="round"
-    />
+    <path d="M6 6L18 18M6 18L18 6" stroke="#C9A96E" strokeWidth="2" strokeLinecap="round" />
   </svg>
 );
 
@@ -52,7 +53,6 @@ const NAV_LINKS = [
   { to: '/',          label: 'ABOUT' },
 ];
 
-/* ─── Menu overlay animation variants ───────────────────────── */
 const overlayVariants = {
   hidden:  { opacity: 0 },
   visible: { opacity: 1, transition: { duration: 0.3 } },
@@ -62,8 +62,7 @@ const overlayVariants = {
 const linkVariants = {
   hidden:  { opacity: 0, y: 40 },
   visible: (i) => ({
-    opacity: 1,
-    y: 0,
+    opacity: 1, y: 0,
     transition: { delay: i * 0.07, duration: 0.4, ease: 'easeOut' },
   }),
   exit: { opacity: 0, y: -20, transition: { duration: 0.2 } },
@@ -76,150 +75,113 @@ export default function Navbar() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') setMenuOpen(false);
-    };
+    const handleKeyDown = (e) => { if (e.key === 'Escape') setMenuOpen(false); };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-    setMenuOpen(false);
-  };
+  const handleLogout = () => { logout(); navigate('/'); setMenuOpen(false); };
 
   return (
     <>
-      {/* ── Top bar ── */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-clap-bg/90 backdrop-blur-sm">
-        <div className="flex items-center h-16 px-5 gap-5">
+        <div className="flex items-center h-16 px-4 md:px-5">
 
-          {/* Logo 3D */}
-          <Link to="/" className="flex-shrink-0 -ml-1">
+          {/* Logo 3D — all screens */}
+          <Link to="/" className="flex-shrink-0">
             <Logo3D />
           </Link>
 
-          {/* Hamburger */}
+          {/* ── DESKTOP layout ── */}
+          {/* Hamburger (desktop, left of search) */}
           <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+            whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
             onClick={() => setMenuOpen(true)}
-            aria-label="Open menu"
-            className="flex items-center flex-shrink-0"
+            className="hidden md:flex items-center ml-4 flex-shrink-0"
           >
-            <HamburgerIcon />
+            <HamburgerDesktop />
           </motion.button>
 
-          {/* Search bar — centred */}
-          <div className="flex-1 flex justify-center px-4">
-            <motion.div
-              initial={false}
-              className="relative w-full max-w-md group"
-            >
-              {/* Loupe inside the bar on the left */}
+          {/* Search bar (desktop center) */}
+          <div className="hidden md:flex flex-1 justify-center px-6">
+            <div className="relative w-full max-w-md group">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
                 <SearchIcon />
               </span>
-
               <input
                 type="text"
                 placeholder="Rechercher films, séries, acteurs…"
-                className="
-                  w-full bg-clap-card border border-clap-muted/50
-                  rounded-full py-2 pl-11 pr-4
-                  text-sm text-clap-light placeholder-clap-gray
-                  outline-none
-                  transition-all duration-300
-                  focus:border-clap-gold focus:ring-1 focus:ring-clap-gold/40
-                  group-hover:border-clap-muted
-                "
+                className="w-full bg-clap-card border border-clap-muted/50 rounded-full py-2 pl-11 pr-4 text-sm text-clap-light placeholder-clap-gray outline-none transition-all duration-300 focus:border-clap-gold focus:ring-1 focus:ring-clap-gold/40"
               />
-            </motion.div>
+            </div>
           </div>
 
-          {/* Bell + Avatar / Auth */}
-          <div className="flex items-center gap-4">
+          {/* Bell + Avatar (desktop right) */}
+          <div className="hidden md:flex items-center gap-4">
             {isAuthenticated && (
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                aria-label="Notifications"
-                className="flex items-center"
-              >
+              <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                 <BellIcon />
               </motion.button>
             )}
-
             {isAuthenticated ? (
               <Link to="/profile">
                 <motion.div
                   whileHover={{ scale: 1.06 }}
                   className="w-9 h-9 rounded-full bg-clap-muted border-2 border-clap-gold overflow-hidden flex items-center justify-center"
                 >
-                  {user?.avatar ? (
-                    <img
-                      src={user.avatar}
-                      alt={user?.username}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-clap-gold font-display text-sm font-bold">
-                      {user?.username?.[0]?.toUpperCase() ?? 'U'}
-                    </span>
-                  )}
+                  <span className="text-clap-gold font-display text-sm font-bold">
+                    {user?.username?.[0]?.toUpperCase() ?? 'U'}
+                  </span>
                 </motion.div>
               </Link>
             ) : (
               <div className="flex items-center gap-3">
-                <Link
-                  to="/login"
-                  className="text-clap-light hover:text-clap-gold transition-colors text-sm tracking-wide"
-                >
-                  Login
-                </Link>
-                <Link to="/register" className="btn-gold text-sm py-1 px-4">
-                  Register
-                </Link>
+                <Link to="/login" className="text-clap-light hover:text-clap-gold transition-colors text-sm">Login</Link>
+                <Link to="/register" className="btn-gold text-sm py-1 px-4">Register</Link>
               </div>
             )}
           </div>
-        </div>
 
+          {/* ── MOBILE layout ── */}
+          {/* Spacer pushes hamburger to the right */}
+          <div className="flex-1 md:hidden" />
+
+          {/* Mobile hamburger — right side */}
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setMenuOpen(true)}
+            className="md:hidden flex items-center"
+          >
+            <HamburgerMobile />
+          </motion.button>
+        </div>
       </nav>
 
-      {/* ── Full-screen menu overlay ── */}
+      {/* ── Full-screen menu overlay (all screens) ── */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
             variants={overlayVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
+            initial="hidden" animate="visible" exit="exit"
             className="fixed inset-0 z-[100] bg-clap-bg/96 backdrop-blur-md flex flex-col items-center justify-center"
           >
-            {/* Close */}
             <motion.button
               initial={{ opacity: 0, rotate: -90 }}
               animate={{ opacity: 1, rotate: 0, transition: { duration: 0.3 } }}
               exit={{ opacity: 0 }}
               onClick={() => setMenuOpen(false)}
-              aria-label="Close menu"
               className="absolute top-5 right-6"
             >
               <CloseIcon />
             </motion.button>
 
-            {/* Links */}
             <nav className="flex flex-col items-center gap-7">
               {NAV_LINKS.map((link, i) => (
                 <motion.div
                   key={link.label}
                   custom={i}
                   variants={linkVariants}
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
+                  initial="hidden" animate="visible" exit="exit"
                 >
                   <Link
                     to={link.to}
@@ -232,35 +194,17 @@ export default function Navbar() {
               ))}
             </nav>
 
-            {/* Bottom auth row */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1, transition: { delay: 0.55 } }}
               className="absolute bottom-10 flex gap-8 text-clap-gray text-sm tracking-widest"
             >
               {isAuthenticated ? (
-                <button
-                  onClick={handleLogout}
-                  className="hover:text-clap-red transition-colors uppercase"
-                >
-                  Logout
-                </button>
+                <button onClick={handleLogout} className="hover:text-clap-red transition-colors uppercase">Logout</button>
               ) : (
                 <>
-                  <Link
-                    to="/login"
-                    onClick={() => setMenuOpen(false)}
-                    className="hover:text-clap-gold transition-colors uppercase"
-                  >
-                    Login
-                  </Link>
-                  <Link
-                    to="/register"
-                    onClick={() => setMenuOpen(false)}
-                    className="hover:text-clap-gold transition-colors uppercase"
-                  >
-                    Register
-                  </Link>
+                  <Link to="/login"    onClick={() => setMenuOpen(false)} className="hover:text-clap-gold transition-colors uppercase">Login</Link>
+                  <Link to="/register" onClick={() => setMenuOpen(false)} className="hover:text-clap-gold transition-colors uppercase">Register</Link>
                 </>
               )}
             </motion.div>
