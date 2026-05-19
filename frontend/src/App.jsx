@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import ProtectedRoute from './components/layout/ProtectedRoute';
@@ -13,7 +13,12 @@ import UserProfile from './pages/UserProfile';
 import Discovery from './pages/Discovery';
 import LogoDemo from './pages/LogoDemo';
 
+const AUTH_ROUTES = ['/login', '/register'];
+
 export default function App() {
+  const { pathname } = useLocation();
+  const isAuth = AUTH_ROUTES.includes(pathname);
+
   return (
     <div className="min-h-screen flex flex-col bg-clap-bg">
       <Navbar />
@@ -31,7 +36,7 @@ export default function App() {
           <Route path="/logo-demo"     element={<LogoDemo />} />
         </Routes>
       </main>
-      <Footer />
+      {!isAuth && <Footer />}
     </div>
   );
 }
