@@ -21,7 +21,10 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
 
     private static final List<String> PUBLIC_PATHS = List.of(
             "/auth/login",
-            "/auth/register"
+            "/auth/register",
+            "/movies",
+            "/tv",
+            "/actors"
     );
 
     @Override

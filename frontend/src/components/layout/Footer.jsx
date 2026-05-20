@@ -34,7 +34,6 @@ export default function Footer() {
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: "url('/FooterBackgroundMobile.png')" }}
         />
-        <div className="absolute inset-0 bg-black/55" />
 
         <div className="relative z-10 flex flex-col items-center px-6 py-10">
 
