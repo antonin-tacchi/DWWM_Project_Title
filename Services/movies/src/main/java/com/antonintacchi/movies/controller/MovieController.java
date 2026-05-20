@@ -60,6 +60,19 @@ public class MovieController {
         return ResponseEntity.status(200).body(response);
     }
 
+    @GetMapping("/discover")
+    public ResponseEntity<TmdbPageResponse> discover(
+            @RequestParam(defaultValue = "movie")  String  mediaType,
+            @RequestParam(required = false)        String  genres,
+            @RequestParam(required = false)        Double  maxRating,
+            @RequestParam(required = false)        Integer maxYear,
+            @RequestParam(required = false)        String  language,
+            @RequestParam(required = false)        String  providers,
+            @RequestParam(defaultValue = "1")      int     page) {
+        TmdbPageResponse response = tmdbService.discover(mediaType, genres, maxRating, maxYear, language, providers, page);
+        return ResponseEntity.status(200).body(response);
+    }
+
     @GetMapping("/discover/random")
     public ResponseEntity<TmdbResult> random(@RequestParam(defaultValue = "movie") String mediaType) {
         TmdbResult result = tmdbService.getRandom(mediaType);

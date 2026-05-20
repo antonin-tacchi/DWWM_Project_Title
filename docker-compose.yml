@@ -13,10 +13,12 @@ services:
     ports:
       - "3306:3306"
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "--silent"]
+      # Vérifie que MySQL accepte des connexions ET que les bases sont créées
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}", "--silent"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 40s   # laisse init-db.sh finir avant de commencer à compter
 
   consul:
     image: hashicorp/consul
@@ -33,10 +35,12 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
 
   auth-service:
     build: ./Services/auth
     container_name: auth-service
+    restart: on-failure   # redémarre automatiquement si MySQL n'était pas encore prêt
     ports:
       - "8090:8090"
     environment:
@@ -53,6 +57,7 @@ services:
   movies-service:
     build: ./Services/movies
     container_name: movies-service
+    restart: on-failure
     ports:
       - "9000:9000"
     environment:
@@ -68,6 +73,7 @@ services:
   social-service:
     build: ./Services/social
     container_name: social-service
+    restart: on-failure
     ports:
       - "9010:9010"
     environment:
@@ -82,6 +88,7 @@ services:
   notifications-service:
     build: ./Services/notifications
     container_name: notifications-service
+    restart: on-failure
     ports:
       - "9020:9020"
     environment:
@@ -96,6 +103,7 @@ services:
   gateway:
     build: ./gateway
     container_name: gateway
+    restart: on-failure
     ports:
       - "8080:8080"
     environment:
@@ -115,11 +123,11 @@ services:
   frontend:
     build: ./frontend
     container_name: clap-frontend
+    restart: on-failure
     ports:
       - "5173:5173"
     depends_on:
       - gateway
-
 
 volumes:
   mysql_data:

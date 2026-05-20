@@ -130,6 +130,46 @@ public class TmdbService {
                 .block();
     }
 
+    @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackPageResponse")
+    public TmdbPageResponse discover(String mediaType, String genres, Double maxRating,
+                                     Integer maxYear, String language, String providers, int page) {
+        return tmdbWebClient.get()
+                .uri(uriBuilder -> {
+                    var builder = uriBuilder
+                            .path("/discover/{mediaType}")
+                            .queryParam("api_key", apiKey)
+                            .queryParam("page", page)
+                            .queryParam("include_adult", false)
+                            .queryParam("sort_by", "popularity.desc");
+
+                    if (genres != null && !genres.isBlank()) {
+                        builder.queryParam("with_genres", genres);
+                    }
+                    if (maxRating != null && maxRating < 10) {
+                        builder.queryParam("vote_average.lte", maxRating);
+                    }
+                    if (maxYear != null) {
+                        String dateLimit = maxYear + "-12-31";
+                        if ("movie".equals(mediaType)) {
+                            builder.queryParam("primary_release_date.lte", dateLimit);
+                        } else {
+                            builder.queryParam("first_air_date.lte", dateLimit);
+                        }
+                    }
+                    if (language != null && !language.isBlank()) {
+                        builder.queryParam("with_original_language", language);
+                    }
+                    if (providers != null && !providers.isBlank()) {
+                        builder.queryParam("with_watch_providers", providers);
+                        builder.queryParam("watch_region", "FR");
+                    }
+                    return builder.build(mediaType);
+                })
+                .retrieve()
+                .bodyToMono(TmdbPageResponse.class)
+                .block();
+    }
+
     @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackRandomResponse")
     public TmdbResult getRandom(String mediaType) {
         int page = new Random().nextInt(10) + 1;
