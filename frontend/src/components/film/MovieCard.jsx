@@ -7,7 +7,7 @@ export default function MovieCard({ movie, type = 'movie' }) {
   const title     = movie.title || movie.name || 'Unknown';
   const poster    = movie.posterPath || movie.poster_path;
   const rating    = movie.voteAverage || movie.vote_average;
-  const path      = `/${type}s/${movie.id || movie.tmdbId}`;
+  const path      = `/${type === 'tv' ? 'serie' : 'film'}/${movie.id || movie.tmdbId}`;
 
   return (
     <motion.div

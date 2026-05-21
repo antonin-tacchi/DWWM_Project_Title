@@ -117,6 +117,19 @@ public class TmdbService {
                 .block();
     }
 
+    @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackCreditsResponse")
+    @Cacheable("tmdb-credits")
+    public TmdbCreditsResponse getCredits(Long tmdbId, String mediaType) {
+        return tmdbWebClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/{mediaType}/{tmdbId}/credits")
+                        .queryParam("api_key", apiKey)
+                        .build(mediaType, tmdbId))
+                .retrieve()
+                .bodyToMono(TmdbCreditsResponse.class)
+                .block();
+    }
+
     @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackProviderResponse")
     @Cacheable("tmdb-provider")
     public TmdbProviderResponse getProvider(Long tmdbId, String mediaType) {
@@ -201,6 +214,10 @@ public class TmdbService {
     }
 
     private TmdbVideoResponse fallbackVideoResponse(Throwable ex) {
+        throw new ServiceUnavailableException("TMDB service unavailable, please try again later.", ex);
+    }
+
+    private TmdbCreditsResponse fallbackCreditsResponse(Throwable ex) {
         throw new ServiceUnavailableException("TMDB service unavailable, please try again later.", ex);
     }
 

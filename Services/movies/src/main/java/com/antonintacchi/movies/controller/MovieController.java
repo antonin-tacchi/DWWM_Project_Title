@@ -54,6 +54,12 @@ public class MovieController {
         return ResponseEntity.status(200).body(response);
     }
 
+    @GetMapping("/{tmdbId}/credits")
+    public ResponseEntity<TmdbCreditsResponse> credits(@PathVariable Long tmdbId, @RequestParam(defaultValue = "movie") String mediaType) {
+        TmdbCreditsResponse response = tmdbService.getCredits(tmdbId, mediaType);
+        return ResponseEntity.status(200).body(response);
+    }
+
     @GetMapping("/{tmdbId}/providers")
     public ResponseEntity<TmdbProviderResponse> providers(@PathVariable Long tmdbId, @RequestParam(defaultValue = "movie") String mediaType) {
         TmdbProviderResponse response = tmdbService.getProvider(tmdbId, mediaType);

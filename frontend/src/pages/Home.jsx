@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../services/api';
+import useAuthStore from '../store/authStore';
 
 /* ─── TMDB image helper ──────────────────────────────────────── */
 // Backend sends snake_case because of @JsonProperty on Java fields
@@ -19,6 +20,69 @@ function Stars({ value = 0, count = 10, size = 'sm' }) {
         <span key={i} style={{ color: i < filled ? '#C9A96E' : '#3A3A5A' }}>★</span>
       ))}
     </div>
+  );
+}
+
+/* ─── Favorite button ────────────────────────────────────────── */
+function FavoriteButton({ tmdbId, mediaType }) {
+  const { isAuthenticated } = useAuthStore();
+  const queryClient = useQueryClient();
+
+  const { data: favorites } = useQuery({
+    queryKey: ['favorites'],
+    queryFn:  () => api.get('/favorites').then((r) => r.data),
+    enabled:  isAuthenticated,
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const currentFav = (favorites ?? []).find(
+    (f) => Number(f.tmdbId) === Number(tmdbId) && f.mediaType === mediaType
+  );
+  const isFav = Boolean(currentFav);
+
+  const toggle = useMutation({
+    mutationFn: () =>
+      isFav
+        ? api.delete(`/favorites/${currentFav.id}`)
+        : api.post('/favorites', { tmdbId: Number(tmdbId), mediaType }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['favorites'] }),
+  });
+
+  if (!isAuthenticated) {
+    return (
+      <Link
+        to="/login"
+        className="text-xs md:text-sm px-3 md:px-4 py-1.5 rounded-full border border-white/60 text-white hover:bg-white/10 transition-colors whitespace-nowrap flex items-center gap-1.5"
+      >
+        <HeartIcon filled={false} />
+        Add to favorites
+      </Link>
+    );
+  }
+
+  return (
+    <motion.button
+      whileTap={{ scale: 0.93 }}
+      onClick={() => toggle.mutate()}
+      disabled={toggle.isPending}
+      className="text-xs md:text-sm px-3 md:px-4 py-1.5 rounded-full border transition-colors whitespace-nowrap flex items-center gap-1.5 disabled:opacity-50"
+      style={{
+        borderColor:     isFav ? '#e05555' : 'rgba(255,255,255,0.6)',
+        backgroundColor: isFav ? 'rgba(224,85,85,0.15)' : 'transparent',
+        color:           isFav ? '#e07070' : 'white',
+      }}
+    >
+      <HeartIcon filled={isFav} />
+      {isFav ? 'Favorited' : 'Add to favorites'}
+    </motion.button>
+  );
+}
+
+function HeartIcon({ filled }) {
+  return (
+    <svg width="13" height="13" viewBox="0 0 18 18" fill={filled ? '#e05555' : 'none'} stroke={filled ? '#e05555' : 'currentColor'} strokeWidth="1.6">
+      <path d="M9 15.5S1.5 11 1.5 5.5A4 4 0 019 3a4 4 0 017.5 2.5C16.5 11 9 15.5 9 15.5z" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
   );
 }
 
@@ -102,15 +166,16 @@ function Hero({ movies }) {
                 <Stars value={movie.vote_average} />
                 <div className="flex gap-2">
                   <Link
-                    to={`/${type === 'tv' ? 'tv' : 'movies'}/${movie.id}`}
+                    to={`/${type === 'tv' ? 'serie' : 'film'}/${movie.id}`}
 
                     className="text-xs md:text-sm px-3 md:px-4 py-1.5 rounded-full border border-white/60 text-white hover:bg-white/10 transition-colors whitespace-nowrap"
                   >
                     Watch trailers
                   </Link>
-                  <button className="text-xs md:text-sm px-3 md:px-4 py-1.5 rounded-full border border-white/60 text-white hover:bg-white/10 transition-colors whitespace-nowrap">
-                    Add to favorites
-                  </button>
+                  <FavoriteButton
+                    tmdbId={movie.id}
+                    mediaType={type === 'tv' ? 'tv' : 'movie'}
+                  />
                 </div>
               </div>
             </div>
@@ -161,7 +226,7 @@ function MovieCard({ movie }) {
       transition={{ duration: 0.2 }}
       className="flex-shrink-0 w-36 md:w-44 cursor-pointer"
     >
-      <Link to={`/${type === 'tv' ? 'tv' : 'movies'}/${movie.id}`}>
+      <Link to={`/${type === 'tv' ? 'serie' : 'film'}/${movie.id}`}>
         <div className="relative rounded-xl overflow-hidden aspect-[2/3]">
           <img
             src={tmdbImg(movie.poster_path, 'w342')}
@@ -243,15 +308,31 @@ function HeroSkeleton() {
 
 /* ─── Page ───────────────────────────────────────────────────── */
 export default function Home() {
+  // Trending: use mediaType=all → TMDB returns movies + TV mixed
   const { data: trendingData, isLoading: trendingLoading } = useQuery({
     queryKey: ['trending'],
-    queryFn: () => api.get('/movies/trending?mediaType=movie&timeWindow=week').then((r) => r.data),
+    queryFn: () => api.get('/movies/trending?mediaType=all&timeWindow=week').then((r) => r.data),
     staleTime: 5 * 60 * 1000,
   });
 
+  // Popular: fetch movie + tv separately and interleave
   const { data: popularData, isLoading: popularLoading } = useQuery({
     queryKey: ['popular'],
-    queryFn: () => api.get('/movies/popular?mediaType=movie').then((r) => r.data),
+    queryFn: async () => {
+      const [movieRes, tvRes] = await Promise.all([
+        api.get('/movies/popular?mediaType=movie').then((r) => r.data),
+        api.get('/movies/popular?mediaType=tv').then((r) => r.data),
+      ]);
+      const m = (movieRes.results ?? []).map((r) => ({ ...r, media_type: 'movie' }));
+      const t = (tvRes.results  ?? []).map((r) => ({ ...r, media_type: 'tv' }));
+      const merged = [];
+      const len = Math.max(m.length, t.length);
+      for (let i = 0; i < len; i++) {
+        if (m[i]) merged.push(m[i]);
+        if (t[i]) merged.push(t[i]);
+      }
+      return { results: merged };
+    },
     staleTime: 5 * 60 * 1000,
   });
 

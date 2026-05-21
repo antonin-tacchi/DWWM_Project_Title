@@ -128,7 +128,6 @@ export default function Footer() {
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: "url('/FooterBackground.png')" }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/55 to-black/70" />
 
         <div className="relative z-10 flex flex-col items-center justify-center py-28 px-6 text-center">
 

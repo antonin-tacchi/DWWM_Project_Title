@@ -24,42 +24,51 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
             "/auth/register",
             "/movies",
             "/tv",
-            "/actors"
+            "/actors",
+            "/comments"
     );
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        String path = exchange.getRequest().getURI().getPath();
-
-        if (isPublic(path)) {
-            return chain.filter(exchange);
-        }
+        String path      = exchange.getRequest().getURI().getPath();
+        boolean isPublic = isPublic(path);
 
         String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        // Token present → validate and inject user headers regardless of public/private
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+
+            if (!jwtUtil.isValid(token)) {
+                // Invalid token on a protected route → reject; on public route → let through without headers
+                if (!isPublic) {
+                    exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                    return exchange.getResponse().setComplete();
+                }
+                return chain.filter(exchange);
+            }
+
+            String email  = jwtUtil.extractEmail(token);
+            Long   userId = jwtUtil.extractUserId(token);
+
+            ServerWebExchange mutatedExchange = exchange.mutate()
+                    .request(exchange.getRequest().mutate()
+                            .header("X-User-Email", email)
+                            .header("X-User-Id", String.valueOf(userId))
+                            .build())
+                    .build();
+
+            return chain.filter(mutatedExchange);
+        }
+
+        // No token on a protected route → reject
+        if (!isPublic) {
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
         }
 
-        String token = authHeader.substring(7);
-
-        if (!jwtUtil.isValid(token)) {
-            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-            return exchange.getResponse().setComplete();
-        }
-
-        String email = jwtUtil.extractEmail(token);
-        Long userId = jwtUtil.extractUserId(token);
-
-        ServerWebExchange mutatedExchange = exchange.mutate()
-                .request(exchange.getRequest().mutate()
-                        .header("X-User-Email", email)
-                        .header("X-User-Id", String.valueOf(userId))
-                        .build())
-                .build();
-
-        return chain.filter(mutatedExchange);
+        // No token on a public route → let through as-is
+        return chain.filter(exchange);
     }
 
     private boolean isPublic(String path) {

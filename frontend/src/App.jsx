@@ -2,6 +2,7 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import ProtectedRoute from './components/layout/ProtectedRoute';
+import ScrollToTop from './components/layout/ScrollToTop';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -21,6 +22,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-clap-bg">
+      <ScrollToTop />
       <Navbar />
       <main className="flex-1">
         <Routes>
@@ -28,8 +30,8 @@ export default function App() {
           <Route path="/login"         element={<Login />} />
           <Route path="/register"      element={<Register />} />
           <Route path="/catalogue"     element={<Catalogue />} />
-          <Route path="/movies/:id"    element={<MovieDetail />} />
-          <Route path="/tv/:id"        element={<TvDetail />} />
+          <Route path="/film/:id"       element={<MovieDetail />} />
+          <Route path="/serie/:id"     element={<TvDetail />} />
           <Route path="/actors/:id"    element={<ActorProfile />} />
           <Route path="/discover"      element={<Discovery />} />
           <Route path="/profile"       element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />

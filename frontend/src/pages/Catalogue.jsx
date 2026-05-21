@@ -52,7 +52,7 @@ function MovieCard({ movie }) {
   const poster = tmdbImg(movie.poster_path);
 
   return (
-    <Link to={`/${type === 'tv' ? 'tv' : 'movies'}/${movie.id}`}>
+    <Link to={`/${type === 'tv' ? 'serie' : 'film'}/${movie.id}`}>
       <motion.div whileHover={{ scale: 1.03 }} transition={{ duration: 0.2 }}>
         <div className="relative rounded-xl overflow-hidden aspect-[2/3] bg-clap-card">
           {poster
@@ -145,7 +145,7 @@ function SearchInput({ value, onChange, className = '' }) {
 }
 
 /* ─── Filter content (partagé desktop + mobile) ──────────────── */
-function FilterContent({ isSearching, filters, onToggleGenre, onTogglePlatform, onToggleLanguage, onSetRating, onSetYear }) {
+function FilterContent({ isSearching, filters, onToggleGenre, onTogglePlatform, onToggleLanguage, onSetRating, onSetYear, onSetMediaType }) {
   const [showGenres,    setShowGenres]    = useState(false);
   const [showPlatforms, setShowPlatforms] = useState(false);
   const [showLanguages, setShowLanguages] = useState(false);
@@ -159,6 +159,26 @@ function FilterContent({ isSearching, filters, onToggleGenre, onTogglePlatform, 
       <h2 className="font-display italic text-clap-light text-xl leading-tight mb-6">
         Refine Your<br />Experience
       </h2>
+
+      {/* Media type */}
+      <section className="mb-6">
+        <h3 className="font-display italic text-white text-base mb-3">Type</h3>
+        <div className="flex rounded-lg overflow-hidden border border-clap-muted/30">
+          {[{ key: 'all', label: 'Tous' }, { key: 'movie', label: 'Films' }, { key: 'tv', label: 'Séries' }].map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => onSetMediaType(key)}
+              className="flex-1 py-1.5 text-xs font-semibold transition-colors"
+              style={{
+                backgroundColor: filters.mediaType === key ? '#C9A96E' : 'transparent',
+                color: filters.mediaType === key ? '#0A0A1A' : 'rgba(255,255,255,0.55)',
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </section>
 
       {/* Genres */}
       <section className="mb-6">
@@ -336,11 +356,22 @@ function MobileDrawer({ open, onClose, isSearching, filters, onToggleGenre, onTo
 /* ─── Pagination ─────────────────────────────────────────────── */
 function Pagination({ page, totalPages, onPageChange }) {
   const clamped = Math.min(totalPages, 237);
+
+  // Build sliding window: always show 1st, last, current ±2, with '…' gaps
   const pages = [];
   if (clamped <= 7) {
     for (let i = 1; i <= clamped; i++) pages.push(i);
   } else {
-    pages.push(1, 2, 3, '...', clamped - 2, clamped - 1, clamped);
+    const delta = 2; // pages on each side of current
+    const range = [];
+    for (let i = Math.max(2, page - delta); i <= Math.min(clamped - 1, page + delta); i++) {
+      range.push(i);
+    }
+    pages.push(1);
+    if (range[0] > 2) pages.push('...');
+    pages.push(...range);
+    if (range[range.length - 1] < clamped - 1) pages.push('...');
+    pages.push(clamped);
   }
 
   return (
@@ -385,7 +416,7 @@ function RandomPick() {
     setLoading(true); setError('');
     try {
       const { data } = await api.get(`/movies/discover/random?mediaType=${pickType}`);
-      navigate(`/${pickType === 'tv' ? 'tv' : 'movies'}/${data.id}`);
+      navigate(`/${pickType === 'tv' ? 'serie' : 'film'}/${data.id}`);
     } catch {
       setError('Aucun résultat, réessaye !');
     } finally {
@@ -445,7 +476,7 @@ function RandomPick() {
 }
 
 /* ─── Page ───────────────────────────────────────────────────── */
-const INITIAL_FILTERS = { genres: [], maxRating: 10, maxYear: CURRENT_YEAR, platforms: [], languages: [] };
+const INITIAL_FILTERS = { mediaType: 'all', genres: [], maxRating: 10, maxYear: CURRENT_YEAR, platforms: [], languages: [] };
 
 export default function Catalogue() {
   const [page,    setPage]    = useState(1);
@@ -471,7 +502,8 @@ export default function Catalogue() {
     filters.platforms.length +
     filters.languages.length +
     (filters.maxRating < 10 ? 1 : 0) +
-    (filters.maxYear < CURRENT_YEAR ? 1 : 0);
+    (filters.maxYear < CURRENT_YEAR ? 1 : 0) +
+    (filters.mediaType !== 'all' ? 1 : 0);
 
   /* Helpers */
   const toggle = (key, value) => {
@@ -490,11 +522,12 @@ export default function Catalogue() {
     onToggleLanguage: (l) => toggle('languages', l),
     onSetRating:      (v) => setSlider('maxRating', v),
     onSetYear:        (v) => setSlider('maxYear', v),
+    onSetMediaType:   (v) => { setFilters((f) => ({ ...f, mediaType: v })); setPage(1); },
   };
 
   /* Build discover params */
-  const buildDiscoverParams = () => {
-    const p = new URLSearchParams({ mediaType: 'movie', page });
+  const buildDiscoverParams = (mediaType) => {
+    const p = new URLSearchParams({ mediaType, page });
     if (filters.genres.length)    p.set('genres',    filters.genres.map((g) => TMDB_GENRE_MAP[g]).join(','));
     if (filters.maxRating < 10)   p.set('maxRating', filters.maxRating);
     if (filters.maxYear < CURRENT_YEAR) p.set('maxYear', filters.maxYear);
@@ -507,9 +540,29 @@ export default function Catalogue() {
   };
 
   /* Queries */
+  const isAll = filters.mediaType === 'all';
+
   const { data: discoverData, isLoading: discoverLoading, isFetching: discoverFetching } = useQuery({
     queryKey:  ['catalogue', page, filters],
-    queryFn:   () => api.get(`/movies/discover?${buildDiscoverParams()}`).then((r) => r.data),
+    queryFn: async () => {
+      if (isAll) {
+        const [movieRes, tvRes] = await Promise.all([
+          api.get(`/movies/discover?${buildDiscoverParams('movie')}`).then((r) => r.data),
+          api.get(`/movies/discover?${buildDiscoverParams('tv')}`).then((r) => r.data),
+        ]);
+        // Interleave movie + tv results: movie, tv, movie, tv…
+        const merged = [];
+        const m = (movieRes.results ?? []).map((r) => ({ ...r, media_type: 'movie' }));
+        const t = (tvRes.results ?? []).map((r) => ({ ...r, media_type: 'tv' }));
+        const len = Math.max(m.length, t.length);
+        for (let i = 0; i < len; i++) {
+          if (m[i]) merged.push(m[i]);
+          if (t[i]) merged.push(t[i]);
+        }
+        return { results: merged, total_pages: Math.max(movieRes.total_pages ?? 1, tvRes.total_pages ?? 1) };
+      }
+      return api.get(`/movies/discover?${buildDiscoverParams(filters.mediaType)}`).then((r) => r.data);
+    },
     staleTime: 3 * 60 * 1000,
     placeholderData: (prev) => prev,
     enabled: !isSearching,
