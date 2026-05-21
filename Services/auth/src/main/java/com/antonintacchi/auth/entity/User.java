@@ -38,6 +38,8 @@ public class User {
     @Column(columnDefinition = "ENUM('movie', 'tv')")
     private String bannerMediaType;
 
+    private String bannerBackdropPath;
+
     private LocalDateTime createdAt;
 
 }

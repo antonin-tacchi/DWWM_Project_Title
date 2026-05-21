@@ -143,6 +143,21 @@ public class TmdbService {
                 .block();
     }
 
+    @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackImagesResponse")
+    @Cacheable("tmdb-images")
+    public TmdbImagesResponse getImages(Long tmdbId, String mediaType) {
+        return tmdbWebClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/{mediaType}/{tmdbId}/images")
+                        .queryParam("api_key", apiKey)
+                        // include_image_language=null fetches all languages (more backdrops)
+                        .queryParam("include_image_language", "null,en")
+                        .build(mediaType, tmdbId))
+                .retrieve()
+                .bodyToMono(TmdbImagesResponse.class)
+                .block();
+    }
+
     @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackPageResponse")
     public TmdbPageResponse discover(String mediaType, String genres, Double maxRating,
                                      Integer maxYear, String language, String providers, int page) {
@@ -223,6 +238,10 @@ public class TmdbService {
 
     private TmdbProviderResponse fallbackProviderResponse(Throwable ex) {
         throw new ServiceUnavailableException("Tmdb service unavailable, please try again later.", ex);
+    }
+
+    private TmdbImagesResponse fallbackImagesResponse(Throwable ex) {
+        throw new ServiceUnavailableException("TMDB service unavailable, please try again later.", ex);
     }
 
     private TmdbResult fallbackRandomResponse(Throwable ex) {

@@ -66,6 +66,12 @@ public class MovieController {
         return ResponseEntity.status(200).body(response);
     }
 
+    @GetMapping("/{tmdbId}/images")
+    public ResponseEntity<TmdbImagesResponse> images(@PathVariable Long tmdbId, @RequestParam(defaultValue = "movie") String mediaType) {
+        TmdbImagesResponse response = tmdbService.getImages(tmdbId, mediaType);
+        return ResponseEntity.status(200).body(response);
+    }
+
     @GetMapping("/discover")
     public ResponseEntity<TmdbPageResponse> discover(
             @RequestParam(defaultValue = "movie")  String  mediaType,

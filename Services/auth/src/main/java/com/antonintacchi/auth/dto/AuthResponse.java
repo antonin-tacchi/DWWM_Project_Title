@@ -9,5 +9,11 @@ public class AuthResponse {
     private String username;
     private String email;
     private String avatarUrl;
+    private String bio;
+    private Integer level;
+    private Integer xp;
+    private Long bannerTmdbId;
+    private String bannerMediaType;
+    private String bannerBackdropPath;
 
 }

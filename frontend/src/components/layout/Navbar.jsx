@@ -279,11 +279,20 @@ export default function Navbar() {
               <Link to="/profile">
                 <motion.div
                   whileHover={{ scale: 1.06 }}
-                  className="w-9 h-9 rounded-full bg-clap-muted border-2 border-clap-gold overflow-hidden flex items-center justify-center"
+                  className="w-9 h-9 rounded-full bg-clap-muted border-2 border-clap-gold overflow-hidden flex items-center justify-center flex-shrink-0"
                 >
-                  <span className="text-clap-gold font-display text-sm font-bold">
-                    {user?.username?.[0]?.toUpperCase() ?? 'U'}
-                  </span>
+                  {user?.avatarUrl ? (
+                    <img
+                      src={user.avatarUrl}
+                      alt={user.username}
+                      className="w-full h-full object-cover"
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                  ) : (
+                    <span className="text-clap-gold font-display text-sm font-bold">
+                      {user?.username?.[0]?.toUpperCase() ?? 'U'}
+                    </span>
+                  )}
                 </motion.div>
               </Link>
             ) : (
