@@ -576,7 +576,7 @@ export default function MovieDetail({ mediaType = 'movie' }) {
   const genres     = (detail?.genres ?? []).map((g) => g.name).join(', ') || '—';
   const runtime    = fmtRuntime(detail?.runtime);
   const cast       = (credits?.cast ?? []).slice(0, 10);
-  const directors  = (credits?.crew ?? []).filter((c) => c.job === 'Director').map((c) => c.name).join(', ') || '—';
+  const directors  = (credits?.crew ?? []).filter((c) => c.job === 'Director');
   const trailer    = (trailerData?.results ?? []).find((v) => v.site === 'YouTube' && v.type === 'Trailer');
   const providers  = providersData?.results?.FR?.flatrate ?? [];
   const relatedMovies = similar?.results ?? [];
@@ -646,7 +646,20 @@ export default function MovieDetail({ mediaType = 'movie' }) {
             )}
           </div>
           <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs md:text-sm text-clap-gray mb-4">
-            <span><span className="text-white/60">Director : </span>{directors}</span>
+            <span>
+              <span className="text-white/60">Director : </span>
+              {directors.length === 0 ? '—' : directors.map((d, i) => (
+                <span key={d.id}>
+                  <Link
+                    to={`/crew/${d.id}`}
+                    className="hover:text-clap-gold transition-colors underline-offset-2 hover:underline"
+                  >
+                    {d.name}
+                  </Link>
+                  {i < directors.length - 1 && ', '}
+                </span>
+              ))}
+            </span>
             {runtime && <span><span className="text-white/60">Duration : </span>{runtime}</span>}
             {detail?.number_of_seasons && (
               <span><span className="text-white/60">Seasons : </span>{detail.number_of_seasons}</span>

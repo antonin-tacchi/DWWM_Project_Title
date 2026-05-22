@@ -81,6 +81,21 @@ public class TmdbService {
     @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackPageResponse")
     @Cacheable("tmdb-similar")
     public TmdbPageResponse getSimilar(String mediaType, Long tmdbId) {
+        // Try /recommendations first (user-behaviour based → far more relevant)
+        TmdbPageResponse recs = tmdbWebClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/{mediaType}/{tmdbId}/recommendations")
+                        .queryParam("api_key", apiKey)
+                        .build(mediaType, tmdbId))
+                .retrieve()
+                .bodyToMono(TmdbPageResponse.class)
+                .block();
+
+        if (recs != null && recs.getResults() != null && !recs.getResults().isEmpty()) {
+            return recs;
+        }
+
+        // Fallback to /similar if recommendations is empty (e.g. very new release)
         return tmdbWebClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/{mediaType}/{tmdbId}/similar")
@@ -101,6 +116,19 @@ public class TmdbService {
                         .build(personId))
                 .retrieve()
                 .bodyToMono(TmdbPersonResponse.class)
+                .block();
+    }
+
+    @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackPersonCreditsResponse")
+    @Cacheable("tmdb-person-credits")
+    public TmdbPersonCreditsResponse getPersonCredits(Long personId) {
+        return tmdbWebClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/person/{personId}/combined_credits")
+                        .queryParam("api_key", apiKey)
+                        .build(personId))
+                .retrieve()
+                .bodyToMono(TmdbPersonCreditsResponse.class)
                 .block();
     }
 
@@ -225,6 +253,10 @@ public class TmdbService {
     }
 
     private TmdbPersonResponse fallbackPersonResponse(Throwable ex) {
+        throw new ServiceUnavailableException("TMDB service unavailable, please try again later.", ex);
+    }
+
+    private TmdbPersonCreditsResponse fallbackPersonCreditsResponse(Throwable ex) {
         throw new ServiceUnavailableException("TMDB service unavailable, please try again later.", ex);
     }
 

@@ -25,7 +25,11 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
             "/movies",
             "/tv",
             "/actors",
-            "/comments"
+            "/comments",
+            "/ratings",
+            "/favorites",
+            "/lists",
+            "/notifications"
     );
 
     @Override

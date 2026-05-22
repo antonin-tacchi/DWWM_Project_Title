@@ -10,6 +10,7 @@ import Catalogue from './pages/Catalogue';
 import MovieDetail from './pages/MovieDetail';
 import TvDetail from './pages/TvDetail';
 import ActorProfile from './pages/ActorProfile';
+import CrewProfile from './pages/CrewProfile';
 import UserProfile from './pages/UserProfile';
 import Discovery from './pages/Discovery';
 import LogoDemo from './pages/LogoDemo';
@@ -33,6 +34,7 @@ export default function App() {
           <Route path="/film/:id"       element={<MovieDetail />} />
           <Route path="/serie/:id"     element={<TvDetail />} />
           <Route path="/actors/:id"    element={<ActorProfile />} />
+          <Route path="/crew/:id"      element={<CrewProfile />} />
           <Route path="/discover"      element={<Discovery />} />
           <Route path="/profile"       element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
           <Route path="/logo-demo"     element={<LogoDemo />} />

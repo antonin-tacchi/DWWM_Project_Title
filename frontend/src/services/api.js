@@ -17,8 +17,13 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      const hadToken = !!localStorage.getItem('token');
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      if (hadToken) {
+        // Session expirée → rediriger vers login
+        window.location.href = '/login';
+      }
+      // Pas de token → utilisateur non connecté, laisser l'erreur silencieuse
     }
     return Promise.reject(error);
   }
