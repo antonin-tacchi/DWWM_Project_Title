@@ -40,7 +40,7 @@ services:
   auth-service:
     build: ./Services/auth
     container_name: auth-service
-    restart: on-failure   # redémarre automatiquement si MySQL n'était pas encore prêt
+    restart: on-failure
     ports:
       - "8090:8090"
     environment:
@@ -48,6 +48,11 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION: ${JWT_EXPIRATION}
+      # Démarrage JVM ~2x plus rapide : désactive le JIT warm-up (pas utile en dev)
+      JAVA_TOOL_OPTIONS: >-
+        -XX:TieredStopAtLevel=1
+        -XX:+UseContainerSupport
+        -Xmx256m
     depends_on:
       mysql:
         condition: service_healthy
@@ -64,6 +69,10 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       TMDB_API_KEY: ${TMDB_API_KEY}
+      JAVA_TOOL_OPTIONS: >-
+        -XX:TieredStopAtLevel=1
+        -XX:+UseContainerSupport
+        -Xmx256m
     depends_on:
       mysql:
         condition: service_healthy
@@ -79,6 +88,10 @@ services:
     environment:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      JAVA_TOOL_OPTIONS: >-
+        -XX:TieredStopAtLevel=1
+        -XX:+UseContainerSupport
+        -Xmx256m
     depends_on:
       mysql:
         condition: service_healthy
@@ -94,6 +107,10 @@ services:
     environment:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      JAVA_TOOL_OPTIONS: >-
+        -XX:TieredStopAtLevel=1
+        -XX:+UseContainerSupport
+        -Xmx128m
     depends_on:
       mysql:
         condition: service_healthy
@@ -108,6 +125,10 @@ services:
       - "8080:8080"
     environment:
       JWT_SECRET: ${JWT_SECRET}
+      JAVA_TOOL_OPTIONS: >-
+        -XX:TieredStopAtLevel=1
+        -XX:+UseContainerSupport
+        -Xmx128m
     depends_on:
       consul:
         condition: service_healthy
