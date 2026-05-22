@@ -3,6 +3,7 @@ import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import ScrollToTop from './components/layout/ScrollToTop';
+import NotificationContainer from './components/ui/NotificationToast';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -24,6 +25,7 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col bg-clap-bg">
       <ScrollToTop />
+      <NotificationContainer />
       <Navbar />
       <main className="flex-1">
         <Routes>

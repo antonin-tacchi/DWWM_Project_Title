@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import useAuthStore from '../../store/authStore';
+import { useNotifications, titleFromType } from '../../hooks/useNotifications';
+import { NOTIF_TYPES } from '../ui/NotificationToast';
 import Logo3D from '../ui/Logo3D';
 import api from '../../services/api';
 
@@ -226,16 +228,142 @@ const linkVariants = {
   exit: { opacity: 0, y: -20, transition: { duration: 0.2 } },
 };
 
+/* ─── Bell panel ─────────────────────────────────────────────── */
+function BellPanel() {
+  const { notifications, remove, clearAll } = useNotifications();
+
+  /* date relative courte */
+  function relativeTime(iso) {
+    if (!iso) return '';
+    const diff = Date.now() - new Date(iso).getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 1)  return "à l'instant";
+    if (m < 60) return `il y a ${m} min`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `il y a ${h} h`;
+    return `il y a ${Math.floor(h / 24)} j`;
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -8, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0,  scale: 1     }}
+      exit={{    opacity: 0, y: -8, scale: 0.96, transition: { duration: 0.15 } }}
+      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+      className="absolute right-0 top-[calc(100%+10px)] w-80 rounded-2xl overflow-hidden"
+      style={{
+        background: 'rgba(12,12,20,0.98)',
+        backdropFilter: 'blur(28px)',
+        border: '1px solid rgba(201,169,110,0.22)',
+        boxShadow: '0 24px 60px rgba(0,0,0,0.7)',
+        zIndex: 200,
+      }}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-white/8">
+        <span className="text-white text-sm font-semibold tracking-wide">Notifications</span>
+        {notifications.length > 0 && (
+          <button
+            onClick={clearAll}
+            className="text-clap-gray text-xs hover:text-clap-gold transition-colors"
+          >
+            Tout effacer
+          </button>
+        )}
+      </div>
+
+      {/* Liste */}
+      <div className="max-h-80 overflow-y-auto">
+        {notifications.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-10 gap-2 text-clap-gray">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <span className="text-xs">Aucune notification</span>
+          </div>
+        ) : (
+          <AnimatePresence initial={false}>
+            {notifications.map((n) => {
+              const cfg = NOTIF_TYPES[n.type] ?? NOTIF_TYPES.info;
+              const title = titleFromType(n.type);
+              return (
+                <motion.div
+                  key={n.id}
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0, transition: { duration: 0.18 } }}
+                  className="flex items-start gap-3 px-4 py-3 border-b border-white/5 transition-colors"
+                  style={{ background: n.isRead ? 'transparent' : `${cfg.color}08` }}
+                >
+                  {/* Dot coloré */}
+                  <div
+                    className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center mt-0.5"
+                    style={{ background: cfg.bg }}
+                  >
+                    <div className="w-2 h-2 rounded-full" style={{ background: cfg.color }} />
+                  </div>
+
+                  {/* Texte */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline gap-2">
+                      <p className="text-white text-xs font-semibold leading-tight">{title}</p>
+                      {!n.isRead && (
+                        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: cfg.color }} />
+                      )}
+                    </div>
+                    {n.message && (
+                      <p className="text-white/50 text-[11px] leading-snug mt-0.5 line-clamp-2">{n.message}</p>
+                    )}
+                    {n.createdAt && (
+                      <p className="text-white/25 text-[10px] mt-1">{relativeTime(n.createdAt)}</p>
+                    )}
+                  </div>
+
+                  {/* Supprimer */}
+                  <button
+                    onClick={() => remove(n.id)}
+                    className="flex-shrink-0 text-white/20 hover:text-white/60 transition-colors mt-0.5"
+                    aria-label="Supprimer"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                      <path d="M18 6L6 18M6 6l12 12" />
+                    </svg>
+                  </button>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
 /* ─── Component ──────────────────────────────────────────────── */
 export default function Navbar() {
   const [menuOpen,         setMenuOpen]         = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [bellOpen,         setBellOpen]         = useState(false);
+  const bellRef                                 = useRef(null);
   const { isAuthenticated, user, logout }       = useAuthStore();
+  const { unreadCount, markAllRead }            = useNotifications();
   const navigate                                = useNavigate();
+
+  /* Fermer le panel bell sur clic extérieur */
+  useEffect(() => {
+    function handler(e) {
+      if (bellRef.current && !bellRef.current.contains(e.target)) {
+        setBellOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') { setMenuOpen(false); setMobileSearchOpen(false); }
+      if (e.key === 'Escape') { setMenuOpen(false); setMobileSearchOpen(false); setBellOpen(false); }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -272,9 +400,28 @@ export default function Navbar() {
           {/* Bell + Avatar (desktop right) */}
           <div className="hidden md:flex items-center gap-4">
             {isAuthenticated && (
-              <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                <BellIcon />
-              </motion.button>
+              <div ref={bellRef} className="relative">
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => { setBellOpen((v) => !v); if (!bellOpen) markAllRead(); }}
+                  className="relative"
+                  aria-label="Notifications"
+                >
+                  <BellIcon />
+                  {unreadCount > 0 && (
+                    <span
+                      className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-bold text-black"
+                      style={{ background: '#f87171', padding: '0 4px' }}
+                    >
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </motion.button>
+                <AnimatePresence>
+                  {bellOpen && <BellPanel />}
+                </AnimatePresence>
+              </div>
             )}
             {isAuthenticated ? (
               <Link to="/profile">

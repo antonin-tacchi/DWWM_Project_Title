@@ -1,4 +1,5 @@
 import axios from 'axios';
+import useNotificationStore from '../store/notificationStore';
 
 const api = axios.create({
   baseURL: '',
@@ -20,10 +21,14 @@ api.interceptors.response.use(
       const hadToken = !!localStorage.getItem('token');
       localStorage.removeItem('token');
       if (hadToken) {
-        // Session expirée → rediriger vers login
-        window.location.href = '/login';
+        useNotificationStore.getState().add({
+          type: 'error',
+          title: 'Session expirée',
+          message: 'Veuillez vous reconnecter.',
+          duration: 4000,
+        });
+        setTimeout(() => { window.location.href = '/login'; }, 1500);
       }
-      // Pas de token → utilisateur non connecté, laisser l'erreur silencieuse
     }
     return Promise.reject(error);
   }
