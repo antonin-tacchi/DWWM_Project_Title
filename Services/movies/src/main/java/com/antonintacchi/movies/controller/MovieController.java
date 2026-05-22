@@ -42,6 +42,12 @@ public class MovieController {
         return ResponseEntity.status(200).body(response);
     }
 
+    @GetMapping("/upcoming")
+    public ResponseEntity<TmdbPageResponse> upcoming(@RequestParam(defaultValue = "movie") String mediaType) {
+        TmdbPageResponse response = tmdbService.getUpcoming(mediaType);
+        return ResponseEntity.status(200).body(response);
+    }
+
     @GetMapping("/{tmdbId}/similar")
     public ResponseEntity<TmdbPageResponse>  similar(@PathVariable Long tmdbId, @RequestParam(defaultValue = "movie") String mediaType) {
         TmdbPageResponse response = tmdbService.getSimilar(mediaType, tmdbId);

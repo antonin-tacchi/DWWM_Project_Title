@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 const NAV_LINKS = [
   { to: '/catalogue', label: 'Movies',    icon: <FilmIcon /> },
   { to: '/catalogue', label: 'Tv Shows',  icon: <TvIcon /> },
-  { to: '/',          label: 'News',      icon: <NewsIcon /> },
+  { to: '/news',      label: 'News',      icon: <NewsIcon /> },
   { to: '/',          label: 'Community', icon: <CommunityIcon /> },
   { to: '/',          label: 'About',     icon: <StarIcon /> },
 ];

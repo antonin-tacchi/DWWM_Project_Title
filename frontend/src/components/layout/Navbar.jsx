@@ -205,6 +205,7 @@ const NAV_LINKS = [
   { to: '/',          label: 'HOME' },
   { to: '/catalogue', label: 'MOVIES' },
   { to: '/catalogue', label: 'SERIES' },
+  { to: '/news',      label: 'NEWS' },
   { to: '/discover',  label: 'DISCOVER' },
   { to: '/',          label: 'COMMUNITY' },
   { to: '/',          label: 'ABOUT' },

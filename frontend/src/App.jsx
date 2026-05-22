@@ -12,8 +12,8 @@ import TvDetail from './pages/TvDetail';
 import ActorProfile from './pages/ActorProfile';
 import CrewProfile from './pages/CrewProfile';
 import UserProfile from './pages/UserProfile';
+import News from './pages/News';
 import Discovery from './pages/Discovery';
-import LogoDemo from './pages/LogoDemo';
 
 const AUTH_ROUTES = ['/login', '/register'];
 
@@ -35,9 +35,9 @@ export default function App() {
           <Route path="/serie/:id"     element={<TvDetail />} />
           <Route path="/actors/:id"    element={<ActorProfile />} />
           <Route path="/crew/:id"      element={<CrewProfile />} />
+          <Route path="/news"          element={<News />} />
           <Route path="/discover"      element={<Discovery />} />
           <Route path="/profile"       element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
-          <Route path="/logo-demo"     element={<LogoDemo />} />
         </Routes>
       </main>
       {!isAuth && <Footer />}

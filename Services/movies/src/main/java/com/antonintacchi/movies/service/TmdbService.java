@@ -79,6 +79,21 @@ public class TmdbService {
     }
 
     @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackPageResponse")
+    @Cacheable("tmdb-upcoming")
+    public TmdbPageResponse getUpcoming(String mediaType) {
+        // movie → /movie/upcoming   |   tv → /tv/on_the_air
+        String path = "movie".equals(mediaType) ? "/movie/upcoming" : "/tv/on_the_air";
+        return tmdbWebClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(path)
+                        .queryParam("api_key", apiKey)
+                        .build())
+                .retrieve()
+                .bodyToMono(TmdbPageResponse.class)
+                .block();
+    }
+
+    @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackPageResponse")
     @Cacheable("tmdb-similar")
     public TmdbPageResponse getSimilar(String mediaType, Long tmdbId) {
         // Try /recommendations first (user-behaviour based → far more relevant)
