@@ -49,4 +49,8 @@ public class TmdbDetailResponse {
 
     @JsonProperty("number_of_episodes")
     private Integer numberOfEpisodes;
+
+    /** TV shows only: series creators returned by TMDB in the detail endpoint */
+    @JsonProperty("created_by")
+    private List<TmdbCreator> createdBy;
 }

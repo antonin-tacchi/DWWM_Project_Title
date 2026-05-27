@@ -452,6 +452,7 @@ function EditBackgroundModal({ user, onClose }) {
   const [selectedPath,   setSelectedPath]   = useState(user?.bannerBackdropPath ?? null);
   const [selectedTmdbId, setSelectedTmdbId] = useState(user?.bannerTmdbId      ?? null);
   const [selectedType,   setSelectedType]   = useState(user?.bannerMediaType   ?? 'movie');
+  const [position,       setPosition]       = useState(() => getBannerPosition(user?.email));
 
   const handleSelect = (filePath, tmdbId, mediaType) => {
     setSelectedPath(filePath);
@@ -467,9 +468,10 @@ function EditBackgroundModal({ user, onClose }) {
       avatarUrl:          user?.avatarUrl ?? null,
       bannerTmdbId:       selectedTmdbId,
       bannerMediaType:    selectedType,
-      bannerBackdropPath: selectedPath,      // ← save the specific chosen image
+      bannerBackdropPath: selectedPath,
     }),
     onSuccess: (res) => {
+      saveBannerPosition(user?.email, position); // persist position in localStorage
       updateUser(res.data);
       queryClient.invalidateQueries({ queryKey: ['me'] });
       onClose();
@@ -494,6 +496,15 @@ function EditBackgroundModal({ user, onClose }) {
       }
     >
       <div className="px-6 py-5 max-h-[70vh] overflow-y-auto flex flex-col gap-6">
+        {/* ── Drag positioner — shown only when an image is selected ── */}
+        {selectedPath && (
+          <ImagePositioner
+            imagePath={selectedPath}
+            position={position}
+            onPositionChange={setPosition}
+          />
+        )}
+
         {uniqueMedia.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-white/30">
             <span className="text-5xl mb-3">🎬</span>
@@ -596,6 +607,135 @@ function CreatePlaylistModal({ onClose }) {
   );
 }
 
+/* ─── Banner position helpers ────────────────────────────────── */
+const DEFAULT_POS = { x: 50, y: 50 };
+
+function getBannerPosition(userEmail) {
+  try {
+    const raw = localStorage.getItem(`clap-banner-pos-${userEmail ?? 'guest'}`);
+    if (!raw) return { ...DEFAULT_POS };
+    const parsed = JSON.parse(raw);
+    /* Migrate old string format ("top" / "center" / "bottom") */
+    if (typeof parsed === 'string') return { ...DEFAULT_POS };
+    return parsed;
+  } catch { return { ...DEFAULT_POS }; }
+}
+function saveBannerPosition(userEmail, pos) {
+  try { localStorage.setItem(`clap-banner-pos-${userEmail ?? 'guest'}`, JSON.stringify(pos)); }
+  catch {}
+}
+
+/* ─── Image drag positioner ──────────────────────────────────── */
+function ImagePositioner({ imagePath, position, onPositionChange }) {
+  const isDragging      = useRef(false);
+  const startPt         = useRef({ x: 0, y: 0 });
+  const startPos        = useRef({ ...DEFAULT_POS });
+  const onChangeRef     = useRef(onPositionChange);
+  onChangeRef.current   = onPositionChange; // always current, avoids stale closure
+
+  /* Sensitivity: px → % shift */
+  const SENS = 0.18;
+
+  const applyDelta = (clientX, clientY) => {
+    const dx = (startPt.current.x - clientX) * SENS;
+    const dy = (startPt.current.y - clientY) * SENS;
+    onChangeRef.current({
+      x: Math.max(0, Math.min(100, startPos.current.x + dx)),
+      y: Math.max(0, Math.min(100, startPos.current.y + dy)),
+    });
+  };
+
+  /* ── Mouse ── */
+  const onMouseDown = (e) => {
+    e.preventDefault();
+    isDragging.current = true;
+    startPt.current    = { x: e.clientX, y: e.clientY };
+    startPos.current   = { ...position };
+  };
+
+  useEffect(() => {
+    const onMove = (e) => { if (isDragging.current) applyDelta(e.clientX, e.clientY); };
+    const onUp   = ()  => { isDragging.current = false; };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup',   onUp);
+    return () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /* ── Touch ── */
+  const onTouchStart = (e) => {
+    const touch = e.touches[0];
+    isDragging.current = true;
+    startPt.current    = { x: touch.clientX, y: touch.clientY };
+    startPos.current   = { ...position };
+  };
+  const onTouchMove = (e) => {
+    if (!isDragging.current) return;
+    const touch = e.touches[0];
+    applyDelta(touch.clientX, touch.clientY);
+  };
+  const onTouchEnd = () => { isDragging.current = false; };
+
+  if (!imagePath) return null;
+
+  return (
+    <div className="flex flex-col gap-2">
+      {/* Label */}
+      <div className="flex items-center justify-between">
+        <span className="text-white/40 text-xs uppercase tracking-wider">Aperçu &amp; positionnement</span>
+        {/* Reset button */}
+        <button
+          onClick={() => onPositionChange({ ...DEFAULT_POS })}
+          className="text-white/25 text-xs hover:text-white/60 transition-colors"
+        >
+          Réinitialiser
+        </button>
+      </div>
+
+      {/* Draggable preview */}
+      <div
+        onMouseDown={onMouseDown}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        className="relative w-full rounded-xl overflow-hidden select-none"
+        style={{
+          paddingBottom: '33%', /* ~3:1 banner ratio */
+          cursor: 'grab',
+          border: '1px solid rgba(201,169,110,0.2)',
+        }}
+      >
+        <img
+          src={tmdbImg(imagePath, 'w1280')}
+          draggable={false}
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+          style={{ objectPosition: `${position.x}% ${position.y}%` }}
+          alt="preview"
+        />
+        {/* Overlay */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none"
+          style={{ background: 'rgba(0,0,0,0.15)' }}>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full"
+            style={{ background: 'rgba(0,0,0,0.45)', border: '1px solid rgba(255,255,255,0.15)' }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" opacity="0.6">
+              <path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M12 12v.01" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span className="text-white/60 text-[10px] tracking-wider uppercase">Glisser pour cadrer</span>
+          </div>
+        </div>
+
+        {/* Position indicator */}
+        <div
+          className="absolute bottom-2 right-2 text-[9px] font-mono"
+          style={{ color: 'rgba(255,255,255,0.35)' }}
+        >
+          {Math.round(position.x)}% · {Math.round(position.y)}%
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Profile Hero ───────────────────────────────────────────── */
 function ProfileHero({ user, onEditProfile, onEditBackground }) {
   const { t } = useTranslation();
@@ -611,11 +751,12 @@ function ProfileHero({ user, onEditProfile, onEditBackground }) {
 
   /* Use the specific chosen backdrop path stored on the user profile */
   const backdropUrl = user?.bannerBackdropPath ? tmdbImg(user.bannerBackdropPath, 'w1280') : null;
+  const bannerPos   = getBannerPosition(user?.email); // { x, y } in %
 
   return (
     <div className="relative w-full h-64 md:h-80 overflow-hidden">
       {backdropUrl
-        ? <img src={backdropUrl} alt="banner" className="w-full h-full object-cover" />
+        ? <img src={backdropUrl} alt="banner" className="w-full h-full object-cover" style={{ objectPosition: `${bannerPos.x}% ${bannerPos.y}%` }} />
         : <div className="w-full h-full" style={{ background: 'linear-gradient(135deg, #1A1A2E 0%, #0F3460 50%, #1A1A2E 100%)' }} />
       }
 
@@ -953,15 +1094,45 @@ const BADGES_CATALOG = [
   { id: 'completionist', icon: '⭐',  i18nKey: 'completionist', req: (d) => d.favTotal >= 100 },
 ];
 
-function BadgeSection({ favMovies, favTV, listCount }) {
+/**
+ * Badges are PERMANENT once unlocked: earned IDs are persisted in localStorage
+ * so removing a favourite doesn't strip a badge that was already won.
+ */
+function BadgeSection({ favMovies, favTV, listCount, userEmail }) {
   const { t } = useTranslation();
   const data = { favMovies, favTV, favTotal: favMovies + favTV, listCount };
+
+  /* localStorage key is scoped to the user so switching accounts works correctly */
+  const storageKey = `clap-badges-${userEmail ?? 'guest'}`;
+
+  const [earnedIds, setEarnedIds] = useState(() => {
+    try { return new Set(JSON.parse(localStorage.getItem(storageKey) ?? '[]')); }
+    catch { return new Set(); }
+  });
+
+  /* Check for new unlocks whenever stats change — only ADD, never remove */
+  useEffect(() => {
+    let changed = false;
+    const updated = new Set(earnedIds);
+    BADGES_CATALOG.forEach((badge) => {
+      if (badge.req(data) && !updated.has(badge.id)) {
+        updated.add(badge.id);
+        changed = true;
+      }
+    });
+    if (changed) {
+      setEarnedIds(updated);
+      localStorage.setItem(storageKey, JSON.stringify([...updated]));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.favTotal, data.favMovies, data.favTV, data.listCount, storageKey]);
+
   return (
     <section>
       <h2 className="font-display italic text-xl md:text-2xl text-white mb-5">{t('userProfile.sectionBadges')}</h2>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {BADGES_CATALOG.map((badge) => {
-          const unlocked = badge.req(data);
+          const unlocked = earnedIds.has(badge.id) || badge.req(data);
           return (
             <motion.div key={badge.id} whileHover={{ scale: 1.03 }}
               className="rounded-2xl p-4 flex flex-col items-center gap-2 text-center"
@@ -1063,7 +1234,7 @@ export default function UserProfile() {
         </section>
 
         <PlaylistSection lists={lists} />
-        <BadgeSection favMovies={favMovies.length} favTV={favTV.length} listCount={lists.length} />
+        <BadgeSection favMovies={favMovies.length} favTV={favTV.length} listCount={lists.length} userEmail={user?.email} />
       </div>
 
       <AnimatePresence>

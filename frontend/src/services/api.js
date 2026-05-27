@@ -47,10 +47,12 @@ api.interceptors.response.use(
       const hadToken = !!localStorage.getItem('token');
       localStorage.removeItem('token');
       if (hadToken) {
+        /* Use i18n keys defined in locales (notifications.sessionExpired / sessionExpiredMsg) */
+        const t = i18n.t.bind(i18n);
         useNotificationStore.getState().add({
-          type: 'error',
-          title: 'Session expirée',
-          message: 'Veuillez vous reconnecter.',
+          type: 'session',
+          title: t('notifications.sessionExpired'),
+          message: t('notifications.sessionExpiredMsg'),
           duration: 4000,
         });
         setTimeout(() => { window.location.href = '/login'; }, 1500);

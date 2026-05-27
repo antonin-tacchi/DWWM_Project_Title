@@ -40,7 +40,10 @@ export default function Login() {
         identifier: form.identifier,
         password:   form.password,
       });
-      login(data.token, data.user);
+      /* AuthResponse is a flat object {token, username, email, avatarUrl, …}
+         — not nested under a "user" key, so we split token from the rest */
+      const { token, ...userFields } = data;
+      login(token, userFields);
       navigate('/');
     } catch (err) {
       setError(err.response?.data?.message || t('login.errorInvalidCredentials'));

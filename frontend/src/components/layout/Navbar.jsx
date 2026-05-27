@@ -211,7 +211,7 @@ const NAV_LINKS = [
   { to: '/catalogue', key: 'series' },
   { to: '/news',      key: 'news' },
   { to: '/discover',  key: 'discover' },
-  { to: '/',          key: 'community' },
+  { to: '/community', key: 'community' },
   { to: '/about',     key: 'about' },
 ];
 

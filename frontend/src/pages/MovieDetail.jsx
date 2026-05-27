@@ -4,6 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import i18nInstance from '../i18n';
 import api from '../services/api';
 import useAuthStore from '../store/authStore';
 
@@ -13,7 +14,8 @@ const img = (path, size = 'original') =>
 
 const fmt = (dateStr) => {
   if (!dateStr) return '—';
-  return new Date(dateStr).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const locale = i18nInstance.language === 'en' ? 'en-US' : 'fr-FR';
+  return new Date(dateStr).toLocaleDateString(locale, { day: '2-digit', month: '2-digit', year: 'numeric' });
 };
 
 const fmtRuntime = (min) => {
@@ -146,6 +148,31 @@ function CastCard({ member }) {
         <p className="text-clap-gray text-[10px] leading-tight">{member.character}</p>
       </div>
     </Link>
+  );
+}
+
+/* ─── Scroll row with arrow buttons ─────────────────────────── */
+function ScrollRow({ children, gap = 'gap-6' }) {
+  const ref = useRef(null);
+  const scroll = (dir) => ref.current?.scrollBy({ left: dir * 220, behavior: 'smooth' });
+  return (
+    <div className="relative group">
+      <button
+        onClick={() => scroll(-1)}
+        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/70 text-clap-gold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity -translate-x-3 text-xl leading-none border border-clap-muted/30"
+      >‹</button>
+      <div
+        ref={ref}
+        className={`flex ${gap} overflow-x-auto pb-2 scroll-smooth`}
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        {children}
+      </div>
+      <button
+        onClick={() => scroll(1)}
+        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/70 text-clap-gold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity translate-x-3 text-xl leading-none border border-clap-muted/30"
+      >›</button>
+    </div>
   );
 }
 
@@ -582,7 +609,15 @@ export default function MovieDetail({ mediaType = 'movie' }) {
   const genres     = (detail?.genres ?? []).map((g) => g.name).join(', ') || '—';
   const runtime    = fmtRuntime(detail?.runtime);
   const cast       = (credits?.cast ?? []).slice(0, 10);
-  const directors  = (credits?.crew ?? []).filter((c) => c.job === 'Director');
+  /* Directors: for movies use job='Director'; for TV fall back to created_by from the detail */
+  const directorsFromCrew = (credits?.crew ?? []).filter(
+    (c) => c.job === 'Director' || c.department === 'Directing'
+  );
+  const creators   = detail?.created_by ?? [];
+  const directors  = directorsFromCrew.length > 0 ? directorsFromCrew : creators;
+  const directorLabel = mediaType === 'tv' && directorsFromCrew.length === 0
+    ? t('movieDetail.labelCreator')
+    : t('movieDetail.labelDirector');
   const trailer    = (trailerData?.results ?? []).find((v) => v.site === 'YouTube' && v.type === 'Trailer');
   const providers  = providersData?.results?.FR?.flatrate ?? [];
   const relatedMovies = similar?.results ?? [];
@@ -653,7 +688,7 @@ export default function MovieDetail({ mediaType = 'movie' }) {
           </div>
           <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs md:text-sm text-clap-gray mb-4">
             <span>
-              <span className="text-white/60">{t('movieDetail.labelDirector')}</span>
+              <span className="text-white/60">{directorLabel}</span>
               {directors.length === 0 ? '—' : directors.map((d, i) => (
                 <span key={d.id}>
                   <Link
@@ -715,11 +750,11 @@ export default function MovieDetail({ mediaType = 'movie' }) {
         {cast.length > 0 && (
           <section>
             <SectionTitle>{t('movieDetail.sectionCast')}</SectionTitle>
-            <div className="flex gap-6 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
+            <ScrollRow gap="gap-6">
               {cast.map((member) => (
                 <CastCard key={member.id} member={member} />
               ))}
-            </div>
+            </ScrollRow>
           </section>
         )}
 
@@ -803,11 +838,11 @@ export default function MovieDetail({ mediaType = 'movie' }) {
         {relatedMovies.length > 0 && (
           <section>
             <SectionTitle>{t('movieDetail.sectionRelated')}</SectionTitle>
-            <div className="flex gap-4 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
+            <ScrollRow gap="gap-4">
               {relatedMovies.slice(0, 12).map((movie) => (
                 <RelatedCard key={movie.id} movie={{ ...movie, media_type: mediaType }} />
               ))}
-            </div>
+            </ScrollRow>
           </section>
         )}
       </div>

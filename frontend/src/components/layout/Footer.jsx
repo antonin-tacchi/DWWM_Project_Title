@@ -7,7 +7,7 @@ const NAV_LINK_DEFS = [
   { to: '/catalogue', key: 'movies',    icon: <FilmIcon /> },
   { to: '/catalogue', key: 'tvShows',   icon: <TvIcon /> },
   { to: '/news',      key: 'news',      icon: <NewsIcon /> },
-  { to: '/',          key: 'community', icon: <CommunityIcon /> },
+  { to: '/community', key: 'community', icon: <CommunityIcon /> },
   { to: '/about',     key: 'about',     icon: <StarIcon /> },
 ];
 

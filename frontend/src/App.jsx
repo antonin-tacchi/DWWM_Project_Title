@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
+import useAuthStore from './store/authStore';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import ProtectedRoute from './components/layout/ProtectedRoute';
@@ -20,12 +22,29 @@ import Terms from './pages/legal/Terms';
 import Privacy from './pages/legal/Privacy';
 import Contact from './pages/legal/Contact';
 import About from './pages/About';
+import Community from './pages/Community';
 
 const AUTH_ROUTES = ['/login', '/register'];
 
 export default function App() {
   const { pathname } = useLocation();
   const isAuth = AUTH_ROUTES.includes(pathname);
+  const { logout } = useAuthStore();
+
+  /* Check JWT expiry on every mount / page load */
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (payload.exp && payload.exp * 1000 < Date.now()) {
+        logout(); // clears store + localStorage
+      }
+    } catch {
+      /* malformed token — remove it */
+      logout();
+    }
+  }, [logout]);
 
   return (
     <div className="min-h-screen flex flex-col bg-clap-bg">
@@ -50,6 +69,7 @@ export default function App() {
           <Route path="/privacy"       element={<Privacy />} />
           <Route path="/contact"       element={<Contact />} />
           <Route path="/about"         element={<About />} />
+          <Route path="/community"     element={<Community />} />
         </Routes>
       </main>
       {!isAuth && <Footer />}

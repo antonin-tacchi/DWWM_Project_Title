@@ -93,15 +93,17 @@ function Hero({ movies }) {
   const { t } = useTranslation();
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
+  /* ↓ increments each time the user manually changes slide → resets the interval */
+  const [resetKey, setResetKey] = useState(0);
 
   useEffect(() => {
     if (!movies?.length) return;
-    const t = setInterval(() => {
+    const timer = setInterval(() => {
       setDirection(1);
       setCurrent((c) => (c + 1) % movies.length);
     }, 8000);
-    return () => clearInterval(t);
-  }, [movies?.length]);
+    return () => clearInterval(timer);
+  }, [movies?.length, resetKey]); // resetKey dependency restarts the timer
 
   if (!movies?.length) return null;
 
@@ -121,6 +123,7 @@ function Hero({ movies }) {
   const goTo = (idx) => {
     setDirection(idx > current ? 1 : -1);
     setCurrent(idx);
+    setResetKey((k) => k + 1); // restart the 8s auto-advance timer
   };
 
   return (
