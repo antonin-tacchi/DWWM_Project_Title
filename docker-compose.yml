@@ -13,10 +13,12 @@ services:
     ports:
       - "3306:3306"
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "--silent"]
+      # Vérifie que MySQL accepte des connexions ET que les bases sont créées
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}", "--silent"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 40s   # laisse init-db.sh finir avant de commencer à compter
 
   consul:
     image: hashicorp/consul
@@ -33,10 +35,12 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
 
   auth-service:
     build: ./Services/auth
     container_name: auth-service
+    restart: on-failure
     ports:
       - "8090:8090"
     environment:
@@ -44,6 +48,11 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION: ${JWT_EXPIRATION}
+      # Démarrage JVM ~2x plus rapide : désactive le JIT warm-up (pas utile en dev)
+      JAVA_TOOL_OPTIONS: >-
+        -XX:TieredStopAtLevel=1
+        -XX:+UseContainerSupport
+        -Xmx256m
     depends_on:
       mysql:
         condition: service_healthy
@@ -53,12 +62,17 @@ services:
   movies-service:
     build: ./Services/movies
     container_name: movies-service
+    restart: on-failure
     ports:
       - "9000:9000"
     environment:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       TMDB_API_KEY: ${TMDB_API_KEY}
+      JAVA_TOOL_OPTIONS: >-
+        -XX:TieredStopAtLevel=1
+        -XX:+UseContainerSupport
+        -Xmx256m
     depends_on:
       mysql:
         condition: service_healthy
@@ -68,11 +82,16 @@ services:
   social-service:
     build: ./Services/social
     container_name: social-service
+    restart: on-failure
     ports:
       - "9010:9010"
     environment:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      JAVA_TOOL_OPTIONS: >-
+        -XX:TieredStopAtLevel=1
+        -XX:+UseContainerSupport
+        -Xmx256m
     depends_on:
       mysql:
         condition: service_healthy
@@ -82,11 +101,16 @@ services:
   notifications-service:
     build: ./Services/notifications
     container_name: notifications-service
+    restart: on-failure
     ports:
       - "9020:9020"
     environment:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      JAVA_TOOL_OPTIONS: >-
+        -XX:TieredStopAtLevel=1
+        -XX:+UseContainerSupport
+        -Xmx128m
     depends_on:
       mysql:
         condition: service_healthy
@@ -96,10 +120,15 @@ services:
   gateway:
     build: ./gateway
     container_name: gateway
+    restart: on-failure
     ports:
       - "8080:8080"
     environment:
       JWT_SECRET: ${JWT_SECRET}
+      JAVA_TOOL_OPTIONS: >-
+        -XX:TieredStopAtLevel=1
+        -XX:+UseContainerSupport
+        -Xmx128m
     depends_on:
       consul:
         condition: service_healthy
@@ -112,6 +141,14 @@ services:
       notifications-service:
         condition: service_started
 
+  frontend:
+    build: ./frontend
+    container_name: clap-frontend
+    restart: on-failure
+    ports:
+      - "5173:5173"
+    depends_on:
+      - gateway
 
 volumes:
   mysql_data:

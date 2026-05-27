@@ -12,5 +12,7 @@ public class UpdateProfileRequest {
     private String language;
     private String theme;
     private Long bannerTmdbId;
+    private String bannerMediaType;
+    private String bannerBackdropPath;
 
 }

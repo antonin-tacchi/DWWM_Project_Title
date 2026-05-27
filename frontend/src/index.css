@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply bg-clap-bg text-clap-light;
+    font-family: 'Arial Nova', Arial, sans-serif;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply min-h-screen overflow-x-hidden;
+  }
+
+  h1, h2, h3 {
+    font-family: 'Playfair Display', serif;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-clap-dark;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-clap-muted rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-clap-gold;
+  }
+}
+
+@layer components {
+  .btn-gold {
+    @apply bg-clap-gold text-clap-bg font-semibold px-6 py-2 rounded-lg
+           hover:brightness-110 transition-all duration-200 active:scale-95;
+  }
+
+  .btn-outline {
+    @apply border border-clap-gold text-clap-gold px-6 py-2 rounded-lg
+           hover:bg-clap-gold hover:text-clap-bg transition-all duration-200 active:scale-95;
+  }
+
+  .card {
+    @apply bg-clap-card rounded-xl overflow-hidden;
+  }
+
+  .section-title {
+    @apply font-display text-2xl text-clap-gold mb-4;
+  }
+
+  .input-field {
+    @apply w-full bg-clap-muted/30 border border-clap-muted text-clap-light
+           rounded-lg px-4 py-3 outline-none focus:border-clap-gold
+           transition-colors duration-200 placeholder:text-clap-gray;
+  }
+}

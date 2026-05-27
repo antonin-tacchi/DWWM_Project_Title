@@ -110,6 +110,8 @@ public class AuthService {
         user.setAvatarUrl(request.getAvatarUrl());
         user.setTheme(request.getTheme());
         user.setBannerTmdbId(request.getBannerTmdbId());
+        if (request.getBannerMediaType() != null) user.setBannerMediaType(request.getBannerMediaType());
+        user.setBannerBackdropPath(request.getBannerBackdropPath());
 
         // 3. Sauvegarde et réponse
         userRepository.save(user);

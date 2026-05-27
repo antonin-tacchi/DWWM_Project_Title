@@ -1,14 +1,21 @@
+# ── Stage 1 : build ──────────────────────────────────────────────
 FROM maven:3.9-eclipse-temurin-17-alpine AS build
+
+WORKDIR /build
+
 COPY pom.xml .
+RUN mvn dependency:go-offline -q
+
 COPY src ./src
-RUN mvn clean package -DskipTests
+RUN mvn package -DskipTests -q
 
-FROM openjdk:17.0.1-jdk-slim
+# ── Stage 2 : runtime ─────────────────────────────────────────────
+FROM eclipse-temurin:17-jre-alpine
 
-LABEL maintainer=antonintacchi
+WORKDIR /app
 
-COPY --from=build /target/notifications-0.0.1-SNAPSHOT.jar notifications-0.0.1-SNAPSHOT.jar
+COPY --from=build /build/target/notifications-0.0.1-SNAPSHOT.jar app.jar
 
 EXPOSE 9020
 
-ENTRYPOINT ["java", "-jar", "/notifications-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
