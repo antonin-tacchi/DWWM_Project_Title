@@ -1,20 +1,21 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
-/* ─── Data ───────────────────────────────────────────────────── */
-const NAV_LINKS = [
-  { to: '/catalogue', label: 'Movies',    icon: <FilmIcon /> },
-  { to: '/catalogue', label: 'Tv Shows',  icon: <TvIcon /> },
-  { to: '/news',      label: 'News',      icon: <NewsIcon /> },
-  { to: '/',          label: 'Community', icon: <CommunityIcon /> },
-  { to: '/',          label: 'About',     icon: <StarIcon /> },
+/* ─── Data keys (labels resolved with t() inside component) ─── */
+const NAV_LINK_DEFS = [
+  { to: '/catalogue', key: 'movies',    icon: <FilmIcon /> },
+  { to: '/catalogue', key: 'tvShows',   icon: <TvIcon /> },
+  { to: '/news',      key: 'news',      icon: <NewsIcon /> },
+  { to: '/',          key: 'community', icon: <CommunityIcon /> },
+  { to: '/about',     key: 'about',     icon: <StarIcon /> },
 ];
 
-const LEGAL_LINKS = [
-  { to: '/', label: 'TERMS OF SERVICE', icon: <ScaleIcon /> },
-  { to: '/', label: 'LEGAL NOTICE',     icon: <DocIcon /> },
-  { to: '/', label: 'PRIVACY POLICY',   icon: <LockIcon /> },
-  { to: '/', label: 'CONTACT',          icon: <MailIcon /> },
+const LEGAL_LINK_DEFS = [
+  { to: '/terms',   key: 'terms',   icon: <ScaleIcon /> },
+  { to: '/legal',   key: 'legal',   icon: <DocIcon /> },
+  { to: '/privacy', key: 'privacy', icon: <LockIcon /> },
+  { to: '/contact', key: 'contact', icon: <MailIcon /> },
 ];
 
 const GOLD = '#C9A96E';
@@ -22,6 +23,9 @@ const CREAM = '#E8DCBF';
 
 /* ─── Component ──────────────────────────────────────────────── */
 export default function Footer() {
+  const { t } = useTranslation();
+  const NAV_LINKS   = NAV_LINK_DEFS.map((l) => ({ ...l, label: t(`footer.${l.key}`) }));
+  const LEGAL_LINKS = LEGAL_LINK_DEFS.map((l) => ({ ...l, label: t(`footer.${l.key}`) }));
   return (
     <footer className="relative mt-20">
 
@@ -49,7 +53,7 @@ export default function Footer() {
             className="font-display text-5xl italic text-center leading-tight mt-8 mb-6"
             style={{ color: CREAM }}
           >
-            Cinema is a dream we share together.
+            {t('footer.tagline')}
           </motion.p>
 
           {/* Dots */}
@@ -140,7 +144,7 @@ export default function Footer() {
             className="font-display text-4xl lg:text-6xl italic leading-snug max-w-3xl mb-20"
             style={{ color: CREAM }}
           >
-            Cinema is a dream we share together.
+            {t('footer.tagline')}
           </motion.p>
 
           {/* Main nav */}

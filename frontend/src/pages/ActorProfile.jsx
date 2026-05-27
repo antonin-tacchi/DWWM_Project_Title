@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 
 /* ─── Helpers ──────────────────────────────────────────────────── */
@@ -13,9 +14,9 @@ const fmtYear = (dateStr) => {
   return new Date(dateStr).getFullYear();
 };
 
-const fmtDate = (dateStr) => {
+const fmtDate = (dateStr, locale = 'fr-FR') => {
   if (!dateStr) return '—';
-  return new Date(dateStr).toLocaleDateString('fr-FR', {
+  return new Date(dateStr).toLocaleDateString(locale, {
     day: '2-digit', month: 'long', year: 'numeric',
   });
 };
@@ -162,6 +163,16 @@ function Carousel({ credits, mode }) {
   );
 }
 
+/* small helper to use hook at component level */
+function GalleryTitle() {
+  const { t } = useTranslation();
+  return (
+    <h2 className="text-3xl md:text-4xl font-display italic text-white mb-8" style={{ textShadow: '0 2px 20px rgba(0,0,0,0.6)' }}>
+      {t('actorProfile.sectionGallery')}
+    </h2>
+  );
+}
+
 /* ─── Photo mosaic ─────────────────────────────────────────────── */
 function PhotoMosaic({ credits, personName }) {
   // Collect unique backdrops from credits (best-voted first)
@@ -181,12 +192,7 @@ function PhotoMosaic({ credits, personName }) {
 
   return (
     <div className="mt-16">
-      <h2
-        className="text-3xl md:text-4xl font-display italic text-white mb-8"
-        style={{ textShadow: '0 2px 20px rgba(0,0,0,0.6)' }}
-      >
-        Galerie
-      </h2>
+      <GalleryTitle />
 
       <div
         className="grid gap-1"
@@ -263,6 +269,8 @@ function PhotoMosaic({ credits, personName }) {
 
 /* ─── Hero section ─────────────────────────────────────────────── */
 function PersonHero({ person, heroCredit }) {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === 'en' ? 'en-US' : 'fr-FR';
   const [expanded, setExpanded] = useState(false);
   const BIO_LIMIT = 400;
   const bio = person.biography || '';
@@ -352,15 +360,15 @@ function PersonHero({ person, heroCredit }) {
               <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-clap-muted mb-4">
                 {person.birthday && (
                   <span>
-                    <span className="text-clap-gold mr-1">Naissance</span>
-                    {fmtDate(person.birthday)}
+                    <span className="text-clap-gold mr-1">{t('actorProfile.born')}</span>
+                    {fmtDate(person.birthday, locale)}
                     {person.place_of_birth && ` — ${person.place_of_birth}`}
                   </span>
                 )}
                 {person.deathday && (
                   <span>
-                    <span className="text-clap-gold mr-1">Décès</span>
-                    {fmtDate(person.deathday)}
+                    <span className="text-clap-gold mr-1">{t('actorProfile.died')}</span>
+                    {fmtDate(person.deathday, locale)}
                   </span>
                 )}
               </div>
@@ -381,7 +389,7 @@ function PersonHero({ person, heroCredit }) {
                 onClick={() => setExpanded((v) => !v)}
                 className="mt-3 text-clap-gold text-sm font-semibold hover:underline focus:outline-none"
               >
-                {expanded ? 'Voir moins ↑' : 'Voir plus ↓'}
+                {expanded ? t('actorProfile.seeLess') : t('actorProfile.seeMore')}
               </button>
             )}
           </div>
@@ -397,6 +405,7 @@ function PersonHero({ person, heroCredit }) {
  * mode = 'crew'  → /crew/:id    (directing / production credits)
  */
 export default function ActorProfile({ mode = 'cast' }) {
+  const { t } = useTranslation();
   const { id } = useParams();
 
   const { data: person, isLoading: loadingPerson } = useQuery({
@@ -464,7 +473,7 @@ export default function ActorProfile({ mode = 'cast' }) {
       <div className="min-h-screen bg-clap-bg flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 rounded-full border-2 border-clap-gold/30 border-t-clap-gold animate-spin" />
-          <p className="text-clap-muted text-sm">Chargement…</p>
+          <p className="text-clap-muted text-sm">{t('actorProfile.loading')}</p>
         </div>
       </div>
     );
@@ -473,12 +482,12 @@ export default function ActorProfile({ mode = 'cast' }) {
   if (!person) {
     return (
       <div className="min-h-screen bg-clap-bg flex items-center justify-center">
-        <p className="text-clap-muted">Profil introuvable.</p>
+        <p className="text-clap-muted">{t('actorProfile.notFound')}</p>
       </div>
     );
   }
 
-  const sectionLabel = mode === 'cast' ? 'Filmographie' : 'Réalisations';
+  const sectionLabel = mode === 'cast' ? t('actorProfile.sectionFilmography') : t('actorProfile.sectionDirections');
 
   return (
     <div className="bg-clap-bg min-h-screen">

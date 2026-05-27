@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import useAuthStore from '../store/authStore';
 import api from '../services/api';
 
@@ -19,6 +20,7 @@ const EyeOffIcon = () => (
 );
 
 export default function Login() {
+  const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm]       = useState({ identifier: '', password: '' });
   const [error, setError]     = useState('');
@@ -41,7 +43,7 @@ export default function Login() {
       login(data.token, data.user);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Identifiants incorrects.');
+      setError(err.response?.data?.message || t('login.errorInvalidCredentials'));
     } finally {
       setLoading(false);
     }
@@ -69,13 +71,13 @@ export default function Login() {
           {/* Tabs */}
           <div className="flex mb-8">
             <div className="flex-1 text-center py-2 rounded-lg border border-white/40 text-white font-medium text-lg cursor-default">
-              Login
+              {t('login.tab')}
             </div>
             <Link
               to="/register"
               className="flex-1 text-center py-2 text-white/50 hover:text-white transition-colors font-medium text-lg"
             >
-              Register
+              {t('login.tabRegister')}
             </Link>
           </div>
 
@@ -83,7 +85,7 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-white/80 text-sm">Email Or Username</label>
+              <label className="text-white/80 text-sm">{t('login.emailOrUsername')}</label>
               <input
                 name="identifier"
                 type="text"
@@ -95,7 +97,7 @@ export default function Login() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-white/80 text-sm">Password</label>
+              <label className="text-white/80 text-sm">{t('login.password')}</label>
               <div className="relative">
                 <input
                   name="password"
@@ -125,14 +127,14 @@ export default function Login() {
               whileTap={{ scale: 0.97 }}
               className="mt-1 bg-clap-gold text-clap-bg font-semibold py-3 rounded-xl hover:brightness-110 transition-all disabled:opacity-60"
             >
-              {loading ? 'Connexion…' : 'Login'}
+              {loading ? t('login.loggingIn') : t('login.loginBtn')}
             </motion.button>
           </form>
 
           {/* Divider */}
           <div className="flex items-center gap-3 my-6">
             <div className="flex-1 h-px bg-white/25" />
-            <span className="text-white/50 text-xs whitespace-nowrap">Other Login</span>
+            <span className="text-white/50 text-xs whitespace-nowrap">{t('login.otherLogin')}</span>
             <div className="flex-1 h-px bg-white/25" />
           </div>
 

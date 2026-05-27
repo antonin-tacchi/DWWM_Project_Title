@@ -15,6 +15,11 @@ import CrewProfile from './pages/CrewProfile';
 import UserProfile from './pages/UserProfile';
 import News from './pages/News';
 import Discovery from './pages/Discovery';
+import LegalNotice from './pages/legal/LegalNotice';
+import Terms from './pages/legal/Terms';
+import Privacy from './pages/legal/Privacy';
+import Contact from './pages/legal/Contact';
+import About from './pages/About';
 
 const AUTH_ROUTES = ['/login', '/register'];
 
@@ -40,6 +45,11 @@ export default function App() {
           <Route path="/news"          element={<News />} />
           <Route path="/discover"      element={<Discovery />} />
           <Route path="/profile"       element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+          <Route path="/legal"         element={<LegalNotice />} />
+          <Route path="/terms"         element={<Terms />} />
+          <Route path="/privacy"       element={<Privacy />} />
+          <Route path="/contact"       element={<Contact />} />
+          <Route path="/about"         element={<About />} />
         </Routes>
       </main>
       {!isAuth && <Footer />}

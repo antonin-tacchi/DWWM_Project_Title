@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import useAuthStore from '../store/authStore';
 
@@ -25,6 +26,7 @@ function Stars({ value = 0, count = 10, size = 'sm' }) {
 
 /* ─── Favorite button ────────────────────────────────────────── */
 function FavoriteButton({ tmdbId, mediaType }) {
+  const { t } = useTranslation();
   const { isAuthenticated } = useAuthStore();
   const queryClient = useQueryClient();
 
@@ -55,7 +57,7 @@ function FavoriteButton({ tmdbId, mediaType }) {
         className="text-xs md:text-sm px-3 md:px-4 py-1.5 rounded-full border border-white/60 text-white hover:bg-white/10 transition-colors whitespace-nowrap flex items-center gap-1.5"
       >
         <HeartIcon filled={false} />
-        Add to favorites
+        {t('home.addToFavorites')}
       </Link>
     );
   }
@@ -73,7 +75,7 @@ function FavoriteButton({ tmdbId, mediaType }) {
       }}
     >
       <HeartIcon filled={isFav} />
-      {isFav ? 'Favorited' : 'Add to favorites'}
+      {isFav ? t('home.favorited') : t('home.addToFavorites')}
     </motion.button>
   );
 }
@@ -88,6 +90,7 @@ function HeartIcon({ filled }) {
 
 /* ─── Hero section ───────────────────────────────────────────── */
 function Hero({ movies }) {
+  const { t } = useTranslation();
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
 
@@ -170,7 +173,7 @@ function Hero({ movies }) {
 
                     className="text-xs md:text-sm px-3 md:px-4 py-1.5 rounded-full border border-white/60 text-white hover:bg-white/10 transition-colors whitespace-nowrap"
                   >
-                    Watch trailers
+                    {t('home.watchTrailers')}
                   </Link>
                   <FavoriteButton
                     tmdbId={movie.id}
@@ -308,6 +311,7 @@ function HeroSkeleton() {
 
 /* ─── Page ───────────────────────────────────────────────────── */
 export default function Home() {
+  const { t } = useTranslation();
   // Trending: use mediaType=all → TMDB returns movies + TV mixed
   const { data: trendingData, isLoading: trendingLoading } = useQuery({
     queryKey: ['trending'],
@@ -352,13 +356,13 @@ export default function Home() {
         <section className="px-4 md:px-6">
           <div className="flex items-baseline justify-between mb-4">
             <h2 className="font-display italic text-2xl md:text-3xl text-white">
-              Trending Now
+              {t('home.trendingNow')}
             </h2>
             <Link
               to="/catalogue"
               className="text-xs md:text-sm text-clap-gold hover:text-white transition-colors tracking-wide"
             >
-              Show more →
+              {t('home.showMore')}
             </Link>
           </div>
           {trendingLoading ? <CarouselSkeleton /> : <Carousel movies={trending} />}
@@ -368,13 +372,13 @@ export default function Home() {
         <section className="px-4 md:px-6">
           <div className="flex items-baseline justify-between mb-4">
             <h2 className="font-display italic text-2xl md:text-3xl text-white">
-              Top Rated
+              {t('home.topRated')}
             </h2>
             <Link
               to="/catalogue"
               className="text-xs md:text-sm text-clap-gold hover:text-white transition-colors tracking-wide"
             >
-              Show more →
+              {t('home.showMore')}
             </Link>
           </div>
           {popularLoading ? <CarouselSkeleton /> : <Carousel movies={popular} />}

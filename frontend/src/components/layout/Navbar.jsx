@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import useAuthStore from '../../store/authStore';
 import { useNotifications, titleFromType } from '../../hooks/useNotifications';
 import { NOTIF_TYPES } from '../ui/NotificationToast';
@@ -67,6 +68,7 @@ function StarRating({ score }) {
 
 /* ─── NavSearch ───────────────────────────────────────────────── */
 function NavSearch({ inputClassName = '', onClose }) {
+  const { t }                        = useTranslation();
   const [query, setQuery]           = useState('');
   const [debounced, setDebounced]   = useState('');
   const [open, setOpen]             = useState(false);
@@ -75,8 +77,8 @@ function NavSearch({ inputClassName = '', onClose }) {
 
   /* debounce */
   useEffect(() => {
-    const t = setTimeout(() => setDebounced(query), 350);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setDebounced(query), 350);
+    return () => clearTimeout(timer);
   }, [query]);
 
   /* open dropdown when results arrive */
@@ -123,7 +125,7 @@ function NavSearch({ inputClassName = '', onClose }) {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onFocus={() => debounced.trim().length >= 2 && setOpen(true)}
-        placeholder="Rechercher films, séries, acteurs…"
+        placeholder={t('nav.search')}
         className={`w-full bg-clap-card border border-clap-muted/50 rounded-full py-2 pl-11 pr-4 text-sm text-clap-light placeholder-clap-gray outline-none transition-all duration-300 focus:border-clap-gold focus:ring-1 focus:ring-clap-gold/40 ${inputClassName}`}
       />
 
@@ -192,7 +194,7 @@ function NavSearch({ inputClassName = '', onClose }) {
                 }}
                 className="text-clap-gold text-xs hover:text-white transition-colors"
               >
-                Voir tous les résultats pour « {query} » →
+                {t('nav.seeAllResults', { query })}
               </button>
             </div>
           </motion.div>
@@ -204,13 +206,13 @@ function NavSearch({ inputClassName = '', onClose }) {
 
 /* ─── Nav links ──────────────────────────────────────────────── */
 const NAV_LINKS = [
-  { to: '/',          label: 'HOME' },
-  { to: '/catalogue', label: 'MOVIES' },
-  { to: '/catalogue', label: 'SERIES' },
-  { to: '/news',      label: 'NEWS' },
-  { to: '/discover',  label: 'DISCOVER' },
-  { to: '/',          label: 'COMMUNITY' },
-  { to: '/',          label: 'ABOUT' },
+  { to: '/',          key: 'home' },
+  { to: '/catalogue', key: 'movies' },
+  { to: '/catalogue', key: 'series' },
+  { to: '/news',      key: 'news' },
+  { to: '/discover',  key: 'discover' },
+  { to: '/',          key: 'community' },
+  { to: '/about',     key: 'about' },
 ];
 
 const overlayVariants = {
@@ -230,18 +232,19 @@ const linkVariants = {
 
 /* ─── Bell panel ─────────────────────────────────────────────── */
 function BellPanel() {
+  const { t }                               = useTranslation();
   const { notifications, remove, clearAll } = useNotifications();
 
-  /* date relative courte */
+  /* date relative courte — traduite */
   function relativeTime(iso) {
     if (!iso) return '';
     const diff = Date.now() - new Date(iso).getTime();
     const m = Math.floor(diff / 60000);
-    if (m < 1)  return "à l'instant";
-    if (m < 60) return `il y a ${m} min`;
+    if (m < 1)  return t('notifications.justNow');
+    if (m < 60) return t('notifications.minutesAgo', { count: m });
     const h = Math.floor(m / 60);
-    if (h < 24) return `il y a ${h} h`;
-    return `il y a ${Math.floor(h / 24)} j`;
+    if (h < 24) return t('notifications.hoursAgo', { count: h });
+    return t('notifications.daysAgo', { count: Math.floor(h / 24) });
   }
 
   return (
@@ -261,13 +264,13 @@ function BellPanel() {
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/8">
-        <span className="text-white text-sm font-semibold tracking-wide">Notifications</span>
+        <span className="text-white text-sm font-semibold tracking-wide">{t('notifications.panelTitle')}</span>
         {notifications.length > 0 && (
           <button
             onClick={clearAll}
             className="text-clap-gray text-xs hover:text-clap-gold transition-colors"
           >
-            Tout effacer
+            {t('notifications.clearAll')}
           </button>
         )}
       </div>
@@ -280,13 +283,13 @@ function BellPanel() {
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
             </svg>
-            <span className="text-xs">Aucune notification</span>
+            <span className="text-xs">{t('notifications.empty')}</span>
           </div>
         ) : (
           <AnimatePresence initial={false}>
             {notifications.map((n) => {
               const cfg = NOTIF_TYPES[n.type] ?? NOTIF_TYPES.info;
-              const title = titleFromType(n.type);
+              const title = t(`notifications.types.${n.type}`, { defaultValue: titleFromType(n.type) });
               return (
                 <motion.div
                   key={n.id}
@@ -324,7 +327,7 @@ function BellPanel() {
                   <button
                     onClick={() => remove(n.id)}
                     className="flex-shrink-0 text-white/20 hover:text-white/60 transition-colors mt-0.5"
-                    aria-label="Supprimer"
+                    aria-label={t('notifications.delete')}
                   >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                       <path d="M18 6L6 18M6 6l12 12" />
@@ -348,7 +351,17 @@ export default function Navbar() {
   const bellRef                                 = useRef(null);
   const { isAuthenticated, user, logout }       = useAuthStore();
   const { unreadCount, markAllRead }            = useNotifications();
+  const { t, i18n }                            = useTranslation();
   const navigate                                = useNavigate();
+  const queryClient                             = useQueryClient();
+
+  const toggleLanguage = () => {
+    const next = i18n.language === 'fr' ? 'en' : 'fr';
+    i18n.changeLanguage(next).then(() => {
+      /* Invalidate all TMDB-backed queries so they refetch in the new language */
+      queryClient.invalidateQueries();
+    });
+  };
 
   /* Fermer le panel bell sur clic extérieur */
   useEffect(() => {
@@ -445,8 +458,8 @@ export default function Navbar() {
               </Link>
             ) : (
               <div className="flex items-center gap-3">
-                <Link to="/login"    className="text-clap-light hover:text-clap-gold transition-colors text-sm">Login</Link>
-                <Link to="/register" className="btn-gold text-sm py-1 px-4">Register</Link>
+                <Link to="/login"    className="text-clap-light hover:text-clap-gold transition-colors text-sm">{t('nav.login')}</Link>
+                <Link to="/register" className="btn-gold text-sm py-1 px-4">{t('nav.register')}</Link>
               </div>
             )}
           </div>
@@ -511,7 +524,7 @@ export default function Navbar() {
             <nav className="flex flex-col items-center gap-7">
               {NAV_LINKS.map((link, i) => (
                 <motion.div
-                  key={link.label}
+                  key={link.key}
                   custom={i}
                   variants={linkVariants}
                   initial="hidden" animate="visible" exit="exit"
@@ -521,7 +534,7 @@ export default function Navbar() {
                     onClick={() => setMenuOpen(false)}
                     className="font-display text-4xl md:text-5xl text-clap-light hover:text-clap-gold transition-colors duration-200 tracking-[0.15em]"
                   >
-                    {link.label}
+                    {t(`nav.${link.key}`).toUpperCase()}
                   </Link>
                 </motion.div>
               ))}
@@ -532,12 +545,25 @@ export default function Navbar() {
               animate={{ opacity: 1, transition: { delay: 0.55 } }}
               className="absolute bottom-10 flex gap-8 text-clap-gray text-sm tracking-widest"
             >
+              {/* Bouton langue */}
+              <button
+                onClick={toggleLanguage}
+                className="flex items-center gap-2 hover:text-clap-gold transition-colors uppercase font-semibold"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+                {t('nav.language')}
+              </button>
+
               {isAuthenticated ? (
-                <button onClick={handleLogout} className="hover:text-clap-red transition-colors uppercase">Logout</button>
+                <button onClick={handleLogout} className="hover:text-clap-red transition-colors uppercase">{t('nav.logout')}</button>
               ) : (
                 <>
-                  <Link to="/login"    onClick={() => setMenuOpen(false)} className="hover:text-clap-gold transition-colors uppercase">Login</Link>
-                  <Link to="/register" onClick={() => setMenuOpen(false)} className="hover:text-clap-gold transition-colors uppercase">Register</Link>
+                  <Link to="/login"    onClick={() => setMenuOpen(false)} className="hover:text-clap-gold transition-colors uppercase">{t('nav.login')}</Link>
+                  <Link to="/register" onClick={() => setMenuOpen(false)} className="hover:text-clap-gold transition-colors uppercase">{t('nav.register')}</Link>
                 </>
               )}
             </motion.div>

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import useAuthStore from '../store/authStore';
 
@@ -69,10 +70,11 @@ function Avatar({ username, avatarUrl, size = 'xl' }) {
 
 /* ─── Level badge ─────────────────────────────────────────────── */
 function LevelBadge({ level }) {
+  const { t } = useTranslation();
   return (
     <span className="px-3 py-0.5 rounded-full text-xs font-bold"
       style={{ background: 'rgba(201,169,110,0.2)', border: '1px solid #C9A96E', color: '#C9A96E' }}>
-      Lvl {level ?? 1}
+      {t('userProfile.level', { level: level ?? 1 })}
     </span>
   );
 }
@@ -98,6 +100,7 @@ function FormInput({ label, type = 'text', value, onChange, placeholder, rightEl
 
 /* ─── Gold button ─────────────────────────────────────────────── */
 function GoldButton({ children, onClick, disabled, type = 'button', full = false, small = false }) {
+  const { t } = useTranslation();
   return (
     <motion.button
       whileTap={{ scale: 0.97 }}
@@ -107,7 +110,7 @@ function GoldButton({ children, onClick, disabled, type = 'button', full = false
       className={`${full ? 'w-full' : ''} ${small ? 'py-2 px-4 text-xs' : 'py-3 px-6 text-sm'} rounded-xl font-semibold transition-all disabled:opacity-50`}
       style={{ background: 'linear-gradient(135deg, #C9A96E 0%, #8B6E42 100%)', color: '#fff' }}
     >
-      {disabled ? 'Saving…' : children}
+      {disabled ? t('userProfile.saving') : children}
     </motion.button>
   );
 }
@@ -145,6 +148,7 @@ function ModalShell({ title, onClose, children, wide = false, headerRight }) {
 /*  EDIT PROFILE MODAL                                             */
 /* ─────────────────────────────────────────────────────────────── */
 function EditProfileModal({ user, onClose }) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { updateUser } = useAuthStore();
 
@@ -174,10 +178,10 @@ function EditProfileModal({ user, onClose }) {
     onSuccess: (res) => {
       updateUser(res.data);
       queryClient.invalidateQueries({ queryKey: ['me'] });
-      setSuccess('Profile updated!');
+      setSuccess(t('userProfile.successProfileUpdated'));
       setTimeout(() => setSuccess(''), 3000);
     },
-    onError: (err) => setError(err.response?.data?.message ?? 'Error updating profile'),
+    onError: (err) => setError(err.response?.data?.message ?? t('userProfile.errorUpdateProfile')),
   });
 
   const passwordMut = useMutation({
@@ -188,10 +192,10 @@ function EditProfileModal({ user, onClose }) {
     }),
     onSuccess: () => {
       setCurrentPw(''); setNewPw(''); setConfirmPw('');
-      setSuccess('Password changed!');
+      setSuccess(t('userProfile.successPasswordChanged'));
       setTimeout(() => setSuccess(''), 3000);
     },
-    onError: (err) => setError(err.response?.data?.message ?? 'Wrong current password'),
+    onError: (err) => setError(err.response?.data?.message ?? t('userProfile.errorWrongPassword')),
   });
 
   const handleSubmit = (e) => {
@@ -199,7 +203,7 @@ function EditProfileModal({ user, onClose }) {
     setError(''); setSuccess('');
     const saves = [profileMut.mutateAsync()];
     if (currentPw || newPw || confirmPw) {
-      if (newPw !== confirmPw) { setError('New passwords do not match'); return; }
+      if (newPw !== confirmPw) { setError(t('userProfile.errorPasswordMismatch')); return; }
       saves.push(passwordMut.mutateAsync());
     }
     Promise.all(saves).catch(() => {});
@@ -211,7 +215,7 @@ function EditProfileModal({ user, onClose }) {
   const previewInitials = (username || '?').slice(0, 2).toUpperCase();
 
   return (
-    <ModalShell title="Edit Profile" onClose={onClose}>
+    <ModalShell title={t('userProfile.editProfileTitle')} onClose={onClose}>
       <form onSubmit={handleSubmit} className="px-6 py-6 flex flex-col gap-5 max-h-[80vh] overflow-y-auto">
 
         {/* ── Avatar section ── */}
@@ -225,39 +229,39 @@ function EditProfileModal({ user, onClose }) {
           </div>
           <div className="flex-1">
             <FormInput
-              label="Profile Picture URL"
+              label={t('userProfile.profilePictureUrl')}
               value={avatarUrl}
               onChange={(e) => setAvatarUrl(e.target.value)}
-              placeholder="https://example.com/your-photo.jpg"
+              placeholder={t('userProfile.profilePictureUrlPlaceholder')}
             />
-            <p className="text-white/25 text-xs mt-1.5">Paste a direct link to an image (jpg, png, webp…)</p>
+            <p className="text-white/25 text-xs mt-1.5">{t('userProfile.profilePictureHint')}</p>
           </div>
         </div>
 
         {/* ── Identity fields ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormInput label="Username"
+          <FormInput label={t('userProfile.username')}
             value={username} onChange={(e) => setUsername(e.target.value)}
-            placeholder="your_username" />
-          <FormInput label="Email" type="email"
+            placeholder={t('userProfile.usernamePlaceholder')} />
+          <FormInput label={t('userProfile.email')} type="email"
             value={email} onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@email.com" />
+            placeholder={t('userProfile.emailPlaceholder')} />
         </div>
 
-        <FormInput label="Bio (optional)"
+        <FormInput label={t('userProfile.bio')}
           value={bio} onChange={(e) => setBio(e.target.value)}
-          placeholder="Tell us about yourself…" />
+          placeholder={t('userProfile.bioPlaceholder')} />
 
         {/* ── Password divider ── */}
         <div className="flex items-center gap-3 pt-1">
           <div className="flex-1 h-px bg-white/8" />
-          <span className="text-white/30 text-xs uppercase tracking-wider">Change Password</span>
+          <span className="text-white/30 text-xs uppercase tracking-wider">{t('userProfile.changePassword')}</span>
           <div className="flex-1 h-px bg-white/8" />
         </div>
 
         {/* ── Password fields ── */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <FormInput label="Current Password"
+          <FormInput label={t('userProfile.currentPassword')}
             type={showCur ? 'text' : 'password'}
             value={currentPw} onChange={(e) => setCurrentPw(e.target.value)}
             placeholder="••••••••"
@@ -266,7 +270,7 @@ function EditProfileModal({ user, onClose }) {
                 <EyeIcon show={showCur} />
               </button>
             } />
-          <FormInput label="New Password"
+          <FormInput label={t('userProfile.newPassword')}
             type={showNew ? 'text' : 'password'}
             value={newPw} onChange={(e) => setNewPw(e.target.value)}
             placeholder="••••••••"
@@ -275,7 +279,7 @@ function EditProfileModal({ user, onClose }) {
                 <EyeIcon show={showNew} />
               </button>
             } />
-          <FormInput label="Confirm New Password"
+          <FormInput label={t('userProfile.confirmNewPassword')}
             type={showConf ? 'text' : 'password'}
             value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)}
             placeholder="••••••••"
@@ -299,7 +303,7 @@ function EditProfileModal({ user, onClose }) {
         </AnimatePresence>
 
         <div className="pt-1">
-          <GoldButton type="submit" disabled={isPending} full>Edit Profile</GoldButton>
+          <GoldButton type="submit" disabled={isPending} full>{t('userProfile.editProfileBtn')}</GoldButton>
         </div>
       </form>
     </ModalShell>
@@ -345,6 +349,7 @@ function BackdropThumb({ filePath, isSelected, onSelect }) {
 
 /* Row for one media: title + horizontal carousel of its backdrops */
 function MediaBackdropRow({ tmdbId, mediaType, selectedPath, onSelect }) {
+  const { t } = useTranslation();
   const scrollRef = useRef(null);
 
   /* Fetch movie/show details for the title */
@@ -399,7 +404,7 @@ function MediaBackdropRow({ tmdbId, mediaType, selectedPath, onSelect }) {
         )}
         <span className="text-white font-semibold text-sm truncate">{title}</span>
         <span className="text-white/30 text-xs flex-shrink-0">
-          {allPaths.length} image{allPaths.length > 1 ? 's' : ''}
+          {t('userProfile.imageCount', { count: allPaths.length })}
         </span>
       </div>
 
@@ -433,6 +438,7 @@ function MediaBackdropRow({ tmdbId, mediaType, selectedPath, onSelect }) {
 }
 
 function EditBackgroundModal({ user, onClose }) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { updateUser } = useAuthStore();
 
@@ -478,12 +484,12 @@ function EditBackgroundModal({ user, onClose }) {
 
   return (
     <ModalShell
-      title="Edit Background"
+      title={t('userProfile.editBackgroundTitle')}
       onClose={onClose}
       wide
       headerRight={
         <GoldButton onClick={() => saveMut.mutate()} disabled={saveMut.isPending}>
-          Save Background
+          {t('userProfile.saveBackground')}
         </GoldButton>
       }
     >
@@ -491,7 +497,7 @@ function EditBackgroundModal({ user, onClose }) {
         {uniqueMedia.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-white/30">
             <span className="text-5xl mb-3">🎬</span>
-            <p>Add favorites first to choose a background</p>
+            <p>{t('userProfile.noFavoritesForBackground')}</p>
           </div>
         ) : (
           uniqueMedia.map((fav) => (
@@ -513,6 +519,7 @@ function EditBackgroundModal({ user, onClose }) {
 /*  CREATE PLAYLIST MODAL                                          */
 /* ─────────────────────────────────────────────────────────────── */
 function CreatePlaylistModal({ onClose }) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [name,    setName]    = useState('');
   const [desc,    setDesc]    = useState('');
@@ -525,30 +532,30 @@ function CreatePlaylistModal({ onClose }) {
       queryClient.invalidateQueries({ queryKey: ['lists'] });
       onClose();
     },
-    onError: (err) => setError(err.response?.data?.message ?? 'Error creating playlist'),
+    onError: (err) => setError(err.response?.data?.message ?? t('userProfile.errorCreatePlaylist')),
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!name.trim()) { setError('Name is required'); return; }
+    if (!name.trim()) { setError(t('userProfile.errorNameRequired')); return; }
     setError('');
     createMut.mutate();
   };
 
   return (
-    <ModalShell title="New Playlist" onClose={onClose}>
+    <ModalShell title={t('userProfile.newPlaylistTitle')} onClose={onClose}>
       <form onSubmit={handleSubmit} className="px-6 py-6 flex flex-col gap-4">
         <FormInput
-          label="Playlist Name"
+          label={t('userProfile.playlistName')}
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="My favourite thrillers…"
+          placeholder={t('userProfile.playlistNamePlaceholder')}
         />
         <FormInput
-          label="Description (optional)"
+          label={t('userProfile.playlistDescription')}
           value={desc}
           onChange={(e) => setDesc(e.target.value)}
-          placeholder="A short description…"
+          placeholder={t('userProfile.playlistDescriptionPlaceholder')}
         />
         {/* Public toggle */}
         <label className="flex items-center gap-3 cursor-pointer select-none">
@@ -563,7 +570,7 @@ function CreatePlaylistModal({ onClose }) {
               className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow"
             />
           </div>
-          <span className="text-sm text-white/70">Make this playlist public</span>
+          <span className="text-sm text-white/70">{t('userProfile.makePublic')}</span>
         </label>
 
         <AnimatePresence mode="wait">
@@ -576,11 +583,11 @@ function CreatePlaylistModal({ onClose }) {
         <div className="pt-1 flex gap-3">
           <button type="button" onClick={onClose}
             className="flex-1 py-3 rounded-xl border border-white/15 text-white/60 text-sm hover:border-white/30 hover:text-white transition-colors">
-            Cancel
+            {t('userProfile.cancel')}
           </button>
           <div className="flex-1">
             <GoldButton type="submit" disabled={createMut.isPending} full>
-              Create Playlist
+              {t('userProfile.createPlaylist')}
             </GoldButton>
           </div>
         </div>
@@ -591,6 +598,7 @@ function CreatePlaylistModal({ onClose }) {
 
 /* ─── Profile Hero ───────────────────────────────────────────── */
 function ProfileHero({ user, onEditProfile, onEditBackground }) {
+  const { t } = useTranslation();
   const [dropOpen, setDropOpen] = useState(false);
   const dropRef = useRef(null);
 
@@ -638,7 +646,7 @@ function ProfileHero({ user, onEditProfile, onEditBackground }) {
             <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
             <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
           </svg>
-          Modify
+          {t('userProfile.modify')}
           <svg width="10" height="10" viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M1 1l4 4 4-4"/>
           </svg>
@@ -653,8 +661,8 @@ function ProfileHero({ user, onEditProfile, onEditBackground }) {
               style={{ background: '#1A1A2E', border: '1px solid rgba(255,255,255,0.08)' }}
             >
               {[
-                { label: 'Edit Profile',    icon: '👤', action: onEditProfile },
-                { label: 'Edit Background', icon: '🖼️',  action: onEditBackground },
+                { label: t('userProfile.dropdownEditProfile'),    icon: '👤', action: onEditProfile },
+                { label: t('userProfile.dropdownEditBackground'), icon: '🖼️',  action: onEditBackground },
               ].map(({ label, icon, action }) => (
                 <button key={label}
                   onClick={() => { setDropOpen(false); action(); }}
@@ -687,10 +695,11 @@ function ProfileHero({ user, onEditProfile, onEditBackground }) {
 
 /* ─── Stats row ──────────────────────────────────────────────── */
 function StatsRow({ favMovies, favTV, listCount }) {
+  const { t } = useTranslation();
   const stats = [
-    { label: 'Favorite Movies', value: favMovies, icon: '🎬' },
-    { label: 'Favorite Shows',  value: favTV,     icon: '📺' },
-    { label: 'Playlists',       value: listCount,  icon: '📋' },
+    { label: t('userProfile.statsLabelFavMovies'), value: favMovies, icon: '🎬' },
+    { label: t('userProfile.statsLabelFavShows'),  value: favTV,     icon: '📺' },
+    { label: t('userProfile.statsLabelPlaylists'), value: listCount,  icon: '📋' },
   ];
   return (
     <div className="grid grid-cols-3 gap-3">
@@ -710,11 +719,12 @@ function StatsRow({ favMovies, favTV, listCount }) {
 const CHART_COLORS = ['#C9A96E','#8B6E42','#E8C98A','#A07840','#D4A96E','#6B5030','#F0D4A0','#9B7850'];
 
 function GenreChart({ genreCounts }) {
+  const { t } = useTranslation();
   if (!genreCounts?.length) return null;
   const max = Math.max(...genreCounts.map((g) => g.count), 1);
   return (
     <section>
-      <h2 className="font-display italic text-xl md:text-2xl text-white mb-5">Favorite Genres</h2>
+      <h2 className="font-display italic text-xl md:text-2xl text-white mb-5">{t('userProfile.sectionFavoriteGenres')}</h2>
       <div className="rounded-2xl p-5 md:p-6 flex flex-col gap-3"
         style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
         {genreCounts.slice(0, 8).map(({ name, count }, i) => (
@@ -764,13 +774,14 @@ function FavMediaCard({ tmdbId, mediaType }) {
 }
 
 function FavCarousel({ items }) {
+  const { t } = useTranslation();
   const ref = useRef(null);
   const scroll = (dir) => ref.current?.scrollBy({ left: dir * 200, behavior: 'smooth' });
   if (!items?.length) {
     return (
       <div className="flex items-center justify-center h-40 rounded-2xl"
         style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
-        <p className="text-white/20 text-sm">None yet</p>
+        <p className="text-white/20 text-sm">{t('userProfile.noneYet')}</p>
       </div>
     );
   }
@@ -815,6 +826,7 @@ function PlaylistItemCard({ tmdbId, mediaType }) {
 }
 
 function PlaylistSection({ lists }) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [activeId,       setActiveId]       = useState(null);
   const [createOpen,     setCreateOpen]     = useState(false);
@@ -847,18 +859,18 @@ function PlaylistSection({ lists }) {
   return (
     <section>
       <div className="flex items-center justify-between mb-5">
-        <h2 className="font-display italic text-xl md:text-2xl text-white">My Selections</h2>
+        <h2 className="font-display italic text-xl md:text-2xl text-white">{t('userProfile.sectionMySelections')}</h2>
         <GoldButton small onClick={() => setCreateOpen(true)}>
-          <span className="flex items-center gap-1.5"><PlusIcon size={13} /> New Playlist</span>
+          <span className="flex items-center gap-1.5"><PlusIcon size={13} /> {t('userProfile.newPlaylistBtn')}</span>
         </GoldButton>
       </div>
 
       {(!lists || lists.length === 0) ? (
         <div className="flex flex-col items-center justify-center h-44 rounded-2xl gap-3"
           style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
-          <p className="text-white/20 text-sm">No playlists yet</p>
+          <p className="text-white/20 text-sm">{t('userProfile.noPlaylists')}</p>
           <GoldButton small onClick={() => setCreateOpen(true)}>
-            <span className="flex items-center gap-1.5"><PlusIcon size={13} /> Create your first playlist</span>
+            <span className="flex items-center gap-1.5"><PlusIcon size={13} /> {t('userProfile.createFirstPlaylist')}</span>
           </GoldButton>
         </div>
       ) : (
@@ -890,9 +902,9 @@ function PlaylistSection({ lists }) {
                 </div>
                 {!activeList.isDefault && (
                   <button
-                    onClick={() => { if (confirm(`Delete "${activeList.name}"?`)) deleteMut.mutate(activeList.id); }}
+                    onClick={() => { if (window.confirm(t('userProfile.deletePlaylistConfirm', { name: activeList.name }))) deleteMut.mutate(activeList.id); }}
                     className="text-white/25 hover:text-red-400 transition-colors p-1 rounded-lg hover:bg-red-400/10"
-                    title="Delete playlist"
+                    title={t('userProfile.deletePlaylistTitle')}
                   >
                     <TrashIcon />
                   </button>
@@ -902,7 +914,7 @@ function PlaylistSection({ lists }) {
 
             {items.length === 0 ? (
               <div className="flex items-center justify-center h-36 text-white/20 text-sm">
-                This playlist is empty
+                {t('userProfile.playlistEmpty')}
               </div>
             ) : (
               <div className="relative group">
@@ -931,21 +943,22 @@ function PlaylistSection({ lists }) {
 
 /* ─── Badges ─────────────────────────────────────────────────── */
 const BADGES_CATALOG = [
-  { id: 'first_fav',     icon: '❤️',  label: 'First Favorite',  desc: 'Add your first favorite',  req: (d) => d.favTotal >= 1   },
-  { id: 'movie_buff',    icon: '🎬',  label: 'Movie Buff',       desc: '10+ favorite movies',       req: (d) => d.favMovies >= 10 },
-  { id: 'series_fan',    icon: '📺',  label: 'Series Fan',       desc: '10+ favorite TV shows',     req: (d) => d.favTV >= 10     },
-  { id: 'collector',     icon: '📚',  label: 'Collector',        desc: '25+ total favorites',       req: (d) => d.favTotal >= 25  },
-  { id: 'curator',       icon: '🗂️', label: 'Curator',           desc: 'Create a playlist',         req: (d) => d.listCount >= 1  },
-  { id: 'cinephile',     icon: '🏆',  label: 'Cinéphile',        desc: '50+ total favorites',       req: (d) => d.favTotal >= 50  },
-  { id: 'multi_list',    icon: '📋',  label: 'List Master',      desc: '3+ playlists',              req: (d) => d.listCount >= 3  },
-  { id: 'completionist', icon: '⭐',  label: 'Completionist',    desc: '100+ total favorites',      req: (d) => d.favTotal >= 100 },
+  { id: 'first_fav',     icon: '❤️',  i18nKey: 'firstFav',      req: (d) => d.favTotal >= 1   },
+  { id: 'movie_buff',    icon: '🎬',  i18nKey: 'movieBuff',     req: (d) => d.favMovies >= 10 },
+  { id: 'series_fan',    icon: '📺',  i18nKey: 'seriesFan',     req: (d) => d.favTV >= 10     },
+  { id: 'collector',     icon: '📚',  i18nKey: 'collector',     req: (d) => d.favTotal >= 25  },
+  { id: 'curator',       icon: '🗂️', i18nKey: 'curator',        req: (d) => d.listCount >= 1  },
+  { id: 'cinephile',     icon: '🏆',  i18nKey: 'cinephile',     req: (d) => d.favTotal >= 50  },
+  { id: 'multi_list',    icon: '📋',  i18nKey: 'listMaster',    req: (d) => d.listCount >= 3  },
+  { id: 'completionist', icon: '⭐',  i18nKey: 'completionist', req: (d) => d.favTotal >= 100 },
 ];
 
 function BadgeSection({ favMovies, favTV, listCount }) {
+  const { t } = useTranslation();
   const data = { favMovies, favTV, favTotal: favMovies + favTV, listCount };
   return (
     <section>
-      <h2 className="font-display italic text-xl md:text-2xl text-white mb-5">Badges</h2>
+      <h2 className="font-display italic text-xl md:text-2xl text-white mb-5">{t('userProfile.sectionBadges')}</h2>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {BADGES_CATALOG.map((badge) => {
           const unlocked = badge.req(data);
@@ -958,11 +971,11 @@ function BadgeSection({ favMovies, favTV, listCount }) {
                 opacity: unlocked ? 1 : 0.4,
               }}>
               <span className="text-3xl" style={{ filter: unlocked ? 'none' : 'grayscale(1)' }}>{badge.icon}</span>
-              <p className="text-white text-xs font-semibold">{badge.label}</p>
-              <p className="text-white/30 text-xs leading-tight">{badge.desc}</p>
+              <p className="text-white text-xs font-semibold">{t(`userProfile.badges.${badge.i18nKey}.label`)}</p>
+              <p className="text-white/30 text-xs leading-tight">{t(`userProfile.badges.${badge.i18nKey}.desc`)}</p>
               {unlocked && (
                 <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
-                  style={{ background: 'rgba(201,169,110,0.2)', color: '#C9A96E' }}>Unlocked</span>
+                  style={{ background: 'rgba(201,169,110,0.2)', color: '#C9A96E' }}>{t('userProfile.badgeUnlocked')}</span>
               )}
             </motion.div>
           );
@@ -991,6 +1004,7 @@ function useGenreCounts(favorites) {
 
 /* ─── Page ───────────────────────────────────────────────────── */
 export default function UserProfile() {
+  const { t } = useTranslation();
   const { user: storeUser } = useAuthStore();
   const [editProfileOpen,    setEditProfileOpen]    = useState(false);
   const [editBackgroundOpen, setEditBackgroundOpen] = useState(false);
@@ -1034,16 +1048,16 @@ export default function UserProfile() {
 
         <section>
           <div className="flex items-baseline justify-between mb-4">
-            <h2 className="font-display italic text-xl md:text-2xl text-white">Favorite Movies</h2>
-            <Link to="/catalogue" className="text-xs text-clap-gold hover:text-white transition-colors">Explore →</Link>
+            <h2 className="font-display italic text-xl md:text-2xl text-white">{t('userProfile.sectionFavoriteMovies')}</h2>
+            <Link to="/catalogue" className="text-xs text-clap-gold hover:text-white transition-colors">{t('userProfile.exploreLink')}</Link>
           </div>
           <FavCarousel items={favMovies} />
         </section>
 
         <section>
           <div className="flex items-baseline justify-between mb-4">
-            <h2 className="font-display italic text-xl md:text-2xl text-white">Favorite TV Shows</h2>
-            <Link to="/catalogue" className="text-xs text-clap-gold hover:text-white transition-colors">Explore →</Link>
+            <h2 className="font-display italic text-xl md:text-2xl text-white">{t('userProfile.sectionFavoriteTVShows')}</h2>
+            <Link to="/catalogue" className="text-xs text-clap-gold hover:text-white transition-colors">{t('userProfile.exploreLink')}</Link>
           </div>
           <FavCarousel items={favTV} />
         </section>

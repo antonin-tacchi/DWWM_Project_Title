@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 
 /* ─── Constants ──────────────────────────────────────────────── */
@@ -108,15 +109,17 @@ function RangeSlider({ min, max, value, onChange }) {
 }
 
 function ShowMore({ expanded, onToggle }) {
+  const { t } = useTranslation();
   return (
     <button onClick={onToggle} className="text-clap-gold text-xs mt-2 hover:underline tracking-wide">
-      {expanded ? 'Show less' : 'Show more'}
+      {expanded ? t('catalogue.showLess') : t('catalogue.showMore')}
     </button>
   );
 }
 
 /* ─── Search input (réutilisable) ────────────────────────────── */
 function SearchInput({ value, onChange, className = '' }) {
+  const { t } = useTranslation();
   return (
     <div className={`relative ${className}`}>
       <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
@@ -129,7 +132,7 @@ function SearchInput({ value, onChange, className = '' }) {
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Search…"
+        placeholder={t('catalogue.searchPlaceholder')}
         className="w-full bg-clap-card border border-clap-muted/50 rounded-full py-2 pl-8 pr-7 text-xs text-clap-light placeholder-clap-gray outline-none transition-all focus:border-clap-gold focus:ring-1 focus:ring-clap-gold/30"
       />
       {value && (
@@ -146,6 +149,7 @@ function SearchInput({ value, onChange, className = '' }) {
 
 /* ─── Filter content (partagé desktop + mobile) ──────────────── */
 function FilterContent({ isSearching, filters, onToggleGenre, onTogglePlatform, onToggleLanguage, onSetRating, onSetYear, onSetMediaType }) {
+  const { t } = useTranslation();
   const [showGenres,    setShowGenres]    = useState(false);
   const [showPlatforms, setShowPlatforms] = useState(false);
   const [showLanguages, setShowLanguages] = useState(false);
@@ -157,14 +161,20 @@ function FilterContent({ isSearching, filters, onToggleGenre, onTogglePlatform, 
   return (
     <div className={isSearching ? 'opacity-40 pointer-events-none select-none' : ''}>
       <h2 className="font-display italic text-clap-light text-xl leading-tight mb-6">
-        Refine Your<br />Experience
+        {t('catalogue.filterTitle').split('\n').map((line, i, arr) => (
+          <span key={i}>{line}{i < arr.length - 1 && <br />}</span>
+        ))}
       </h2>
 
       {/* Media type */}
       <section className="mb-6">
-        <h3 className="font-display italic text-white text-base mb-3">Type</h3>
+        <h3 className="font-display italic text-white text-base mb-3">{t('catalogue.filterType')}</h3>
         <div className="flex rounded-lg overflow-hidden border border-clap-muted/30">
-          {[{ key: 'all', label: 'Tous' }, { key: 'movie', label: 'Films' }, { key: 'tv', label: 'Séries' }].map(({ key, label }) => (
+          {[
+            { key: 'all',   label: t('catalogue.typeAll') },
+            { key: 'movie', label: t('catalogue.typeMovies') },
+            { key: 'tv',    label: t('catalogue.typeSeries') },
+          ].map(({ key, label }) => (
             <button
               key={key}
               onClick={() => onSetMediaType(key)}
@@ -182,7 +192,7 @@ function FilterContent({ isSearching, filters, onToggleGenre, onTogglePlatform, 
 
       {/* Genres */}
       <section className="mb-6">
-        <h3 className="font-display italic text-white text-base mb-3">Genres</h3>
+        <h3 className="font-display italic text-white text-base mb-3">{t('catalogue.filterGenres')}</h3>
         <div className="flex flex-col gap-2.5">
           {visibleGenres.map((g) => (
             <Checkbox key={g} label={g} checked={filters.genres.includes(g)} onChange={() => onToggleGenre(g)} />
@@ -193,19 +203,19 @@ function FilterContent({ isSearching, filters, onToggleGenre, onTogglePlatform, 
 
       {/* Rating */}
       <section className="mb-6">
-        <h3 className="font-display italic text-white text-base mb-3">Rating</h3>
+        <h3 className="font-display italic text-white text-base mb-3">{t('catalogue.filterRating')}</h3>
         <RangeSlider min={0} max={10} value={filters.maxRating} onChange={onSetRating} />
       </section>
 
       {/* Release Year */}
       <section className="mb-6">
-        <h3 className="font-display italic text-white text-base mb-3">Release Year</h3>
+        <h3 className="font-display italic text-white text-base mb-3">{t('catalogue.filterReleaseYear')}</h3>
         <RangeSlider min={1900} max={CURRENT_YEAR} value={filters.maxYear} onChange={onSetYear} />
       </section>
 
       {/* Platform */}
       <section className="mb-6">
-        <h3 className="font-display italic text-white text-base mb-3">Plateform</h3>
+        <h3 className="font-display italic text-white text-base mb-3">{t('catalogue.filterPlatform')}</h3>
         <div className="flex flex-wrap gap-2">
           {visiblePlatforms.map((p) => {
             const active = filters.platforms.includes(p.id);
@@ -231,7 +241,7 @@ function FilterContent({ isSearching, filters, onToggleGenre, onTogglePlatform, 
 
       {/* Language */}
       <section className="mb-6">
-        <h3 className="font-display italic text-white text-base mb-3">Language</h3>
+        <h3 className="font-display italic text-white text-base mb-3">{t('catalogue.filterLanguage')}</h3>
         <div className="flex flex-col gap-2.5">
           {visibleLanguages.map((l) => (
             <Checkbox key={l.code} label={l.label} checked={filters.languages.includes(l.code)} onChange={() => onToggleLanguage(l.code)} />
@@ -256,6 +266,7 @@ function Sidebar(props) {
 
 /* ─── Mobile top bar + drawer ────────────────────────────────── */
 function MobileBar({ query, onQueryChange, activeCount, onOpenDrawer }) {
+  const { t } = useTranslation();
   return (
     <div className="flex md:hidden items-center gap-2 mb-4">
       <SearchInput value={query} onChange={onQueryChange} className="flex-1" />
@@ -269,7 +280,7 @@ function MobileBar({ query, onQueryChange, activeCount, onOpenDrawer }) {
           <line x1="8" y1="12" x2="16" y2="12" />
           <line x1="11" y1="18" x2="13" y2="18" />
         </svg>
-        Filters
+        {t('catalogue.filtersBtn')}
         {activeCount > 0 && (
           <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-clap-gold text-clap-bg text-[10px] font-bold flex items-center justify-center">
             {activeCount}
@@ -281,6 +292,8 @@ function MobileBar({ query, onQueryChange, activeCount, onOpenDrawer }) {
 }
 
 function MobileDrawer({ open, onClose, isSearching, filters, onToggleGenre, onTogglePlatform, onToggleLanguage, onSetRating, onSetYear, activeCount, onReset }) {
+  const { t } = useTranslation();
+
   /* lock body scroll when open */
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';
@@ -313,11 +326,11 @@ function MobileDrawer({ open, onClose, isSearching, filters, onToggleGenre, onTo
 
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-3 border-b border-clap-muted/30">
-              <span className="font-display italic text-white text-lg">Filters</span>
+              <span className="font-display italic text-white text-lg">{t('catalogue.drawerTitle')}</span>
               <div className="flex items-center gap-3">
                 {activeCount > 0 && (
                   <button onClick={onReset} className="text-xs text-clap-gold hover:underline">
-                    Reset ({activeCount})
+                    {t('catalogue.reset', { count: activeCount })}
                   </button>
                 )}
                 <button onClick={onClose} className="text-clap-gray hover:text-white text-xl leading-none">×</button>
@@ -343,7 +356,7 @@ function MobileDrawer({ open, onClose, isSearching, filters, onToggleGenre, onTo
                 onClick={onClose}
                 className="w-full py-3 rounded-full bg-clap-gold text-clap-bg font-bold text-sm tracking-wide hover:brightness-110 transition-all"
               >
-                Apply filters
+                {t('catalogue.applyFilters')}
               </button>
             </div>
           </motion.div>
@@ -407,6 +420,7 @@ function PageBtn({ children, onClick, disabled, active }) {
 
 /* ─── Random Pick ────────────────────────────────────────────── */
 function RandomPick() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [pickType, setPickType] = useState('movie');
   const [loading,  setLoading]  = useState(false);
@@ -418,7 +432,7 @@ function RandomPick() {
       const { data } = await api.get(`/movies/discover/random?mediaType=${pickType}`);
       navigate(`/${pickType === 'tv' ? 'serie' : 'film'}/${data.id}`);
     } catch {
-      setError('Aucun résultat, réessaye !');
+      setError(t('catalogue.randomPickError'));
     } finally {
       setLoading(false);
     }
@@ -435,7 +449,9 @@ function RandomPick() {
           className="font-display italic text-4xl md:text-5xl leading-tight"
           style={{ color: '#E8DCBF' }}
         >
-          Find Your New<br />Favorite
+          {t('catalogue.randomPickTitle').split('\n').map((line, i, arr) => (
+            <span key={i}>{line}{i < arr.length - 1 && <br />}</span>
+          ))}
         </motion.h2>
 
         <motion.div
@@ -444,7 +460,10 @@ function RandomPick() {
           className="flex rounded-full border border-white/25 overflow-hidden"
           style={{ backgroundColor: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)' }}
         >
-          {[{ key: 'movie', label: 'Movie' }, { key: 'tv', label: 'Tv Show' }].map(({ key, label }, i) => (
+          {[
+            { key: 'movie', label: t('catalogue.randomPickMovie') },
+            { key: 'tv',    label: t('catalogue.randomPickTvShow') },
+          ].map(({ key, label }, i) => (
             <button key={key} onClick={() => setPickType(key)}
               className="px-10 py-2.5 text-sm font-semibold transition-all"
               style={{
@@ -468,7 +487,7 @@ function RandomPick() {
           className="px-24 py-4 rounded-full text-white text-xl font-bold tracking-[0.25em] transition-all disabled:opacity-60"
           style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.2)', cursor: loading ? 'wait' : 'pointer' }}
         >
-          {loading ? '...' : 'FIND'}
+          {loading ? '...' : t('catalogue.randomPickFind')}
         </motion.button>
       </div>
     </section>
@@ -479,6 +498,7 @@ function RandomPick() {
 const INITIAL_FILTERS = { mediaType: 'all', genres: [], maxRating: 10, maxYear: CURRENT_YEAR, platforms: [], languages: [] };
 
 export default function Catalogue() {
+  const { t } = useTranslation();
   const [page,    setPage]    = useState(1);
   const [query,   setQuery]   = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
@@ -553,11 +573,11 @@ export default function Catalogue() {
         // Interleave movie + tv results: movie, tv, movie, tv…
         const merged = [];
         const m = (movieRes.results ?? []).map((r) => ({ ...r, media_type: 'movie' }));
-        const t = (tvRes.results ?? []).map((r) => ({ ...r, media_type: 'tv' }));
-        const len = Math.max(m.length, t.length);
+        const tv = (tvRes.results ?? []).map((r) => ({ ...r, media_type: 'tv' }));
+        const len = Math.max(m.length, tv.length);
         for (let i = 0; i < len; i++) {
           if (m[i]) merged.push(m[i]);
-          if (t[i]) merged.push(t[i]);
+          if (tv[i]) merged.push(tv[i]);
         }
         return { results: merged, total_pages: Math.max(movieRes.total_pages ?? 1, tvRes.total_pages ?? 1) };
       }
@@ -602,7 +622,7 @@ export default function Catalogue() {
 
           {isSearching && (
             <p className="text-clap-gray text-sm mb-4 italic">
-              Results for <span className="text-clap-gold">"{debouncedQuery}"</span>
+              {t('catalogue.resultsFor', { query: debouncedQuery })}
             </p>
           )}
 
@@ -616,7 +636,7 @@ export default function Catalogue() {
                 ))
               : movies.length > 0
                 ? movies.map((movie) => <MovieCard key={movie.id} movie={movie} />)
-                : <div className="col-span-full py-20 text-center text-clap-gray">No results found.</div>
+                : <div className="col-span-full py-20 text-center text-clap-gray">{t('catalogue.noResults')}</div>
             }
           </div>
 

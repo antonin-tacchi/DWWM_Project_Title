@@ -4,10 +4,7 @@ import com.antonintacchi.movies.dto.tmdb.TmdbDetailResponse;
 import com.antonintacchi.movies.service.TmdbService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/tv")
@@ -17,8 +14,11 @@ public class TvController {
     private final TmdbService tmdbService;
 
     @GetMapping("/{tmdbId}")
-    public ResponseEntity<TmdbDetailResponse> tvDetails(@PathVariable Long tmdbId) {
-        TmdbDetailResponse response = tmdbService.getDetail(tmdbId, "tv");
+    public ResponseEntity<TmdbDetailResponse> tvDetails(
+            @PathVariable Long tmdbId,
+            @RequestParam(defaultValue = "fr-FR") String language) {
+
+        TmdbDetailResponse response = tmdbService.getDetail(tmdbId, "tv", language);
         return ResponseEntity.status(200).body(response);
     }
 }

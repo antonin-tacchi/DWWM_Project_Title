@@ -2,22 +2,23 @@ import { useState, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 
 /* ─── Helpers ──────────────────────────────────────────────────── */
 const tmdbImg = (path, size = 'original') =>
   path ? `https://image.tmdb.org/t/p/${size}${path}` : null;
 
-const fmtDate = (dateStr) => {
+const fmtDate = (dateStr, locale = 'fr-FR') => {
   if (!dateStr) return null;
-  return new Date(dateStr).toLocaleDateString('fr-FR', {
+  return new Date(dateStr).toLocaleDateString(locale, {
     day: '2-digit', month: 'long', year: 'numeric',
   });
 };
 
-const fmtDateShort = (dateStr) => {
+const fmtDateShort = (dateStr, locale = 'fr-FR') => {
   if (!dateStr) return null;
-  return new Date(dateStr).toLocaleDateString('fr-FR', {
+  return new Date(dateStr).toLocaleDateString(locale, {
     day: '2-digit', month: '2-digit', year: 'numeric',
   });
 };
@@ -32,6 +33,8 @@ const itemTitle = (item) => item.title || item.name || '—';
 
 /* ─── Hero article ─────────────────────────────────────────────── */
 function HeroArticle({ item }) {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === 'en' ? 'en-US' : 'fr-FR';
   const href    = mediaHref(item);
   const backdrop = tmdbImg(item.backdrop_path, 'original');
   const poster   = tmdbImg(item.poster_path, 'w500');
@@ -75,7 +78,7 @@ function HeroArticle({ item }) {
               className="inline-block text-clap-gold text-xs font-bold tracking-widest uppercase mb-3 px-3 py-1 rounded-full"
               style={{ background: 'rgba(201,169,110,0.15)', border: '1px solid rgba(201,169,110,0.35)' }}
             >
-              {item.first_air_date ? 'Série' : 'Film'} · À venir
+              {item.first_air_date ? t('news.typeSerie') : t('news.typeFilm')} · {t('news.upcoming')}
             </span>
 
             {/* Title */}
@@ -97,7 +100,7 @@ function HeroArticle({ item }) {
             <div className="flex items-center gap-4 text-sm">
               {date && (
                 <span className="text-clap-gold font-semibold">
-                  {fmtDate(date)}
+                  {fmtDate(date, locale)}
                 </span>
               )}
               {item.vote_average > 0 && (
@@ -116,7 +119,7 @@ function HeroArticle({ item }) {
           className="text-xs font-semibold text-white px-4 py-2 rounded-full flex items-center gap-2"
           style={{ background: 'rgba(201,169,110,0.25)', border: '1px solid rgba(201,169,110,0.5)', backdropFilter: 'blur(8px)' }}
         >
-          Voir le film →
+          {t('news.seeFilm')}
         </span>
       </div>
     </Link>
@@ -125,6 +128,8 @@ function HeroArticle({ item }) {
 
 /* ─── Featured article card (wide, horizontal) ─────────────────── */
 function FeaturedCard({ item, index }) {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === 'en' ? 'en-US' : 'fr-FR';
   const href     = mediaHref(item);
   const backdrop = tmdbImg(item.backdrop_path, 'w1280');
   const poster   = tmdbImg(item.poster_path, 'w342');
@@ -170,7 +175,7 @@ function FeaturedCard({ item, index }) {
         <div className="flex-1 flex flex-col justify-center px-5 py-5 gap-3">
           {/* Type badge */}
           <span className="text-clap-gold text-xs font-bold tracking-widest uppercase">
-            {item.first_air_date ? 'Série' : 'Film'}
+            {item.first_air_date ? t('news.typeSerie') : t('news.typeFilm')}
           </span>
 
           {/* Title */}
@@ -207,6 +212,8 @@ function FeaturedCard({ item, index }) {
 
 /* ─── Compact article card — absolutely-positioned panel on hover ── */
 function ArticleCard({ item, index, isExpanded, onHover }) {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === 'en' ? 'en-US' : 'fr-FR';
   const wrapRef  = useRef(null);
   const [flipLeft, setFlipLeft] = useState(false);
 
@@ -216,7 +223,8 @@ function ArticleCard({ item, index, isExpanded, onHover }) {
   const date     = itemDate(item);
   const title    = itemTitle(item);
   const bg       = backdrop || poster;
-  const type     = item.first_air_date ? 'Série' : 'Film';
+  const type     = item.first_air_date ? t('news.typeSerie') : t('news.typeFilm');
+  const isSerie  = !!item.first_air_date;
 
   const handleEnter = () => {
     if (wrapRef.current) {
@@ -381,7 +389,7 @@ function ArticleCard({ item, index, isExpanded, onHover }) {
                   </span>
                 )}
                 {date && (
-                  <span className="text-white/45 text-[10px] ml-auto">{fmtDateShort(date)}</span>
+                  <span className="text-white/45 text-[10px] ml-auto">{fmtDateShort(date, locale)}</span>
                 )}
               </div>
 
@@ -395,7 +403,7 @@ function ArticleCard({ item, index, isExpanded, onHover }) {
                   color: '#C9A96E',
                 }}
               >
-                Voir {type === 'Série' ? 'la série' : 'le film'}
+                {isSerie ? t('news.seeSerie') : t('news.seeFilmBtn')}
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
@@ -410,25 +418,26 @@ function ArticleCard({ item, index, isExpanded, onHover }) {
 
 /* ─── Filter tabs ──────────────────────────────────────────────── */
 function FilterTabs({ active, onChange }) {
+  const { t } = useTranslation();
   const tabs = [
-    { key: 'all',   label: 'Tout' },
-    { key: 'movie', label: 'Films' },
-    { key: 'tv',    label: 'Séries' },
+    { key: 'all',   label: t('news.filterAll') },
+    { key: 'movie', label: t('news.filterMovies') },
+    { key: 'tv',    label: t('news.filterSeries') },
   ];
   return (
     <div className="flex gap-2">
-      {tabs.map((t) => (
+      {tabs.map((tab) => (
         <button
-          key={t.key}
-          onClick={() => onChange(t.key)}
+          key={tab.key}
+          onClick={() => onChange(tab.key)}
           className="px-4 py-1.5 rounded-full text-sm font-semibold transition-all"
           style={
-            active === t.key
+            active === tab.key
               ? { background: '#C9A96E', color: '#0d0d0d' }
               : { background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.1)' }
           }
         >
-          {t.label}
+          {tab.label}
         </button>
       ))}
     </div>
@@ -437,6 +446,7 @@ function FilterTabs({ active, onChange }) {
 
 /* ─── Main page ────────────────────────────────────────────────── */
 export default function News() {
+  const { t } = useTranslation();
   const [filter,     setFilter]     = useState('all');
   const [expandedId, setExpandedId] = useState(null);
   const leaveTimer                  = useRef(null);
@@ -505,7 +515,7 @@ export default function News() {
       <div className="min-h-screen bg-clap-bg flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 rounded-full border-2 border-clap-gold/30 border-t-clap-gold animate-spin" />
-          <p className="text-clap-muted text-sm">Chargement des actualités…</p>
+          <p className="text-clap-muted text-sm">{t('news.loading')}</p>
         </div>
       </div>
     );
@@ -526,7 +536,7 @@ export default function News() {
             className="font-display italic text-white"
             style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', textDecoration: 'underline', textDecorationColor: 'rgba(201,169,110,0.5)', textUnderlineOffset: 6 }}
           >
-            News :
+            {t('news.sectionTitle')}
           </h2>
           <FilterTabs active={filter} onChange={setFilter} />
         </div>
@@ -543,7 +553,7 @@ export default function News() {
         {/* Divider */}
         <div className="flex items-center gap-4 mb-8">
           <div className="h-px flex-1" style={{ background: 'linear-gradient(to right, rgba(201,169,110,0.3), transparent)' }} />
-          <span className="text-clap-gold text-xs tracking-widest uppercase font-semibold">À venir</span>
+          <span className="text-clap-gold text-xs tracking-widest uppercase font-semibold">{t('news.dividerLabel')}</span>
           <div className="h-px flex-1" style={{ background: 'linear-gradient(to left, rgba(201,169,110,0.3), transparent)' }} />
         </div>
 
@@ -563,7 +573,7 @@ export default function News() {
         ) : (
           <div className="text-center py-20 text-clap-muted">
             <p className="text-4xl mb-4">🎬</p>
-            <p>Aucun contenu disponible pour ce filtre.</p>
+            <p>{t('news.noContent')}</p>
           </div>
         )}
       </div>

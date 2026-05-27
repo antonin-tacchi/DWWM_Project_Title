@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import useAuthStore from '../store/authStore';
 
@@ -23,6 +24,7 @@ const fmtRuntime = (min) => {
 
 /* ─── Trailer modal ──────────────────────────────────────────── */
 function TrailerModal({ videoKey, onClose }) {
+  const { t } = useTranslation();
   /* close on Escape */
   useEffect(() => {
     const handler = (e) => { if (e.key === 'Escape') onClose(); };
@@ -56,7 +58,7 @@ function TrailerModal({ videoKey, onClose }) {
           <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
             <iframe
               src={`https://www.youtube.com/embed/${videoKey}?autoplay=1&rel=0&modestbranding=1`}
-              title="Trailer"
+              title={t('movieDetail.trailerTitle')}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
               className="absolute inset-0 w-full h-full"
@@ -67,7 +69,7 @@ function TrailerModal({ videoKey, onClose }) {
           <button
             onClick={onClose}
             className="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/70 border border-clap-muted/40 flex items-center justify-center text-clap-gold hover:bg-clap-gold hover:text-black transition-all z-10"
-            aria-label="Fermer"
+            aria-label={t('movieDetail.close')}
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -81,6 +83,7 @@ function TrailerModal({ videoKey, onClose }) {
 
 /* ─── Score circle ───────────────────────────────────────────── */
 function ScoreCircle({ value }) {
+  const { t } = useTranslation();
   const pct = Math.round((value ?? 0) * 10);
   const r   = 22;
   const circ = 2 * Math.PI * r;
@@ -101,7 +104,7 @@ function ScoreCircle({ value }) {
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center leading-none">
         <span className="text-white text-xs font-bold">{pct}%</span>
-        <span className="text-white text-[8px]">User Score</span>
+        <span className="text-white text-[8px]">{t('movieDetail.userScore')}</span>
       </div>
     </div>
   );
@@ -170,6 +173,7 @@ function RelatedCard({ movie }) {
 
 /* ─── Comment card ───────────────────────────────────────────── */
 function CommentCard({ comment, currentUserId, onDelete }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const text    = comment.content ?? '';
@@ -178,7 +182,7 @@ function CommentCard({ comment, currentUserId, onDelete }) {
   const isOwner = currentUserId && Number(currentUserId) === Number(comment.userId);
 
   const handleDelete = async () => {
-    if (!window.confirm('Supprimer ce commentaire ?')) return;
+    if (!window.confirm(t('movieDetail.deleteCommentConfirm'))) return;
     setDeleting(true);
     try { await onDelete(comment.id); } finally { setDeleting(false); }
   };
@@ -200,19 +204,19 @@ function CommentCard({ comment, currentUserId, onDelete }) {
               onClick={handleDelete}
               disabled={deleting}
               className="opacity-0 group-hover:opacity-100 transition-opacity text-clap-gray hover:text-red-400 text-xs flex items-center gap-1 disabled:opacity-30"
-              title="Supprimer mon commentaire"
+              title={t('movieDetail.deleteCommentTitle')}
             >
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                 <path d="M1 3h10M4 3V2h4v1M5 5.5v3M7 5.5v3M2 3l.8 7.2A.8.8 0 003.6 11h4.8a.8.8 0 00.8-.8L10 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
               </svg>
-              {deleting ? '…' : 'Supprimer'}
+              {deleting ? '…' : t('movieDetail.deleteComment')}
             </button>
           )}
         </div>
         <p className="text-clap-light text-sm leading-relaxed">{shown}</p>
         {long && (
           <button onClick={() => setExpanded((v) => !v)} className="text-clap-gold text-xs mt-1 italic hover:underline">
-            {expanded ? 'Show less' : 'Show more'}
+            {expanded ? t('movieDetail.commentShowLess') : t('movieDetail.commentShowMore')}
           </button>
         )}
       </div>
@@ -222,6 +226,7 @@ function CommentCard({ comment, currentUserId, onDelete }) {
 
 /* ─── Playlist dropdown ──────────────────────────────────────── */
 function PlaylistDropdown({ tmdbId, mediaType, isFavorited, currentFavorite, onToggleFav, favPending }) {
+  const { t } = useTranslation();
   const [open, setOpen]           = useState(false);
   const [dropPos, setDropPos]     = useState({ top: 0, left: 0 });
   const [feedback, setFeedback]   = useState({}); // { listId: 'added'|'removed'|'exists' }
@@ -334,7 +339,7 @@ function PlaylistDropdown({ tmdbId, mediaType, isFavorited, currentFavorite, onT
         >
             {/* ── Favoris ── */}
             <div className="px-4 pt-3 pb-1">
-              <p className="text-clap-gray text-[10px] uppercase tracking-widest mb-2">Favoris</p>
+              <p className="text-clap-gray text-[10px] uppercase tracking-widest mb-2">{t('movieDetail.playlistSectionFavorites')}</p>
               <button
                 onClick={() => { onToggleFav(); }}
                 disabled={favPending}
@@ -348,7 +353,7 @@ function PlaylistDropdown({ tmdbId, mediaType, isFavorited, currentFavorite, onT
                     <path d="M9 15.5S1.5 11 1.5 5.5A4 4 0 019 3a4 4 0 017.5 2.5C16.5 11 9 15.5 9 15.5z"
                       strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                  <span className="text-clap-light text-sm">Mes favoris</span>
+                  <span className="text-clap-light text-sm">{t('movieDetail.myFavorites')}</span>
                 </div>
                 {isFavorited && (
                   <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
@@ -361,13 +366,13 @@ function PlaylistDropdown({ tmdbId, mediaType, isFavorited, currentFavorite, onT
 
             {/* ── Playlists ── */}
             <div className="px-4 py-2">
-              <p className="text-clap-gray text-[10px] uppercase tracking-widest mb-2">Mes playlists</p>
+              <p className="text-clap-gray text-[10px] uppercase tracking-widest mb-2">{t('movieDetail.myPlaylists')}</p>
               {listsLoading ? (
                 <div className="flex flex-col gap-2 py-2">
                   {[1, 2].map((i) => <div key={i} className="h-8 bg-clap-muted/30 animate-pulse rounded-xl" />)}
                 </div>
               ) : !listsWithItems?.length ? (
-                <p className="text-clap-gray text-xs italic py-2 text-center">Aucune playlist créée</p>
+                <p className="text-clap-gray text-xs italic py-2 text-center">{t('movieDetail.noPlaylistCreated')}</p>
               ) : (
                 <div className="flex flex-col gap-0.5 max-h-48 overflow-y-auto">
                   {listsWithItems.map((list) => {
@@ -388,9 +393,9 @@ function PlaylistDropdown({ tmdbId, mediaType, isFavorited, currentFavorite, onT
                           <span className="text-clap-light text-sm text-left truncate max-w-[140px]">{list.name}</span>
                         </div>
                         <span className="text-[11px] flex-shrink-0">
-                          {fb === 'exists'  && <span className="text-yellow-400">Déjà ajouté</span>}
-                          {fb === 'added'   && <span className="text-green-400">✓ Ajouté</span>}
-                          {fb === 'removed' && <span className="text-clap-gray">Retiré</span>}
+                          {fb === 'exists'  && <span className="text-yellow-400">{t('movieDetail.alreadyAdded')}</span>}
+                          {fb === 'added'   && <span className="text-green-400">{t('movieDetail.added')}</span>}
+                          {fb === 'removed' && <span className="text-clap-gray">{t('movieDetail.removed')}</span>}
                           {!fb && inList    && <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
                             <circle cx="6.5" cy="6.5" r="6" stroke="#4ade80"/>
                             <path d="M3.5 6.5l2 2 4-4" stroke="#4ade80" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
@@ -407,7 +412,7 @@ function PlaylistDropdown({ tmdbId, mediaType, isFavorited, currentFavorite, onT
             {/* ── Footer ── */}
             <div className="border-t border-clap-muted/20 px-4 py-2.5">
               <p className="text-clap-gray text-[10px] text-center italic">
-                Crée des playlists depuis ton profil
+                {t('movieDetail.createPlaylistsHint')}
               </p>
             </div>
           </motion.div>
@@ -422,14 +427,14 @@ function PlaylistDropdown({ tmdbId, mediaType, isFavorited, currentFavorite, onT
         ref={btnRef}
         whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.95 }}
         onClick={isAuthenticated ? handleToggle : undefined}
-        title={isAuthenticated ? 'Ajouter à une playlist' : 'Connecte-toi pour sauvegarder'}
+        title={isAuthenticated ? t('movieDetail.addToPlaylistTitle') : t('movieDetail.loginToSave')}
         className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold text-clap-gold transition-all"
         style={btnStyle}
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6">
           <path d="M3 2.5A1.5 1.5 0 014.5 1h7A1.5 1.5 0 0113 2.5v12l-5-3-5 3v-12z" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
-        Sauvegarder
+        {t('movieDetail.save')}
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.6"
           style={{ transform: open ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}>
           <path d="M2 3.5l3 3 3-3" strokeLinecap="round" strokeLinejoin="round"/>
@@ -438,7 +443,7 @@ function PlaylistDropdown({ tmdbId, mediaType, isFavorited, currentFavorite, onT
 
       {/* Non connecté → lien login par-dessus */}
       {!isAuthenticated && (
-        <Link to="/login" className="absolute inset-0" aria-label="Connecte-toi pour sauvegarder" />
+        <Link to="/login" className="absolute inset-0" aria-label={t('movieDetail.loginToSave')} />
       )}
 
       {/* Dropdown rendu dans le body via portal (bypass overflow-hidden du hero) */}
@@ -449,6 +454,7 @@ function PlaylistDropdown({ tmdbId, mediaType, isFavorited, currentFavorite, onT
 
 /* ─── Media Detail Page ──────────────────────────────────────── */
 export default function MovieDetail({ mediaType = 'movie' }) {
+  const { t } = useTranslation();
   const { id }         = useParams();
   const tmdbId         = Number(id);
   const { isAuthenticated, user } = useAuthStore();
@@ -512,13 +518,13 @@ export default function MovieDetail({ mediaType = 'movie' }) {
   const addFavorite = useMutation({
     mutationFn: () => api.post('/favorites', { tmdbId, mediaType }),
     onSuccess:  () => queryClient.invalidateQueries({ queryKey: ['favorites'] }),
-    onError:    () => setFavError('Erreur lors de l\'ajout aux favoris.'),
+    onError:    () => setFavError(t('movieDetail.errorAddFavorite')),
   });
 
   const removeFavorite = useMutation({
     mutationFn: () => api.delete(`/favorites/${currentFavorite?.id}`),
     onSuccess:  () => queryClient.invalidateQueries({ queryKey: ['favorites'] }),
-    onError:    () => setFavError('Erreur lors de la suppression des favoris.'),
+    onError:    () => setFavError(t('movieDetail.errorRemoveFavorite')),
   });
 
   const handleFavorite = () => {
@@ -626,28 +632,28 @@ export default function MovieDetail({ mediaType = 'movie' }) {
 
           {/* Metadata rows */}
           <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs md:text-sm text-clap-gray mb-2">
-            <span><span className="text-white/60">Category : </span>{genres}</span>
-            <span><span className="text-white/60">Release date : </span>{releaseDate}</span>
+            <span><span className="text-white/60">{t('movieDetail.labelCategory')}</span>{genres}</span>
+            <span><span className="text-white/60">{t('movieDetail.labelReleaseDate')}</span>{releaseDate}</span>
             {providers.length > 0 && (
               <span className="flex items-center gap-2">
-                <span className="text-white/60">Streaming Platform : </span>
+                <span className="text-white/60">{t('movieDetail.labelStreamingPlatform')}</span>
                 {providers.slice(0, 2).map((p) => (
                   <span key={p.provider_name} className="bg-clap-card border border-clap-muted/40 px-2 py-0.5 rounded text-white text-xs">
                     {p.provider_name}
                   </span>
                 ))}
-                {providers.length === 0 && <span className="bg-clap-card border border-clap-muted/40 px-2 py-0.5 rounded text-white text-xs">Only in Theater</span>}
+                {providers.length === 0 && <span className="bg-clap-card border border-clap-muted/40 px-2 py-0.5 rounded text-white text-xs">{t('movieDetail.onlyInTheater')}</span>}
               </span>
             )}
             {providers.length === 0 && (
-              <span><span className="text-white/60">Streaming Platform : </span>
-                <span className="bg-clap-card border border-clap-muted/40 px-2 py-0.5 rounded text-white text-xs">Only in Theater</span>
+              <span><span className="text-white/60">{t('movieDetail.labelStreamingPlatform')}</span>
+                <span className="bg-clap-card border border-clap-muted/40 px-2 py-0.5 rounded text-white text-xs">{t('movieDetail.onlyInTheater')}</span>
               </span>
             )}
           </div>
           <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs md:text-sm text-clap-gray mb-4">
             <span>
-              <span className="text-white/60">Director : </span>
+              <span className="text-white/60">{t('movieDetail.labelDirector')}</span>
               {directors.length === 0 ? '—' : directors.map((d, i) => (
                 <span key={d.id}>
                   <Link
@@ -660,9 +666,9 @@ export default function MovieDetail({ mediaType = 'movie' }) {
                 </span>
               ))}
             </span>
-            {runtime && <span><span className="text-white/60">Duration : </span>{runtime}</span>}
+            {runtime && <span><span className="text-white/60">{t('movieDetail.labelDuration')}</span>{runtime}</span>}
             {detail?.number_of_seasons && (
-              <span><span className="text-white/60">Seasons : </span>{detail.number_of_seasons}</span>
+              <span><span className="text-white/60">{t('movieDetail.labelSeasons')}</span>{detail.number_of_seasons}</span>
             )}
           </div>
 
@@ -676,7 +682,7 @@ export default function MovieDetail({ mediaType = 'movie' }) {
                 className="px-6 py-2.5 rounded-full font-semibold text-sm tracking-wide transition-all"
                 style={{ backgroundColor: 'rgba(30,30,60,0.85)', border: '1px solid rgba(201,169,110,0.6)', color: '#C9A96E', backdropFilter: 'blur(8px)' }}
               >
-                ▶ Watch trailers
+                {t('movieDetail.watchTrailers')}
               </motion.button>
             )}
 
@@ -700,7 +706,7 @@ export default function MovieDetail({ mediaType = 'movie' }) {
         {/* ── Overview ── */}
         {detail?.overview && (
           <section>
-            <SectionTitle>Overview</SectionTitle>
+            <SectionTitle>{t('movieDetail.sectionOverview')}</SectionTitle>
             <p className="text-clap-light leading-relaxed text-sm md:text-base">{detail.overview}</p>
           </section>
         )}
@@ -708,7 +714,7 @@ export default function MovieDetail({ mediaType = 'movie' }) {
         {/* ── Top Billed Cast ── */}
         {cast.length > 0 && (
           <section>
-            <SectionTitle>Top Billed Cast</SectionTitle>
+            <SectionTitle>{t('movieDetail.sectionCast')}</SectionTitle>
             <div className="flex gap-6 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
               {cast.map((member) => (
                 <CastCard key={member.id} member={member} />
@@ -719,14 +725,14 @@ export default function MovieDetail({ mediaType = 'movie' }) {
 
         {/* ── Commentary ── */}
         <section>
-          <SectionTitle>Commentary</SectionTitle>
+          <SectionTitle>{t('movieDetail.sectionCommentary')}</SectionTitle>
 
           {/* Textarea */}
           <div className="mb-4">
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder={isAuthenticated ? 'Your Commentary…' : 'Login to leave a commentary…'}
+              placeholder={isAuthenticated ? t('movieDetail.commentPlaceholderAuth') : t('movieDetail.commentPlaceholderGuest')}
               disabled={!isAuthenticated}
               rows={4}
               className="w-full bg-clap-card/60 border border-clap-muted/40 rounded-2xl px-4 py-3 text-clap-light text-sm resize-none outline-none transition-all focus:border-clap-gold/50 focus:ring-1 focus:ring-clap-gold/20 placeholder-clap-gray disabled:opacity-50"
@@ -743,7 +749,7 @@ export default function MovieDetail({ mediaType = 'movie' }) {
                 className="px-12 py-2.5 rounded-full font-display italic text-white font-semibold text-base tracking-wide transition-all disabled:opacity-50"
                 style={{ backgroundColor: 'rgba(30,30,60,0.9)', border: '1px solid rgba(255,255,255,0.2)' }}
               >
-                {postComment.isPending ? 'Envoi en cours…' : 'Envoyer'}
+                {postComment.isPending ? t('movieDetail.sendingComment') : t('movieDetail.sendComment')}
               </motion.button>
               <AnimatePresence>
                 {commentSuccess && (
@@ -757,7 +763,7 @@ export default function MovieDetail({ mediaType = 'movie' }) {
                       <circle cx="7" cy="7" r="6.5" stroke="#4ade80" />
                       <path d="M4 7l2 2 4-4" stroke="#4ade80" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
-                    Commentaire publié !
+                    {t('movieDetail.commentPublished')}
                   </motion.p>
                 )}
               </AnimatePresence>
@@ -765,7 +771,7 @@ export default function MovieDetail({ mediaType = 'movie' }) {
           ) : (
             <div className="flex justify-center mb-8">
               <Link to="/login" className="text-clap-gold text-sm hover:underline italic">
-                Login to comment
+                {t('movieDetail.loginToComment')}
               </Link>
             </div>
           )}
@@ -789,14 +795,14 @@ export default function MovieDetail({ mediaType = 'movie' }) {
               ))}
             </div>
           ) : (
-            <p className="text-clap-gray text-sm italic">No comments yet. Be the first!</p>
+            <p className="text-clap-gray text-sm italic">{t('movieDetail.noComments')}</p>
           )}
         </section>
 
         {/* ── Related content ── */}
         {relatedMovies.length > 0 && (
           <section>
-            <SectionTitle>Related content</SectionTitle>
+            <SectionTitle>{t('movieDetail.sectionRelated')}</SectionTitle>
             <div className="flex gap-4 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
               {relatedMovies.slice(0, 12).map((movie) => (
                 <RelatedCard key={movie.id} movie={{ ...movie, media_type: mediaType }} />

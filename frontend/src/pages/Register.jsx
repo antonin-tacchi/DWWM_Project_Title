@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 
 /* ── Eye icons ── */
@@ -46,6 +47,7 @@ function PasswordInput({ name, label, value, onChange }) {
 }
 
 export default function Register() {
+  const { t } = useTranslation();
   const [form, setForm]       = useState({ username: '', email: '', password: '', confirmPassword: '' });
   const [error, setError]     = useState('');
   const [loading, setLoading] = useState(false);
@@ -62,7 +64,7 @@ export default function Register() {
       await api.post('/auth/register', form);
       navigate('/login');
     } catch (err) {
-      setError(err.response?.data?.message || "Erreur lors de l'inscription.");
+      setError(err.response?.data?.message || t('register.errorDefault'));
     } finally {
       setLoading(false);
     }
@@ -93,10 +95,10 @@ export default function Register() {
               to="/login"
               className="flex-1 text-center py-2 text-white/50 hover:text-white transition-colors font-medium text-lg"
             >
-              Login
+              {t('register.tabLogin')}
             </Link>
             <div className="flex-1 text-center py-2 rounded-lg border border-white/40 text-white font-medium text-lg cursor-default">
-              Register
+              {t('register.tab')}
             </div>
           </div>
 
@@ -104,7 +106,7 @@ export default function Register() {
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-white/80 text-sm">Username</label>
+              <label className="text-white/80 text-sm">{t('register.username')}</label>
               <input
                 name="username"
                 type="text"
@@ -116,7 +118,7 @@ export default function Register() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-white/80 text-sm">Email</label>
+              <label className="text-white/80 text-sm">{t('register.email')}</label>
               <input
                 name="email"
                 type="email"
@@ -129,14 +131,14 @@ export default function Register() {
 
             <PasswordInput
               name="password"
-              label="Password"
+              label={t('register.password')}
               value={form.password}
               onChange={handleChange}
             />
 
             <PasswordInput
               name="confirmPassword"
-              label="Confirm password"
+              label={t('register.confirmPassword')}
               value={form.confirmPassword}
               onChange={handleChange}
             />
@@ -151,14 +153,14 @@ export default function Register() {
               whileTap={{ scale: 0.97 }}
               className="mt-1 bg-clap-gold text-clap-bg font-semibold py-3 rounded-xl hover:brightness-110 transition-all disabled:opacity-60"
             >
-              {loading ? 'Inscription…' : 'Register'}
+              {loading ? t('register.registering') : t('register.registerBtn')}
             </motion.button>
           </form>
 
           {/* Divider */}
           <div className="flex items-center gap-3 my-6">
             <div className="flex-1 h-px bg-white/25" />
-            <span className="text-white/50 text-xs whitespace-nowrap">Other Register</span>
+            <span className="text-white/50 text-xs whitespace-nowrap">{t('register.otherRegister')}</span>
             <div className="flex-1 h-px bg-white/25" />
           </div>
 

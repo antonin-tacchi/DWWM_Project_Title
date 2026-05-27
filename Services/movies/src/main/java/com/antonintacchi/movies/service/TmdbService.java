@@ -25,13 +25,14 @@ public class TmdbService {
 
     @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackPageResponse")
     @Cacheable("tmdb-search")
-    public TmdbPageResponse searchMulti(String query, int page) {
+    public TmdbPageResponse searchMulti(String query, int page, String language) {
         return tmdbWebClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/search/multi")
                         .queryParam("api_key", apiKey)
                         .queryParam("query", query)
                         .queryParam("page", page)
+                        .queryParam("language", language)
                         .queryParam("include_adult", false)
                         .build())
                 .retrieve()
@@ -41,11 +42,12 @@ public class TmdbService {
 
     @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackPageResponse")
     @Cacheable("tmdb-trending")
-    public TmdbPageResponse getTrending(String mediaType, String timeWindow) {
+    public TmdbPageResponse getTrending(String mediaType, String timeWindow, String language) {
         return tmdbWebClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/trending/{mediaType}/{timeWindow}")
                         .queryParam("api_key", apiKey)
+                        .queryParam("language", language)
                         .build(mediaType, timeWindow))
                 .retrieve()
                 .bodyToMono(TmdbPageResponse.class)
@@ -54,11 +56,12 @@ public class TmdbService {
 
     @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackDetailResponse")
     @Cacheable("tmdb-detail")
-    public TmdbDetailResponse getDetail(Long tmdbId, String mediaType) {
+    public TmdbDetailResponse getDetail(Long tmdbId, String mediaType, String language) {
         return tmdbWebClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/{mediaType}/{tmdbId}")
                         .queryParam("api_key", apiKey)
+                        .queryParam("language", language)
                         .build(mediaType, tmdbId))
                 .retrieve()
                 .bodyToMono(TmdbDetailResponse.class)
@@ -67,11 +70,12 @@ public class TmdbService {
 
     @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackPageResponse")
     @Cacheable("tmdb-popular")
-    public TmdbPageResponse getPopular(String mediaType) {
+    public TmdbPageResponse getPopular(String mediaType, String language) {
         return tmdbWebClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/{mediaType}/popular")
                         .queryParam("api_key", apiKey)
+                        .queryParam("language", language)
                         .build(mediaType))
                 .retrieve()
                 .bodyToMono(TmdbPageResponse.class)
@@ -80,13 +84,13 @@ public class TmdbService {
 
     @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackPageResponse")
     @Cacheable("tmdb-upcoming")
-    public TmdbPageResponse getUpcoming(String mediaType) {
-        // movie → /movie/upcoming   |   tv → /tv/on_the_air
+    public TmdbPageResponse getUpcoming(String mediaType, String language) {
         String path = "movie".equals(mediaType) ? "/movie/upcoming" : "/tv/on_the_air";
         return tmdbWebClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path(path)
                         .queryParam("api_key", apiKey)
+                        .queryParam("language", language)
                         .build())
                 .retrieve()
                 .bodyToMono(TmdbPageResponse.class)
@@ -95,12 +99,12 @@ public class TmdbService {
 
     @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackPageResponse")
     @Cacheable("tmdb-similar")
-    public TmdbPageResponse getSimilar(String mediaType, Long tmdbId) {
-        // Try /recommendations first (user-behaviour based → far more relevant)
+    public TmdbPageResponse getSimilar(String mediaType, Long tmdbId, String language) {
         TmdbPageResponse recs = tmdbWebClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/{mediaType}/{tmdbId}/recommendations")
                         .queryParam("api_key", apiKey)
+                        .queryParam("language", language)
                         .build(mediaType, tmdbId))
                 .retrieve()
                 .bodyToMono(TmdbPageResponse.class)
@@ -110,11 +114,11 @@ public class TmdbService {
             return recs;
         }
 
-        // Fallback to /similar if recommendations is empty (e.g. very new release)
         return tmdbWebClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/{mediaType}/{tmdbId}/similar")
                         .queryParam("api_key", apiKey)
+                        .queryParam("language", language)
                         .build(mediaType, tmdbId))
                 .retrieve()
                 .bodyToMono(TmdbPageResponse.class)
@@ -123,11 +127,12 @@ public class TmdbService {
 
     @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackPersonResponse")
     @Cacheable("tmdb-person")
-    public TmdbPersonResponse getPerson(Long personId) {
+    public TmdbPersonResponse getPerson(Long personId, String language) {
         return tmdbWebClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/person/{personId}")
                         .queryParam("api_key", apiKey)
+                        .queryParam("language", language)
                         .build(personId))
                 .retrieve()
                 .bodyToMono(TmdbPersonResponse.class)
@@ -136,11 +141,12 @@ public class TmdbService {
 
     @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackPersonCreditsResponse")
     @Cacheable("tmdb-person-credits")
-    public TmdbPersonCreditsResponse getPersonCredits(Long personId) {
+    public TmdbPersonCreditsResponse getPersonCredits(Long personId, String language) {
         return tmdbWebClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/person/{personId}/combined_credits")
                         .queryParam("api_key", apiKey)
+                        .queryParam("language", language)
                         .build(personId))
                 .retrieve()
                 .bodyToMono(TmdbPersonCreditsResponse.class)
@@ -149,11 +155,12 @@ public class TmdbService {
 
     @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackVideoResponse")
     @Cacheable("tmdb-trailer")
-    public TmdbVideoResponse getTrailer(Long tmdbId, String mediaType) {
+    public TmdbVideoResponse getTrailer(Long tmdbId, String mediaType, String language) {
         return tmdbWebClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/{mediaType}/{tmdbId}/videos")
                         .queryParam("api_key", apiKey)
+                        .queryParam("language", language)
                         .build(mediaType, tmdbId))
                 .retrieve()
                 .bodyToMono(TmdbVideoResponse.class)
@@ -162,11 +169,12 @@ public class TmdbService {
 
     @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackCreditsResponse")
     @Cacheable("tmdb-credits")
-    public TmdbCreditsResponse getCredits(Long tmdbId, String mediaType) {
+    public TmdbCreditsResponse getCredits(Long tmdbId, String mediaType, String language) {
         return tmdbWebClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/{mediaType}/{tmdbId}/credits")
                         .queryParam("api_key", apiKey)
+                        .queryParam("language", language)
                         .build(mediaType, tmdbId))
                 .retrieve()
                 .bodyToMono(TmdbCreditsResponse.class)
@@ -193,7 +201,6 @@ public class TmdbService {
                 .uri(uriBuilder -> uriBuilder
                         .path("/{mediaType}/{tmdbId}/images")
                         .queryParam("api_key", apiKey)
-                        // include_image_language=null fetches all languages (more backdrops)
                         .queryParam("include_image_language", "null,en")
                         .build(mediaType, tmdbId))
                 .retrieve()
@@ -203,13 +210,15 @@ public class TmdbService {
 
     @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackPageResponse")
     public TmdbPageResponse discover(String mediaType, String genres, Double maxRating,
-                                     Integer maxYear, String language, String providers, int page) {
+                                     Integer maxYear, String language, String providers, int page,
+                                     String uiLanguage) {
         return tmdbWebClient.get()
                 .uri(uriBuilder -> {
                     var builder = uriBuilder
                             .path("/discover/{mediaType}")
                             .queryParam("api_key", apiKey)
                             .queryParam("page", page)
+                            .queryParam("language", uiLanguage)
                             .queryParam("include_adult", false)
                             .queryParam("sort_by", "popularity.desc");
 
@@ -242,18 +251,19 @@ public class TmdbService {
     }
 
     @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackRandomResponse")
-    public TmdbResult getRandom(String mediaType) {
+    public TmdbResult getRandom(String mediaType, String language) {
         int page = new Random().nextInt(10) + 1;
 
         TmdbPageResponse response = tmdbWebClient.get()
-                                        .uri(uriBuilder -> uriBuilder
-                                                .path("/discover/{mediaType}")
-                                                .queryParam("api_key", apiKey)
-                                                .queryParam("page", page)
-                                                .build(mediaType))
-                                        .retrieve()
-                                        .bodyToMono(TmdbPageResponse.class)
-                                        .block();
+                .uri(uriBuilder -> uriBuilder
+                        .path("/discover/{mediaType}")
+                        .queryParam("api_key", apiKey)
+                        .queryParam("language", language)
+                        .queryParam("page", page)
+                        .build(mediaType))
+                .retrieve()
+                .bodyToMono(TmdbPageResponse.class)
+                .block();
 
         List<TmdbResult> results = response.getResults();
         return results.get(new Random().nextInt(results.size()));
