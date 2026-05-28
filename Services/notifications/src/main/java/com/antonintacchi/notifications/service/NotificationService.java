@@ -1,72 +1,60 @@
 package com.antonintacchi.notifications.service;
 
+import com.antonintacchi.notifications.client.DbNotificationClient;
 import com.antonintacchi.notifications.dto.CreateNotificationRequest;
 import com.antonintacchi.notifications.dto.NotificationDto;
-import com.antonintacchi.notifications.entity.Notification;
-import com.antonintacchi.notifications.repository.NotificationRepository;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class NotificationService {
 
-    private final NotificationRepository notificationRepository;
+    private final DbNotificationClient dbNotificationClient;
 
     public List<NotificationDto> getNotifications(Long userId) {
-        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId)
-                .stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
+        return dbNotificationClient.findByUser(userId);
     }
 
-    public NotificationDto createNotification(CreateNotificationRequest  request) {
-        Notification notification = Notification.builder()
-                .userId(request.getUserId())
-                .type(request.getType())
-                .message(request.getMessage())
-                .isRead(false)
-                .build();
-
-        Notification savedNotification = notificationRepository.save(notification);
-        return toDto(savedNotification);
-
+    public NotificationDto createNotification(CreateNotificationRequest request) {
+        Map<String, Object> body = Map.of(
+                "userId",  request.getUserId(),
+                "type",    request.getType(),
+                "message", request.getMessage(),
+                "isRead",  false
+        );
+        return dbNotificationClient.save(body);
     }
 
     public NotificationDto markAsRead(Long userId, Long notificationId) {
-        Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new NoSuchElementException("Notification not found"));
+        NotificationDto notification = findOrThrow(notificationId);
         if (!notification.getUserId().equals(userId)) {
             throw new IllegalStateException("Not your notification");
         }
-        notification.setIsRead(Boolean.TRUE);
-        notificationRepository.save(notification);
-        return toDto(notification);
+        return dbNotificationClient.markAsRead(notificationId);
     }
 
     public void deleteNotification(Long userId, Long notificationId) {
-        Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new NoSuchElementException("Notification not found"));
+        NotificationDto notification = findOrThrow(notificationId);
         if (!notification.getUserId().equals(userId)) {
             throw new IllegalStateException("Not your notification");
         }
-        notificationRepository.delete(notification);
+        dbNotificationClient.delete(notificationId);
     }
 
+    /* ── Helpers ─────────────────────────────────────────────────── */
 
-    private NotificationDto toDto(Notification notification) {
-        return NotificationDto.builder()
-                .id(notification.getId())
-                .userId(notification.getUserId())
-                .type(notification.getType())
-                .message(notification.getMessage())
-                .isRead(notification.getIsRead())
-                .createdAt(notification.getCreatedAt())
-                .build();
+    private NotificationDto findOrThrow(Long id) {
+        try {
+            return dbNotificationClient.findById(id);
+        } catch (FeignException.NotFound e) {
+            throw new NoSuchElementException("Notification not found");
+        }
     }
 
 }

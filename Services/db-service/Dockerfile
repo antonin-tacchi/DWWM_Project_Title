@@ -1,0 +1,24 @@
+# ── Stage 1 : build ──────────────────────────────────────────────
+FROM maven:3.9-eclipse-temurin-17-alpine AS build
+
+WORKDIR /build
+
+COPY pom.xml .
+RUN mvn dependency:go-offline -q
+
+COPY src ./src
+RUN mvn package -DskipTests -q
+
+# ── Stage 2 : runtime ─────────────────────────────────────────────
+FROM eclipse-temurin:17-jre-alpine
+
+WORKDIR /app
+
+# Répertoire persistant pour les données H2
+VOLUME /data
+
+COPY --from=build /build/target/db-service-0.0.1-SNAPSHOT.jar app.jar
+
+EXPOSE 8060
+
+ENTRYPOINT ["java", "-jar", "app.jar"]

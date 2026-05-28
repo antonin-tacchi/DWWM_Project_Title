@@ -1,72 +1,64 @@
 package com.antonintacchi.social.service;
 
+import com.antonintacchi.social.client.DbRatingClient;
 import com.antonintacchi.social.dto.rating.CreateRatingRequest;
 import com.antonintacchi.social.dto.rating.RatingDto;
 import com.antonintacchi.social.dto.rating.UpdateRatingRequest;
-import com.antonintacchi.social.entity.Rating;
-import com.antonintacchi.social.repository.RatingRepository;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class RatingService {
 
-    private final RatingRepository ratingRepository;
+    private final DbRatingClient dbRatingClient;
 
     public List<RatingDto> getRatings(Long tmdbId, String mediaType) {
-        return ratingRepository.findByTmdbIdAndMediaType(tmdbId, mediaType)
-                .stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
+        return dbRatingClient.findByMedia(tmdbId, mediaType);
     }
 
     public RatingDto createRating(Long userId, CreateRatingRequest request) {
-        if (ratingRepository.existsByUserIdAndTmdbIdAndMediaType(userId, request.getTmdbId(), request.getMediaType())) {
+        if (Boolean.TRUE.equals(dbRatingClient.exists(userId, request.getTmdbId(), request.getMediaType()))) {
             throw new IllegalStateException("Rating already exists");
         }
-        Rating rating = Rating.builder()
-                .userId(userId)
-                .tmdbId(request.getTmdbId())
-                .mediaType(request.getMediaType())
-                .score(request.getScore())
-                .build();
-        Rating saved = ratingRepository.save(rating);
-        return toDto(saved);
+        Map<String, Object> body = Map.of(
+                "userId",    userId,
+                "tmdbId",    request.getTmdbId(),
+                "mediaType", request.getMediaType(),
+                "score",     request.getScore()
+        );
+        return dbRatingClient.save(body);
     }
 
     public RatingDto updateRating(Long userId, Long ratingId, UpdateRatingRequest request) {
-        Rating rating = ratingRepository.findById(ratingId)
-                .orElseThrow(() -> new NoSuchElementException("Rating not found"));
+        RatingDto rating = findRatingOrThrow(ratingId);
         if (!rating.getUserId().equals(userId)) {
             throw new IllegalStateException("Not your rating");
         }
-        rating.setScore(request.getScore());
-        return toDto(ratingRepository.save(rating));
+        return dbRatingClient.update(ratingId, Map.of("score", request.getScore()));
     }
 
     public void deleteRating(Long userId, Long ratingId) {
-        Rating rating = ratingRepository.findById(ratingId)
-                .orElseThrow(() -> new NoSuchElementException("Rating not found"));
+        RatingDto rating = findRatingOrThrow(ratingId);
         if (!rating.getUserId().equals(userId)) {
             throw new IllegalStateException("Not your rating");
         }
-        ratingRepository.delete(rating);
+        dbRatingClient.delete(ratingId);
     }
 
-    private RatingDto toDto(Rating rating) {
-        return RatingDto.builder()
-                .id(rating.getId())
-                .userId(rating.getUserId())
-                .tmdbId(rating.getTmdbId())
-                .mediaType(rating.getMediaType())
-                .score(rating.getScore())
-                .createdAt(rating.getCreatedAt())
-                .build();
+    /* ── Helpers ─────────────────────────────────────────────────── */
+
+    private RatingDto findRatingOrThrow(Long ratingId) {
+        try {
+            return dbRatingClient.findById(ratingId);
+        } catch (FeignException.NotFound e) {
+            throw new NoSuchElementException("Rating not found");
+        }
     }
 
 }
