@@ -4,8 +4,13 @@ import com.antonintacchi.auth.model.UserModel;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @FeignClient(name = "db-service", contextId = "dbUserClient")
 public interface DbUserClient {
+
+    @GetMapping("/db/users")
+    List<UserModel> findAll();
 
     @GetMapping("/db/users/{id}")
     UserModel findById(@PathVariable Long id);

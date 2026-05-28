@@ -11,6 +11,7 @@
     "login": "Connexion",
     "register": "Inscription",
     "logout": "Déconnexion",
+    "admin": "Admin",
     "search": "Rechercher films, séries, acteurs…",
     "language": "English",
     "seeAllResults": "Voir tous les résultats pour « {{query}} » →"
@@ -222,10 +223,106 @@
     "close": "Fermer",
     "save": "Enregistrer",
     "cancel": "Annuler",
+    "confirm": "Confirmer",
     "delete": "Supprimer",
     "minutes": "min",
     "seasons": "saisons",
     "episodes": "épisodes"
+  },
+  "admin": {
+    "sidebar": {
+      "title": "Administration",
+      "dashboard": "Tableau de bord",
+      "users": "Utilisateurs",
+      "comments": "Commentaires",
+      "ratings": "Notes",
+      "logs": "Activité",
+      "search": "Recherche",
+      "backToSite": "Retour au site"
+    },
+    "dashboard": {
+      "title": "Tableau de bord",
+      "subtitle": "Vue d'ensemble de la plateforme Clap!",
+      "poweredBy": "Projet DWWM 2026",
+      "distribution": "Répartition des données",
+      "recentActivity": "Activité récente",
+      "stats": {
+        "users": "Utilisateurs",
+        "comments": "Commentaires",
+        "ratings": "Notes",
+        "favorites": "Favoris",
+        "notifications": "Notifications"
+      }
+    },
+    "ratings": {
+      "title": "Gestion des notes",
+      "total": "note(s) au total",
+      "search": "Rechercher…",
+      "delete": "Supprimer",
+      "noResults": "Aucune note trouvée.",
+      "confirmDelete": "Supprimer cette note ?",
+      "byUser": "Par utilisateur",
+      "cols": {
+        "user": "Utilisateur",
+        "media": "Média",
+        "score": "Note",
+        "date": "Date",
+        "actions": "Actions"
+      }
+    },
+    "logs": {
+      "title": "Journal d'activité",
+      "total": "action(s) enregistrée(s)",
+      "search": "Rechercher…",
+      "filterAll": "Tout",
+      "noResults": "Aucune action trouvée."
+    },
+    "search": {
+      "title": "Recherche globale",
+      "subtitle": "Cherchez dans les utilisateurs, commentaires et notes en même temps.",
+      "placeholder": "Rechercher dans tout l'admin…",
+      "hint": "Saisissez au moins 2 caractères pour lancer la recherche.",
+      "noResults": "Aucun résultat pour « {{query}} ».",
+      "found": "{{count}} résultat(s) pour « {{query}} »",
+      "sectionUsers": "Utilisateurs",
+      "sectionComments": "Commentaires",
+      "sectionRatings": "Notes"
+    },
+    "users": {
+      "title": "Gestion des utilisateurs",
+      "total": "utilisateur(s) au total",
+      "search": "Rechercher un utilisateur…",
+      "you": "vous",
+      "promote": "Promouvoir admin",
+      "demote": "Rétrograder",
+      "delete": "Supprimer",
+      "noResults": "Aucun utilisateur trouvé.",
+      "confirmDelete": "Supprimer cet utilisateur ?",
+      "confirmRole": "Changer le rôle en « {{role}} » ?",
+      "cols": {
+        "user": "Utilisateur",
+        "email": "Email",
+        "role": "Rôle",
+        "level": "Niveau",
+        "actions": "Actions"
+      }
+    },
+    "comments": {
+      "title": "Modération des commentaires",
+      "total": "commentaire(s) au total",
+      "search": "Rechercher un commentaire…",
+      "delete": "Supprimer",
+      "noResults": "Aucun commentaire trouvé.",
+      "confirmDelete": "Supprimer ce commentaire ?",
+      "byUser": "Par utilisateur",
+      "cols": {
+        "user": "Utilisateur",
+        "content": "Contenu",
+        "media": "Média",
+        "date": "Date",
+        "actions": "Actions"
+      }
+    }
   },
   "footer": {
     "tagline": "Le cinéma est un rêve que l'on partage ensemble.",

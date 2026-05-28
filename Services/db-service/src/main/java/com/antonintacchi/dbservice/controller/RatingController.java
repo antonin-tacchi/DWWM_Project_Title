@@ -15,6 +15,13 @@ public class RatingController {
 
     private final RatingRepository ratingRepository;
 
+    @GetMapping("/all")
+    public ResponseEntity<List<Rating>> findAll() {
+        return ResponseEntity.ok(ratingRepository.findAll(
+                org.springframework.data.domain.Sort.by(
+                        org.springframework.data.domain.Sort.Direction.DESC, "createdAt")));
+    }
+
     @GetMapping
     public ResponseEntity<List<Rating>> findByMedia(
             @RequestParam Long tmdbId,

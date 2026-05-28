@@ -11,6 +11,7 @@
     "login": "Login",
     "register": "Register",
     "logout": "Logout",
+    "admin": "Admin",
     "search": "Search films, series, actors…",
     "language": "Français",
     "seeAllResults": "See all results for « {{query}} » →"
@@ -222,10 +223,106 @@
     "close": "Close",
     "save": "Save",
     "cancel": "Cancel",
+    "confirm": "Confirm",
     "delete": "Delete",
     "minutes": "min",
     "seasons": "seasons",
     "episodes": "episodes"
+  },
+  "admin": {
+    "sidebar": {
+      "title": "Administration",
+      "dashboard": "Dashboard",
+      "users": "Users",
+      "comments": "Comments",
+      "ratings": "Ratings",
+      "logs": "Activity",
+      "search": "Search",
+      "backToSite": "Back to site"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "Overview of the Clap! platform",
+      "poweredBy": "DWWM Project 2026",
+      "distribution": "Data distribution",
+      "recentActivity": "Recent activity",
+      "stats": {
+        "users": "Users",
+        "comments": "Comments",
+        "ratings": "Ratings",
+        "favorites": "Favorites",
+        "notifications": "Notifications"
+      }
+    },
+    "ratings": {
+      "title": "Ratings management",
+      "total": "rating(s) total",
+      "search": "Search…",
+      "delete": "Delete",
+      "noResults": "No ratings found.",
+      "confirmDelete": "Delete this rating?",
+      "byUser": "By user",
+      "cols": {
+        "user": "User",
+        "media": "Media",
+        "score": "Score",
+        "date": "Date",
+        "actions": "Actions"
+      }
+    },
+    "logs": {
+      "title": "Activity log",
+      "total": "action(s) recorded",
+      "search": "Search…",
+      "filterAll": "All",
+      "noResults": "No actions found."
+    },
+    "search": {
+      "title": "Global search",
+      "subtitle": "Search across users, comments and ratings at once.",
+      "placeholder": "Search everything in admin…",
+      "hint": "Type at least 2 characters to start searching.",
+      "noResults": "No results for \"{{query}}\".",
+      "found": "{{count}} result(s) for \"{{query}}\"",
+      "sectionUsers": "Users",
+      "sectionComments": "Comments",
+      "sectionRatings": "Ratings"
+    },
+    "users": {
+      "title": "User management",
+      "total": "user(s) total",
+      "search": "Search a user…",
+      "you": "you",
+      "promote": "Promote to admin",
+      "demote": "Demote",
+      "delete": "Delete",
+      "noResults": "No users found.",
+      "confirmDelete": "Delete this user?",
+      "confirmRole": "Change role to \"{{role}}\"?",
+      "cols": {
+        "user": "User",
+        "email": "Email",
+        "role": "Role",
+        "level": "Level",
+        "actions": "Actions"
+      }
+    },
+    "comments": {
+      "title": "Comment moderation",
+      "total": "comment(s) total",
+      "search": "Search a comment…",
+      "delete": "Delete",
+      "noResults": "No comments found.",
+      "confirmDelete": "Delete this comment?",
+      "byUser": "By user",
+      "cols": {
+        "user": "User",
+        "content": "Content",
+        "media": "Media",
+        "date": "Date",
+        "actions": "Actions"
+      }
+    }
   },
   "footer": {
     "tagline": "Cinema is a dream we share together.",

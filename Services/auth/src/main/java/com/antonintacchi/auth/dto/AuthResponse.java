@@ -15,5 +15,6 @@ public class AuthResponse {
     private Long bannerTmdbId;
     private String bannerMediaType;
     private String bannerBackdropPath;
+    private String role;
 
 }

@@ -33,6 +33,7 @@ public class User {
     private String bannerMediaType;
     private String bannerBackdropPath;
     private LocalDateTime createdAt;
+    private String role;
 
     @PrePersist
     public void prePersist() {
@@ -41,6 +42,7 @@ public class User {
         if (this.xp == null)        this.xp = 0;
         if (this.language == null)  this.language = "fr";
         if (this.theme == null)     this.theme = "dark";
+        if (this.role == null)      this.role = "user";
     }
 
 }

@@ -50,7 +50,7 @@ public class AuthService {
 
         // Génération du token et réponse
         AuthResponse response = userMapper.toAuthResponse(saved);
-        response.setToken(jwtUtil.generateToken(saved.getEmail(), saved.getId()));
+        response.setToken(jwtUtil.generateToken(saved.getEmail(), saved.getId(), saved.getRole()));
 
         return response;
     }
@@ -79,7 +79,7 @@ public class AuthService {
 
         // Génération du token et réponse
         AuthResponse response = userMapper.toAuthResponse(user);
-        response.setToken(jwtUtil.generateToken(user.getEmail(), user.getId()));
+        response.setToken(jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole()));
 
         return response;
     }

@@ -37,6 +37,11 @@ spring:
           predicates:
             - Path=/auth/**
 
+        - id: admin
+          uri: http://auth-service:8090
+          predicates:
+            - Path=/admin/**
+
         - id: movies-service
           uri: http://movies-service:9000
           predicates:

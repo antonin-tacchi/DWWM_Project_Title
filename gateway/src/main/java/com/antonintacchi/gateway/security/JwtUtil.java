@@ -37,6 +37,11 @@ public class JwtUtil {
         return getClaims(token).get("userId", Long.class);
     }
 
+    public String extractRole(String token) {
+        String role = getClaims(token).get("role", String.class);
+        return role != null ? role : "user";
+    }
+
     private Claims getClaims(String token) {
         return Jwts.parser()
                 .verifyWith((javax.crypto.SecretKey) getSigningKey())
