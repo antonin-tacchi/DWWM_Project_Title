@@ -17,6 +17,7 @@ export default defineConfig({
     host: true,
     proxy: {
       '/auth':          { target: 'http://localhost:8080', changeOrigin: true, bypass: spaBypass },
+      '/admin':         { target: 'http://localhost:8080', changeOrigin: true, bypass: spaBypass },
       '/movies':        { target: 'http://localhost:8080', changeOrigin: true, bypass: spaBypass },
       '/tv':            { target: 'http://localhost:8080', changeOrigin: true, bypass: spaBypass },
       '/actors':        { target: 'http://localhost:8080', changeOrigin: true, bypass: spaBypass },

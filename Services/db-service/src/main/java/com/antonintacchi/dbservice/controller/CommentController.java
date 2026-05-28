@@ -20,6 +20,13 @@ public class CommentController {
 
     /* ── Comments ────────────────────────────────────────────────── */
 
+    @GetMapping("/all")
+    public ResponseEntity<List<Comment>> findAll() {
+        return ResponseEntity.ok(commentRepository.findAll(
+                org.springframework.data.domain.Sort.by(
+                        org.springframework.data.domain.Sort.Direction.DESC, "createdAt")));
+    }
+
     @GetMapping
     public ResponseEntity<List<Comment>> findByMedia(
             @RequestParam Long tmdbId,

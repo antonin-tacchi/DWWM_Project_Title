@@ -31,5 +31,6 @@ public class UserModel {
     private String bannerMediaType;
     private String bannerBackdropPath;
     private LocalDateTime createdAt;
+    private String role;
 
 }

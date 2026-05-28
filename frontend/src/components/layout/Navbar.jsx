@@ -410,7 +410,7 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Bell + Avatar (desktop right) */}
+          {/* Bell + Admin + Avatar (desktop right) */}
           <div className="hidden md:flex items-center gap-4">
             {isAuthenticated && (
               <div ref={bellRef} className="relative">
@@ -435,6 +435,15 @@ export default function Navbar() {
                   {bellOpen && <BellPanel />}
                 </AnimatePresence>
               </div>
+            )}
+            {/* Admin shortcut — visible only for admins */}
+            {isAuthenticated && user?.role === 'admin' && (
+              <Link
+                to="/admin"
+                className="text-xs px-2.5 py-1 rounded border border-clap-gold/30 text-clap-gold/70 hover:text-clap-gold hover:border-clap-gold/60 transition-colors font-medium tracking-wide"
+              >
+                {t('nav.admin')}
+              </Link>
             )}
             {isAuthenticated ? (
               <Link to="/profile">
@@ -558,6 +567,15 @@ export default function Navbar() {
                 {t('nav.language')}
               </button>
 
+              {isAuthenticated && user?.role === 'admin' && (
+                <Link
+                  to="/admin"
+                  onClick={() => setMenuOpen(false)}
+                  className="hover:text-clap-gold transition-colors uppercase"
+                >
+                  {t('nav.admin')}
+                </Link>
+              )}
               {isAuthenticated ? (
                 <button onClick={handleLogout} className="hover:text-clap-red transition-colors uppercase">{t('nav.logout')}</button>
               ) : (

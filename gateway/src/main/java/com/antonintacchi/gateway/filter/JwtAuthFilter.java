@@ -19,6 +19,7 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
 
     private final JwtUtil jwtUtil;
 
+    /** Routes accessibles sans token */
     private static final List<String> PUBLIC_PATHS = List.of(
             "/auth/login",
             "/auth/register",
@@ -32,19 +33,21 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
             "/notifications"
     );
 
+    /** Routes réservées aux admins */
+    private static final List<String> ADMIN_PATHS = List.of("/admin");
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path      = exchange.getRequest().getURI().getPath();
         boolean isPublic = isPublic(path);
+        boolean isAdmin  = isAdmin(path);
 
         String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
-        // Token present → validate and inject user headers regardless of public/private
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
 
             if (!jwtUtil.isValid(token)) {
-                // Invalid token on a protected route → reject; on public route → let through without headers
                 if (!isPublic) {
                     exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                     return exchange.getResponse().setComplete();
@@ -54,29 +57,40 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
 
             String email  = jwtUtil.extractEmail(token);
             Long   userId = jwtUtil.extractUserId(token);
+            String role   = jwtUtil.extractRole(token);
+
+            // Route admin : seul un admin peut y accéder
+            if (isAdmin && !"admin".equals(role)) {
+                exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
+                return exchange.getResponse().setComplete();
+            }
 
             ServerWebExchange mutatedExchange = exchange.mutate()
                     .request(exchange.getRequest().mutate()
-                            .header("X-User-Email", email)
-                            .header("X-User-Id", String.valueOf(userId))
+                            .header("X-User-Email",  email)
+                            .header("X-User-Id",     String.valueOf(userId))
+                            .header("X-User-Role",   role)
                             .build())
                     .build();
 
             return chain.filter(mutatedExchange);
         }
 
-        // No token on a protected route → reject
-        if (!isPublic) {
+        // Pas de token → route protégée ou admin → rejet
+        if (!isPublic || isAdmin) {
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
         }
 
-        // No token on a public route → let through as-is
         return chain.filter(exchange);
     }
 
     private boolean isPublic(String path) {
         return PUBLIC_PATHS.stream().anyMatch(path::startsWith);
+    }
+
+    private boolean isAdmin(String path) {
+        return ADMIN_PATHS.stream().anyMatch(path::startsWith);
     }
 
     @Override
