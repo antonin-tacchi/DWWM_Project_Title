@@ -1,10 +1,11 @@
 package com.antonintacchi.auth.service;
 
+import com.antonintacchi.auth.client.DbUserClient;
 import com.antonintacchi.auth.dto.*;
-import com.antonintacchi.auth.entity.User;
 import com.antonintacchi.auth.mapper.UserMapper;
-import com.antonintacchi.auth.repository.UserRepository;
+import com.antonintacchi.auth.model.UserModel;
 import com.antonintacchi.auth.security.JwtUtil;
+import feign.FeignException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -12,68 +13,71 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuthService {
 
-    private final UserRepository userRepository;
+    private final DbUserClient    dbUserClient;
     private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
-    private final UserMapper userMapper;
+    private final JwtUtil         jwtUtil;
+    private final UserMapper      userMapper;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, UserMapper userMapper) {
-        this.userRepository = userRepository;
+    public AuthService(DbUserClient dbUserClient, PasswordEncoder passwordEncoder,
+                       JwtUtil jwtUtil, UserMapper userMapper) {
+        this.dbUserClient    = dbUserClient;
         this.passwordEncoder = passwordEncoder;
-        this.jwtUtil = jwtUtil;
-        this.userMapper = userMapper;
+        this.jwtUtil         = jwtUtil;
+        this.userMapper      = userMapper;
     }
 
     /**
      * Inscrit un nouvel utilisateur.
-     * Vérifie que l'email n'existe pas déjà et que les mots de passe correspondent,
-     * puis crée le compte, hashe le mot de passe et retourne un JWT.
      */
     public AuthResponse register(RegisterRequest request) {
 
-        // 1. Vérifications
-        if (userRepository.findByEmail(request.getEmail()).isPresent())
+        // Vérification : email déjà pris ?
+        if (Boolean.TRUE.equals(dbUserClient.existsByEmail(request.getEmail()))) {
             throw new RuntimeException("Email already exists");
+        }
 
-        if (!request.getPassword().equals(request.getConfirmPassword()))
+        // Vérification : mots de passe correspondent ?
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
             throw new RuntimeException("Passwords don't match");
+        }
 
-        // 2. Création de l'utilisateur
-        User user = userMapper.toUser(request);
+        // Création du modèle utilisateur
+        UserModel user = userMapper.toUser(request);
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
 
-        // 3. Sauvegarde en BDD
-        userRepository.save(user);
+        // Sauvegarde via db-service
+        UserModel saved = dbUserClient.save(user);
 
-        // 4. Génération du token et réponse
-        AuthResponse response = userMapper.toAuthResponse(user);
-        response.setToken(jwtUtil.generateToken(user.getEmail(), user.getId()));
+        // Génération du token et réponse
+        AuthResponse response = userMapper.toAuthResponse(saved);
+        response.setToken(jwtUtil.generateToken(saved.getEmail(), saved.getId()));
 
         return response;
     }
 
     /**
      * Connecte un utilisateur existant.
-     * Accepte un email ou un username comme identifiant,
-     * vérifie le mot de passe et retourne un JWT.
      */
     public AuthResponse login(LoginRequest request) {
 
-        // 1. Recherche par email ou username selon si l'identifiant contient un @
-        User user;
-        if (request.getIdentifier().contains("@")){
-            user = userRepository.findByEmail(request.getIdentifier())
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        } else {
-            user = userRepository.findByUsername(request.getIdentifier())
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        // Recherche par email ou username
+        UserModel user;
+        try {
+            if (request.getIdentifier().contains("@")) {
+                user = dbUserClient.findByEmail(request.getIdentifier());
+            } else {
+                user = dbUserClient.findByUsername(request.getIdentifier());
+            }
+        } catch (FeignException.NotFound e) {
+            throw new UsernameNotFoundException("User not found");
         }
 
-        // 2. Vérification du mot de passe
-        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash()))
+        // Vérification du mot de passe
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             throw new RuntimeException("Passwords don't match");
+        }
 
-        // 3. Génération du token et réponse
+        // Génération du token et réponse
         AuthResponse response = userMapper.toAuthResponse(user);
         response.setToken(jwtUtil.generateToken(user.getEmail(), user.getId()));
 
@@ -82,27 +86,18 @@ public class AuthService {
 
     /**
      * Retourne le profil de l'utilisateur connecté.
-     * L'email est extrait du JWT par la Gateway et transmis en paramètre.
      */
     public AuthResponse getProfile(String email) {
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        UserModel user = findByEmailOrThrow(email);
         return userMapper.toAuthResponse(user);
-
     }
 
     /**
      * Met à jour le profil de l'utilisateur connecté.
-     * Seuls les champs envoyés dans la requête sont mis à jour.
      */
     public AuthResponse updateProfile(String email, UpdateProfileRequest request) {
+        UserModel user = findByEmailOrThrow(email);
 
-        // 1. Récupération de l'utilisateur
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-        // 2. Mise à jour des champs
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setBio(request.getBio());
@@ -110,32 +105,42 @@ public class AuthService {
         user.setAvatarUrl(request.getAvatarUrl());
         user.setTheme(request.getTheme());
         user.setBannerTmdbId(request.getBannerTmdbId());
-        if (request.getBannerMediaType() != null) user.setBannerMediaType(request.getBannerMediaType());
+        if (request.getBannerMediaType() != null) {
+            user.setBannerMediaType(request.getBannerMediaType());
+        }
         user.setBannerBackdropPath(request.getBannerBackdropPath());
 
-        // 3. Sauvegarde et réponse
-        userRepository.save(user);
-        return userMapper.toAuthResponse(user);
+        UserModel updated = dbUserClient.update(user.getId(), user);
+        return userMapper.toAuthResponse(updated);
     }
 
     public void deleteAccount(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        userRepository.delete(user);
+        UserModel user = findByEmailOrThrow(email);
+        dbUserClient.delete(user.getId());
     }
 
     public void changePassword(String email, ChangePasswordRequest request) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        UserModel user = findByEmailOrThrow(email);
 
-        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash()))
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
             throw new RuntimeException("Wrong current password");
-
-        if (!request.getNewPassword().equals(request.getConfirmNewPassword()))
+        }
+        if (!request.getNewPassword().equals(request.getConfirmNewPassword())) {
             throw new RuntimeException("Passwords don't match");
+        }
 
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
-        userRepository.save(user);
+        dbUserClient.update(user.getId(), user);
+    }
+
+    /* ── Helpers ─────────────────────────────────────────────────── */
+
+    private UserModel findByEmailOrThrow(String email) {
+        try {
+            return dbUserClient.findByEmail(email);
+        } catch (FeignException.NotFound e) {
+            throw new UsernameNotFoundException("User not found");
+        }
     }
 
 }

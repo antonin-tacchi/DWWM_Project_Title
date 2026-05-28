@@ -1,134 +1,113 @@
 package com.antonintacchi.social.service;
 
+import com.antonintacchi.social.client.DbListClient;
 import com.antonintacchi.social.dto.list.*;
-import com.antonintacchi.social.entity.ListItem;
-import com.antonintacchi.social.entity.MediaList;
-import com.antonintacchi.social.repository.ListItemRepository;
-import com.antonintacchi.social.repository.MediaListRepository;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ListService {
 
-    private final MediaListRepository mediaListRepository;
-    private final ListItemRepository listItemRepository;
+    private final DbListClient dbListClient;
+
+    /* ── Lists ───────────────────────────────────────────────────── */
 
     public List<ListDto> getLists(Long userId) {
-        return mediaListRepository.findByUserId(userId)
-                .stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
+        return dbListClient.findByUser(userId);
     }
 
     public ListDto createList(Long userId, CreateListRequest request) {
-        MediaList list = MediaList.builder()
-                .userId(userId)
-                .name(request.getName())
-                .description(request.getDescription())
-                .isDefault(false)
-                .isPublic(request.getIsPublic() != null ? request.getIsPublic() : false)
-                .build();
-        return toDto(mediaListRepository.save(list));
+        Map<String, Object> body = Map.of(
+                "userId",      userId,
+                "name",        request.getName(),
+                "description", request.getDescription() != null ? request.getDescription() : "",
+                "isDefault",   false,
+                "isPublic",    request.getIsPublic() != null ? request.getIsPublic() : false
+        );
+        return dbListClient.save(body);
     }
 
     public ListDto getList(Long userId, Long listId) {
-        MediaList list = mediaListRepository.findById(listId)
-                .orElseThrow(() -> new NoSuchElementException("List not found"));
+        ListDto list = findListOrThrow(listId);
         if (!list.getUserId().equals(userId)) {
             throw new IllegalStateException("Not your list");
         }
-        return toDto(list);
+        return list;
     }
 
     public ListDto updateList(Long userId, Long listId, UpdateListRequest request) {
-        MediaList list = mediaListRepository.findById(listId)
-                .orElseThrow(() -> new NoSuchElementException("List not found"));
+        ListDto list = findListOrThrow(listId);
         if (!list.getUserId().equals(userId)) {
             throw new IllegalStateException("Not your list");
         }
-        list.setName(request.getName());
-        list.setDescription(request.getDescription());
-        if (request.getIsPublic() != null) {
-            list.setIsPublic(request.getIsPublic());
-        }
-        return toDto(mediaListRepository.save(list));
+        Map<String, Object> patch = new java.util.HashMap<>();
+        patch.put("name", request.getName());
+        patch.put("description", request.getDescription() != null ? request.getDescription() : "");
+        if (request.getIsPublic() != null) patch.put("isPublic", request.getIsPublic());
+        return dbListClient.update(listId, patch);
     }
 
     public void deleteList(Long userId, Long listId) {
-        MediaList list = mediaListRepository.findById(listId)
-                .orElseThrow(() -> new NoSuchElementException("List not found"));
+        ListDto list = findListOrThrow(listId);
         if (!list.getUserId().equals(userId)) {
             throw new IllegalStateException("Not your list");
         }
-        mediaListRepository.delete(list);
+        dbListClient.delete(listId);
     }
 
+    /* ── List Items ──────────────────────────────────────────────── */
+
     public List<ListItemDto> getListItems(Long userId, Long listId) {
-        MediaList list = mediaListRepository.findById(listId)
-                .orElseThrow(() -> new NoSuchElementException("List not found"));
+        ListDto list = findListOrThrow(listId);
         if (!list.getUserId().equals(userId)) {
             throw new IllegalStateException("Not your list");
         }
-        return listItemRepository.findByListId(listId)
-                .stream()
-                .map(this::toItemDto)
-                .collect(Collectors.toList());
+        return dbListClient.findItems(listId);
     }
 
     public ListItemDto addListItem(Long userId, Long listId, AddListItemRequest request) {
-        MediaList list = mediaListRepository.findById(listId)
-                .orElseThrow(() -> new NoSuchElementException("List not found"));
+        ListDto list = findListOrThrow(listId);
         if (!list.getUserId().equals(userId)) {
             throw new IllegalStateException("Not your list");
         }
-        if (listItemRepository.existsByListIdAndTmdbIdAndMediaType(listId, request.getTmdbId(), request.getMediaType())) {
+        if (Boolean.TRUE.equals(dbListClient.itemExists(listId, request.getTmdbId(), request.getMediaType()))) {
             throw new IllegalStateException("Item already in list");
         }
-        ListItem item = ListItem.builder()
-                .listId(listId)
-                .tmdbId(request.getTmdbId())
-                .mediaType(request.getMediaType())
-                .build();
-        return toItemDto(listItemRepository.save(item));
+        Map<String, Object> body = Map.of(
+                "listId",    listId,
+                "tmdbId",    request.getTmdbId(),
+                "mediaType", request.getMediaType()
+        );
+        return dbListClient.saveItem(body);
     }
 
     public void removeListItem(Long userId, Long listId, Long itemId) {
-        MediaList list = mediaListRepository.findById(listId)
-                .orElseThrow(() -> new NoSuchElementException("List not found"));
+        ListDto list = findListOrThrow(listId);
         if (!list.getUserId().equals(userId)) {
             throw new IllegalStateException("Not your list");
         }
-        ListItem item = listItemRepository.findById(itemId)
-                .orElseThrow(() -> new NoSuchElementException("Item not found"));
-        listItemRepository.delete(item);
+        try {
+            dbListClient.findItemById(itemId);
+        } catch (FeignException.NotFound e) {
+            throw new NoSuchElementException("Item not found");
+        }
+        dbListClient.deleteItem(itemId);
     }
 
-    private ListDto toDto(MediaList list) {
-        return ListDto.builder()
-                .id(list.getId())
-                .userId(list.getUserId())
-                .name(list.getName())
-                .description(list.getDescription())
-                .isDefault(list.getIsDefault())
-                .isPublic(list.getIsPublic())
-                .createdAt(list.getCreatedAt())
-                .build();
-    }
+    /* ── Helpers ─────────────────────────────────────────────────── */
 
-    private ListItemDto toItemDto(ListItem item) {
-        return ListItemDto.builder()
-                .id(item.getId())
-                .listId(item.getListId())
-                .tmdbId(item.getTmdbId())
-                .mediaType(item.getMediaType())
-                .addedAt(item.getAddedAt())
-                .build();
+    private ListDto findListOrThrow(Long listId) {
+        try {
+            return dbListClient.findById(listId);
+        } catch (FeignException.NotFound e) {
+            throw new NoSuchElementException("List not found");
+        }
     }
 
 }
