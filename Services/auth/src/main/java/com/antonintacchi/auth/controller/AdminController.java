@@ -5,6 +5,7 @@ import com.antonintacchi.auth.client.DbCommentAdminClient;
 import com.antonintacchi.auth.client.DbRatingAdminClient;
 import com.antonintacchi.auth.client.DbStatsClient;
 import com.antonintacchi.auth.client.DbUserClient;
+import com.antonintacchi.auth.client.NotificationsClient;
 import com.antonintacchi.auth.dto.AuthResponse;
 import com.antonintacchi.auth.mapper.UserMapper;
 import com.antonintacchi.auth.model.UserModel;
@@ -13,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -32,6 +35,7 @@ public class AdminController {
     private final DbCommentAdminClient dbCommentAdminClient;
     private final DbRatingAdminClient  dbRatingAdminClient;
     private final DbAdminLogClient     dbAdminLogClient;
+    private final NotificationsClient  notificationsClient;
     private final UserMapper           userMapper;
 
     /* ── Users ───────────────────────────────────────────────────── */
@@ -144,6 +148,68 @@ public class AdminController {
     @GetMapping("/stats")
     public ResponseEntity<Map<String, Long>> getStats() {
         return ResponseEntity.ok(dbStatsClient.getStats());
+    }
+
+    /* ── Notifications ───────────────────────────────────────────── */
+
+    /**
+     * Envoie une notification à un utilisateur spécifique.
+     * Body : { "userId": 42, "type": "info", "message": "..." }
+     */
+    @PostMapping("/notifications/send")
+    public ResponseEntity<Map<String, Object>> sendNotification(
+            @RequestBody Map<String, Object> body,
+            @RequestHeader(value = "X-User-Id", required = false) Long adminId) {
+
+        Long userId  = Long.valueOf(body.get("userId").toString());
+        String type    = body.getOrDefault("type", "info").toString();
+        String message = body.getOrDefault("message", "").toString();
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("userId",  userId);
+        payload.put("type",    type);
+        payload.put("message", message);
+
+        Map<String, Object> result = notificationsClient.send(payload);
+        log(adminId, "SEND_NOTIFICATION", "user", userId, "type=" + type);
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * Envoie une notification à tous les utilisateurs (broadcast).
+     * Body : { "type": "info", "message": "..." }
+     */
+    @PostMapping("/notifications/broadcast")
+    public ResponseEntity<Map<String, Object>> broadcastNotification(
+            @RequestBody Map<String, Object> body,
+            @RequestHeader(value = "X-User-Id", required = false) Long adminId) {
+
+        String type    = body.getOrDefault("type", "info").toString();
+        String message = body.getOrDefault("message", "").toString();
+
+        List<UserModel> users = dbUserClient.findAll();
+        List<Long> failed = new ArrayList<>();
+
+        for (UserModel user : users) {
+            try {
+                Map<String, Object> payload = new HashMap<>();
+                payload.put("userId",  user.getId());
+                payload.put("type",    type);
+                payload.put("message", message);
+                notificationsClient.send(payload);
+            } catch (Exception e) {
+                failed.add(user.getId());
+            }
+        }
+
+        log(adminId, "BROADCAST_NOTIFICATION", "all", null,
+                "type=" + type + " | sent=" + (users.size() - failed.size()) + "/" + users.size());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("total",  users.size());
+        result.put("sent",   users.size() - failed.size());
+        result.put("failed", failed.size());
+        return ResponseEntity.ok(result);
     }
 
     /* ── Helper ──────────────────────────────────────────────────── */

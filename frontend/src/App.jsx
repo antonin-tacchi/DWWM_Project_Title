@@ -5,6 +5,8 @@ import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import AdminRoute from './components/layout/AdminRoute';
+import ErrorBoundary from './components/layout/ErrorBoundary';
+import NotFound from './pages/NotFound';
 import ScrollToTop from './components/layout/ScrollToTop';
 import NotificationContainer from './components/ui/NotificationToast';
 import Home from './pages/Home';
@@ -31,6 +33,7 @@ import AdminComments from './pages/admin/AdminComments';
 import AdminRatings from './pages/admin/AdminRatings';
 import AdminLogs from './pages/admin/AdminLogs';
 import AdminSearch from './pages/admin/AdminSearch';
+import AdminNotifications from './pages/admin/AdminNotifications';
 
 const AUTH_ROUTES  = ['/login', '/register'];
 
@@ -55,6 +58,7 @@ export default function App() {
   }, [logout]);
 
   return (
+    <ErrorBoundary resetKey={pathname}>
     <div className="min-h-screen flex flex-col bg-clap-bg">
       <ScrollToTop />
       <NotificationContainer />
@@ -73,8 +77,9 @@ export default function App() {
             <Route path="users"    element={<AdminUsers />} />
             <Route path="comments" element={<AdminComments />} />
             <Route path="ratings"  element={<AdminRatings />} />
-            <Route path="logs"     element={<AdminLogs />} />
-            <Route path="search"   element={<AdminSearch />} />
+            <Route path="notifications" element={<AdminNotifications />} />
+            <Route path="logs"          element={<AdminLogs />} />
+            <Route path="search"        element={<AdminSearch />} />
           </Route>
 
           {/* ── Public / protected routes ─────────────────────────── */}
@@ -95,10 +100,12 @@ export default function App() {
           <Route path="/contact"   element={<Contact />} />
           <Route path="/about"     element={<About />} />
           <Route path="/community" element={<Community />} />
+          <Route path="*"          element={<NotFound />} />
         </Routes>
       </main>
 
       {!isAuth && !isAdmin && <Footer />}
     </div>
+    </ErrorBoundary>
   );
 }

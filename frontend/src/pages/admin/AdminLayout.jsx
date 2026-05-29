@@ -3,12 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 
 const NAV_ITEMS = [
-  { to: '/admin',           icon: '▣', key: 'dashboard', end: true },
-  { to: '/admin/users',     icon: '◉', key: 'users' },
-  { to: '/admin/comments',  icon: '◈', key: 'comments' },
-  { to: '/admin/ratings',   icon: '◆', key: 'ratings' },
-  { to: '/admin/logs',      icon: '≡', key: 'logs' },
-  { to: '/admin/search',    icon: '⊕', key: 'search' },
+  { to: '/admin',                  icon: '▣', key: 'dashboard',      end: true },
+  { to: '/admin/users',            icon: '◉', key: 'users' },
+  { to: '/admin/comments',         icon: '◈', key: 'comments' },
+  { to: '/admin/ratings',          icon: '◆', key: 'ratings' },
+  { to: '/admin/notifications',    icon: '🔔', key: 'notifications' },
+  { to: '/admin/logs',             icon: '≡', key: 'logs' },
+  { to: '/admin/search',           icon: '⊕', key: 'search' },
 ];
 
 export default function AdminLayout() {

@@ -1,8 +1,7 @@
-package com.antonintacchi.auth.exception;
+package com.antonintacchi.dbservice.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -11,29 +10,18 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 /**
- * Gestionnaire global d'exceptions pour auth-service.
- * Toutes les exceptions sont transformées en réponses JSON structurées.
+ * Gestionnaire global d'exceptions pour db-service.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleNotFound(UsernameNotFoundException ex) {
-        return error(HttpStatus.NOT_FOUND, ex.getMessage());
-    }
-
     @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<Map<String, Object>> handleNoSuchElement(NoSuchElementException ex) {
+    public ResponseEntity<Map<String, Object>> handleNotFound(NoSuchElementException ex) {
         return error(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
-        return error(HttpStatus.BAD_REQUEST, ex.getMessage());
-    }
-
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<Map<String, Object>> handleRuntime(RuntimeException ex) {
+    public ResponseEntity<Map<String, Object>> handleBadRequest(IllegalArgumentException ex) {
         return error(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
