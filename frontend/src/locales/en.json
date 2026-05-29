@@ -215,6 +215,13 @@
       "completionist": { "label": "Completionist",    "desc": "100+ total favorites" }
     }
   },
+  "notFound": {
+    "label": "Page not found",
+    "title": "This page doesn't exist.",
+    "subtitle": "The film you're looking for isn't in our catalogue.",
+    "backHome": "Back to home",
+    "catalogue": "Browse catalogue"
+  },
   "common": {
     "loading": "Loading…",
     "error": "Something went wrong",
@@ -236,6 +243,7 @@
       "users": "Users",
       "comments": "Comments",
       "ratings": "Ratings",
+      "notifications": "Notifications",
       "logs": "Activity",
       "search": "Search",
       "backToSite": "Back to site"
@@ -276,6 +284,30 @@
       "search": "Search…",
       "filterAll": "All",
       "noResults": "No actions found."
+    },
+    "notifications": {
+      "title": "Notifications",
+      "subtitle": "Send a notification to one user or broadcast to everyone.",
+      "modeBroadcast": "Broadcast",
+      "modeSingle": "Single user",
+      "recipient": "Recipient",
+      "searchUser": "Search a user…",
+      "selectedUser": "Selected",
+      "type": "Type",
+      "message": "Message",
+      "messagePlaceholder": "Notification content…",
+      "preview": "Preview",
+      "sending": "Sending…",
+      "sendBroadcast": "Send to all ({{count}} users)",
+      "sendSingle": "Send to this user",
+      "successSend": "Notification sent!",
+      "successBroadcast": "Broadcast sent: {{sent}} / {{total}} users",
+      "errorSend": "Error sending notification.",
+      "errorBroadcast": "Error during broadcast.",
+      "infoTitle": "How it works",
+      "info1": "Notifications appear in real time in users' notification panel.",
+      "info2": "The \"Broadcast\" mode sends to all registered users.",
+      "info3": "Each notification has a type: info, success, warning, error, badge, update."
     },
     "search": {
       "title": "Global search",

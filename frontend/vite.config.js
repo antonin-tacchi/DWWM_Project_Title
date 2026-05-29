@@ -1,5 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+// eslint-disable-next-line no-unused-vars
+/// <reference types="vitest" />
 
 /**
  * Returns '/index.html' for browser-navigation requests (Accept: text/html)
@@ -12,6 +14,18 @@ const spaBypass = (req) => {
 
 export default defineConfig({
   plugins: [react()],
+
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./src/tests/setup.js'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html'],
+      exclude: ['node_modules/', 'src/tests/'],
+    },
+  },
+
   server: {
     port: 5173,
     host: true,

@@ -215,6 +215,13 @@
       "completionist": { "label": "Complétiste",      "desc": "100+ favoris au total" }
     }
   },
+  "notFound": {
+    "label": "Page introuvable",
+    "title": "Cette page n'existe pas.",
+    "subtitle": "Le film que vous cherchez n'est pas dans notre catalogue.",
+    "backHome": "Retour à l'accueil",
+    "catalogue": "Voir le catalogue"
+  },
   "common": {
     "loading": "Chargement…",
     "error": "Une erreur est survenue",
@@ -236,6 +243,7 @@
       "users": "Utilisateurs",
       "comments": "Commentaires",
       "ratings": "Notes",
+      "notifications": "Notifications",
       "logs": "Activité",
       "search": "Recherche",
       "backToSite": "Retour au site"
@@ -276,6 +284,30 @@
       "search": "Rechercher…",
       "filterAll": "Tout",
       "noResults": "Aucune action trouvée."
+    },
+    "notifications": {
+      "title": "Notifications",
+      "subtitle": "Envoyez une notification à un utilisateur ou à tout le monde.",
+      "modeBroadcast": "Diffusion",
+      "modeSingle": "Utilisateur ciblé",
+      "recipient": "Destinataire",
+      "searchUser": "Chercher un utilisateur…",
+      "selectedUser": "Sélectionné",
+      "type": "Type",
+      "message": "Message",
+      "messagePlaceholder": "Contenu de la notification…",
+      "preview": "Aperçu",
+      "sending": "Envoi en cours…",
+      "sendBroadcast": "Envoyer à tous ({{count}} utilisateurs)",
+      "sendSingle": "Envoyer à cet utilisateur",
+      "successSend": "Notification envoyée !",
+      "successBroadcast": "Diffusion effectuée : {{sent}} / {{total}} utilisateurs",
+      "errorSend": "Erreur lors de l'envoi.",
+      "errorBroadcast": "Erreur lors de la diffusion.",
+      "infoTitle": "Comment ça fonctionne",
+      "info1": "Les notifications apparaissent en temps réel dans le panneau de l'utilisateur.",
+      "info2": "Le mode « Diffusion » envoie à tous les utilisateurs inscrits.",
+      "info3": "Chaque notification a un type : info, success, warning, error, badge, update."
     },
     "search": {
       "title": "Recherche globale",

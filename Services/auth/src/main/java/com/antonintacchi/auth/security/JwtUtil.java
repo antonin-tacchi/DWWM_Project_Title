@@ -43,7 +43,17 @@ public class JwtUtil {
         return getClaims(token).getSubject();
     }
 
-    public Long extractUserId(String token) { return  getClaims(token).get("userId", Long.class); }
+    public Long extractUserId(String token) { return getClaims(token).get("userId", Long.class); }
+
+    public String extractRole(String token) {
+        String role = getClaims(token).get("role", String.class);
+        return role != null ? role : "user";
+    }
+
+    /** Alias court utilisé dans les tests et le gateway. */
+    public boolean isValid(String token) {
+        return isTokenValid(token);
+    }
 
     public boolean isTokenValid(String token) {
         try {
