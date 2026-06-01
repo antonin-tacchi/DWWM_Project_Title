@@ -91,10 +91,16 @@
 			<artifactId>spring-cloud-starter-openfeign</artifactId>
 		</dependency>
 
-		<!-- Cache Spring (mise en cache des appels TMDB) -->
+		<!-- Cache Spring (mise en cache des appels TMDB en mémoire) -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-cache</artifactId>
+		</dependency>
+
+		<!-- MongoDB — cache persistant des réponses TMDB avec TTL automatique -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-mongodb</artifactId>
 		</dependency>
 
 		<!-- Lombok -->
