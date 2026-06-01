@@ -1,5 +1,6 @@
 package com.antonintacchi.movies.service;
 
+import com.antonintacchi.movies.cache.TmdbMongoCache;
 import com.antonintacchi.movies.dto.tmdb.*;
 import com.antonintacchi.movies.exception.ServiceUnavailableException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -14,13 +15,15 @@ import java.util.Random;
 @Service
 public class TmdbService {
 
-    private final WebClient tmdbWebClient;
+    private final WebClient      tmdbWebClient;
+    private final TmdbMongoCache mongoCache;
 
     @Value("${tmdb.api-key}")
     private String apiKey;
 
-    public TmdbService(WebClient tmdbWebClient) {
+    public TmdbService(WebClient tmdbWebClient, TmdbMongoCache mongoCache) {
         this.tmdbWebClient = tmdbWebClient;
+        this.mongoCache    = mongoCache;
     }
 
     @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackPageResponse")
@@ -55,17 +58,21 @@ public class TmdbService {
     }
 
     @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackDetailResponse")
-    @Cacheable("tmdb-detail")
     public TmdbDetailResponse getDetail(Long tmdbId, String mediaType, String language) {
-        return tmdbWebClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/{mediaType}/{tmdbId}")
-                        .queryParam("api_key", apiKey)
-                        .queryParam("language", language)
-                        .build(mediaType, tmdbId))
-                .retrieve()
-                .bodyToMono(TmdbDetailResponse.class)
-                .block();
+        String key = "detail:" + mediaType + ":" + tmdbId + ":" + language;
+        return mongoCache.get(key, TmdbDetailResponse.class).orElseGet(() -> {
+            TmdbDetailResponse result = tmdbWebClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/{mediaType}/{tmdbId}")
+                            .queryParam("api_key", apiKey)
+                            .queryParam("language", language)
+                            .build(mediaType, tmdbId))
+                    .retrieve()
+                    .bodyToMono(TmdbDetailResponse.class)
+                    .block();
+            if (result != null) mongoCache.put(key, result);
+            return result;
+        });
     }
 
     @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackPageResponse")
@@ -154,58 +161,74 @@ public class TmdbService {
     }
 
     @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackVideoResponse")
-    @Cacheable("tmdb-trailer")
     public TmdbVideoResponse getTrailer(Long tmdbId, String mediaType, String language) {
-        return tmdbWebClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/{mediaType}/{tmdbId}/videos")
-                        .queryParam("api_key", apiKey)
-                        .queryParam("language", language)
-                        .build(mediaType, tmdbId))
-                .retrieve()
-                .bodyToMono(TmdbVideoResponse.class)
-                .block();
+        String key = "trailer:" + mediaType + ":" + tmdbId + ":" + language;
+        return mongoCache.get(key, TmdbVideoResponse.class).orElseGet(() -> {
+            TmdbVideoResponse result = tmdbWebClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/{mediaType}/{tmdbId}/videos")
+                            .queryParam("api_key", apiKey)
+                            .queryParam("language", language)
+                            .build(mediaType, tmdbId))
+                    .retrieve()
+                    .bodyToMono(TmdbVideoResponse.class)
+                    .block();
+            if (result != null) mongoCache.put(key, result);
+            return result;
+        });
     }
 
     @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackCreditsResponse")
-    @Cacheable("tmdb-credits")
     public TmdbCreditsResponse getCredits(Long tmdbId, String mediaType, String language) {
-        return tmdbWebClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/{mediaType}/{tmdbId}/credits")
-                        .queryParam("api_key", apiKey)
-                        .queryParam("language", language)
-                        .build(mediaType, tmdbId))
-                .retrieve()
-                .bodyToMono(TmdbCreditsResponse.class)
-                .block();
+        String key = "credits:" + mediaType + ":" + tmdbId + ":" + language;
+        return mongoCache.get(key, TmdbCreditsResponse.class).orElseGet(() -> {
+            TmdbCreditsResponse result = tmdbWebClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/{mediaType}/{tmdbId}/credits")
+                            .queryParam("api_key", apiKey)
+                            .queryParam("language", language)
+                            .build(mediaType, tmdbId))
+                    .retrieve()
+                    .bodyToMono(TmdbCreditsResponse.class)
+                    .block();
+            if (result != null) mongoCache.put(key, result);
+            return result;
+        });
     }
 
     @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackProviderResponse")
-    @Cacheable("tmdb-provider")
     public TmdbProviderResponse getProvider(Long tmdbId, String mediaType) {
-        return tmdbWebClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/{mediaType}/{tmdbId}/watch/providers")
-                        .queryParam("api_key", apiKey)
-                        .build(mediaType, tmdbId))
-                .retrieve()
-                .bodyToMono(TmdbProviderResponse.class)
-                .block();
+        String key = "provider:" + mediaType + ":" + tmdbId;
+        return mongoCache.get(key, TmdbProviderResponse.class).orElseGet(() -> {
+            TmdbProviderResponse result = tmdbWebClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/{mediaType}/{tmdbId}/watch/providers")
+                            .queryParam("api_key", apiKey)
+                            .build(mediaType, tmdbId))
+                    .retrieve()
+                    .bodyToMono(TmdbProviderResponse.class)
+                    .block();
+            if (result != null) mongoCache.put(key, result);
+            return result;
+        });
     }
 
     @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackImagesResponse")
-    @Cacheable("tmdb-images")
     public TmdbImagesResponse getImages(Long tmdbId, String mediaType) {
-        return tmdbWebClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/{mediaType}/{tmdbId}/images")
-                        .queryParam("api_key", apiKey)
-                        .queryParam("include_image_language", "null,en")
-                        .build(mediaType, tmdbId))
-                .retrieve()
-                .bodyToMono(TmdbImagesResponse.class)
-                .block();
+        String key = "images:" + mediaType + ":" + tmdbId;
+        return mongoCache.get(key, TmdbImagesResponse.class).orElseGet(() -> {
+            TmdbImagesResponse result = tmdbWebClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/{mediaType}/{tmdbId}/images")
+                            .queryParam("api_key", apiKey)
+                            .queryParam("include_image_language", "null,en")
+                            .build(mediaType, tmdbId))
+                    .retrieve()
+                    .bodyToMono(TmdbImagesResponse.class)
+                    .block();
+            if (result != null) mongoCache.put(key, result);
+            return result;
+        });
     }
 
     @CircuitBreaker(name = "tmdb", fallbackMethod = "fallbackPageResponse")

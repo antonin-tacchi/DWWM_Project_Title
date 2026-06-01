@@ -17,6 +17,11 @@ spring:
                 health-check-interval: 10s
     cache:
         type: simple
+    data:
+        mongodb:
+            host: mongodb
+            port: 27017
+            database: clap_cache
 
 server:
     port: 9000
