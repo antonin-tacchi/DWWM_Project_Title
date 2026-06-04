@@ -8,17 +8,6 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.Optional;
 
-/**
- * Service de cache TMDB persistant, adossé à MongoDB.
- *
- * Chaque réponse TMDB est sérialisée en JSON et stockée dans la collection
- * {@code tmdb_cache}. Le TTL index MongoDB (24h) supprime automatiquement
- * les entrées périmées sans intervention manuelle.
- *
- * En cas d'erreur MongoDB (timeout, connexion perdue…), les méthodes
- * retournent {@code Optional.empty()} ou s'abstenaient silencieusement :
- * le service TMDB est alors appelé directement, sans interruption de service.
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -71,7 +60,6 @@ public class TmdbMongoCache {
         }
     }
 
-    /** Supprime une entrée manuellement (ex. si on force un rafraîchissement). */
     public void evict(String key) {
         try {
             repository.deleteById(key);
