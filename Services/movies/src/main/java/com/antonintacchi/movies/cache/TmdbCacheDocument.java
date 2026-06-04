@@ -7,17 +7,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 
-/**
- * Document MongoDB représentant une entrée du cache TMDB.
- *
- * Le champ {@code createdAt} est annoté avec {@code @Indexed(expireAfterSeconds)}
- * ce qui crée automatiquement un TTL index MongoDB : les documents expirent
- * et sont supprimés par MongoDB lui-même sans aucun job de nettoyage.
- *
- * TTL par défaut : 24h (86400 secondes).
- * Les données de détail (films, séries, credits, bandes-annonces) sont
- * stables sur cette durée — TMDB ne les modifie pas à la minute.
- */
 @Data
 @Document(collection = "tmdb_cache")
 public class TmdbCacheDocument {
