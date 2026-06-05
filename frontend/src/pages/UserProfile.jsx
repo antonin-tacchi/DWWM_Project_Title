@@ -49,20 +49,23 @@ function TrashIcon() {
 }
 
 /* ─── Avatar circle (initials or image) ─────────────────────── */
-function Avatar({ username, avatarUrl, size = 'xl' }) {
+function Avatar({ username, avatarUrl, size = 'xl', avatarPos }) {
   const initials = (username ?? '?').slice(0, 2).toUpperCase();
   const sizes = {
     sm: 'w-10 h-10 text-sm',
     md: 'w-14 h-14 text-lg',
     xl: 'w-24 h-24 text-3xl md:w-32 md:h-32 md:text-4xl',
   };
+  const objPos = avatarPos ? `${avatarPos.x}% ${avatarPos.y}%` : '50% 20%';
   return (
     <div
       className={`${sizes[size]} rounded-full overflow-hidden flex items-center justify-center font-bold text-white flex-shrink-0`}
       style={{ background: 'linear-gradient(135deg, #C9A96E 0%, #8B6E42 100%)', border: '3px solid rgba(201,169,110,0.5)' }}
     >
       {avatarUrl
-        ? <img src={avatarUrl} alt={username} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+        ? <img src={avatarUrl} alt={username} className="w-full h-full object-cover"
+            style={{ objectPosition: objPos }}
+            onError={(e) => { e.currentTarget.style.display = 'none'; }} />
         : initials}
     </div>
   );
@@ -155,7 +158,6 @@ function EditProfileModal({ user, onClose }) {
   const [username,    setUsername]    = useState(user?.username  ?? '');
   const [email,       setEmail]       = useState(user?.email     ?? '');
   const [bio,         setBio]         = useState(user?.bio       ?? '');
-  const [avatarUrl,   setAvatarUrl]   = useState(user?.avatarUrl ?? '');
   const [currentPw,  setCurrentPw]   = useState('');
   const [newPw,       setNewPw]       = useState('');
   const [confirmPw,   setConfirmPw]   = useState('');
@@ -165,15 +167,18 @@ function EditProfileModal({ user, onClose }) {
   const [error,       setError]       = useState('');
   const [success,     setSuccess]     = useState('');
 
+  /* Avatar preview (read-only — modifiable via "Photo de profil" dans le dropdown) */
+  const previewInitials = (username || '?').slice(0, 2).toUpperCase();
+
   const profileMut = useMutation({
     mutationFn: () => api.put('/auth/me', {
       username,
       email,
       bio,
-      avatarUrl:          avatarUrl || null,
-      bannerTmdbId:       user?.bannerTmdbId        ?? null,
-      bannerMediaType:    user?.bannerMediaType      ?? null,
-      bannerBackdropPath: user?.bannerBackdropPath   ?? null,
+      avatarUrl:          user?.avatarUrl            ?? null,
+      bannerTmdbId:       user?.bannerTmdbId         ?? null,
+      bannerMediaType:    user?.bannerMediaType       ?? null,
+      bannerBackdropPath: user?.bannerBackdropPath    ?? null,
     }),
     onSuccess: (res) => {
       updateUser(res.data);
@@ -211,32 +216,9 @@ function EditProfileModal({ user, onClose }) {
 
   const isPending = profileMut.isPending || passwordMut.isPending;
 
-  /* Avatar preview with fallback to initials */
-  const previewInitials = (username || '?').slice(0, 2).toUpperCase();
-
   return (
     <ModalShell title={t('userProfile.editProfileTitle')} onClose={onClose}>
       <form onSubmit={handleSubmit} className="px-6 py-6 flex flex-col gap-5 max-h-[80vh] overflow-y-auto">
-
-        {/* ── Avatar section ── */}
-        <div className="flex items-center gap-5">
-          <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center font-bold text-white text-xl"
-            style={{ background: 'linear-gradient(135deg, #C9A96E 0%, #8B6E42 100%)', border: '2px solid rgba(201,169,110,0.5)' }}>
-            {avatarUrl
-              ? <img src={avatarUrl} alt="" className="w-full h-full object-cover"
-                  onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-              : previewInitials}
-          </div>
-          <div className="flex-1">
-            <FormInput
-              label={t('userProfile.profilePictureUrl')}
-              value={avatarUrl}
-              onChange={(e) => setAvatarUrl(e.target.value)}
-              placeholder={t('userProfile.profilePictureUrlPlaceholder')}
-            />
-            <p className="text-white/25 text-xs mt-1.5">{t('userProfile.profilePictureHint')}</p>
-          </div>
-        </div>
 
         {/* ── Identity fields ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -736,8 +718,351 @@ function ImagePositioner({ imagePath, position, onPositionChange }) {
   );
 }
 
+/* ─────────────────────────────────────────────────────────────── */
+/*  EDIT AVATAR MODAL                                               */
+/* ─────────────────────────────────────────────────────────────── */
+
+function AvatarThumb({ url, isSelected, onSelect, label }) {
+  return (
+    <motion.button
+      whileHover={{ scale: 1.06 }}
+      whileTap={{ scale: 0.94 }}
+      onClick={onSelect}
+      title={label}
+      className="relative flex-shrink-0 rounded-xl overflow-hidden"
+      style={{
+        width: 72,
+        height: 108,
+        border: isSelected ? '2px solid #C9A96E' : '2px solid transparent',
+        boxShadow: isSelected ? '0 0 14px rgba(201,169,110,0.45)' : 'none',
+      }}
+    >
+      <img src={url} alt={label ?? ''} className="w-full h-full object-cover" />
+      {isSelected && (
+        <div className="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center"
+          style={{ background: '#C9A96E' }}>
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+            <path d="M2 6l3 3 5-5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+      )}
+    </motion.button>
+  );
+}
+
+function MediaAvatarRow({ tmdbId, mediaType, selectedUrl, onSelect }) {
+  const scrollRef = useRef(null);
+
+  const { data: detail } = useQuery({
+    queryKey: ['movie-detail', tmdbId, mediaType],
+    queryFn:  () => api.get(`/movies/${tmdbId}?mediaType=${mediaType}`).then(r => r.data),
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const { data: imagesData } = useQuery({
+    queryKey: ['movie-images', tmdbId, mediaType],
+    queryFn:  () => api.get(`/movies/${tmdbId}/images?mediaType=${mediaType}`).then(r => r.data),
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const title = detail?.title || detail?.name || '…';
+
+  /* Posters uniquement — main poster_path en premier, puis extras de /images */
+  const allOptions = [];
+  if (detail?.poster_path) {
+    allOptions.push({ url: tmdbImg(detail.poster_path, 'w342'), label: title });
+  }
+  (imagesData?.posters ?? [])
+    .filter(p => p.file_path && p.file_path !== detail?.poster_path)
+    .slice(0, 7)
+    .forEach(p => allOptions.push({ url: tmdbImg(p.file_path, 'w342'), label: title }));
+
+  const scroll = dir => scrollRef.current?.scrollBy({ left: dir * 100, behavior: 'smooth' });
+
+  if (!detail && allOptions.length === 0) {
+    return (
+      <div className="space-y-2">
+        <div className="h-4 w-32 rounded bg-white/10 animate-pulse" />
+        <div className="flex gap-3">
+          {[1,2,3,4].map(i => (
+            <div key={i} className="flex-shrink-0 rounded-xl bg-white/5 animate-pulse" style={{ width: 72, height: 108 }} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (allOptions.length === 0) return null;
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        {detail?.poster_path && (
+          <img src={tmdbImg(detail.poster_path, 'w92')} alt="" className="w-5 h-8 rounded object-cover flex-shrink-0" />
+        )}
+        <span className="text-white font-semibold text-sm truncate">{title}</span>
+        <span className="text-white/30 text-xs flex-shrink-0">
+          {allOptions.length} image{allOptions.length > 1 ? 's' : ''}
+        </span>
+      </div>
+
+      <div className="relative group">
+        <button
+          onClick={() => scroll(-1)}
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity -translate-x-1 text-lg leading-none"
+        >‹</button>
+        <div
+          ref={scrollRef}
+          className="flex gap-3 overflow-x-auto pb-1"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {allOptions.map((opt, i) => (
+            <AvatarThumb
+              key={i}
+              url={opt.url}
+              label={opt.label}
+              isSelected={selectedUrl === opt.url}
+              onSelect={() => onSelect(opt.url)}
+            />
+          ))}
+        </div>
+        <button
+          onClick={() => scroll(1)}
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity translate-x-1 text-lg leading-none"
+        >›</button>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Avatar position helpers ─────────────────────────────────── */
+const DEFAULT_AVATAR_POS = { x: 50, y: 20 };
+
+function getAvatarPosition(userEmail) {
+  try {
+    const raw = localStorage.getItem(`clap-avatar-pos-${userEmail ?? 'guest'}`);
+    if (!raw) return { ...DEFAULT_AVATAR_POS };
+    const parsed = JSON.parse(raw);
+    if (typeof parsed === 'string') return { ...DEFAULT_AVATAR_POS };
+    return parsed;
+  } catch { return { ...DEFAULT_AVATAR_POS }; }
+}
+function saveAvatarPosition(userEmail, pos) {
+  try { localStorage.setItem(`clap-avatar-pos-${userEmail ?? 'guest'}`, JSON.stringify(pos)); }
+  catch {}
+}
+
+/* ─── Avatar image positioner (drag to crop) ─────────────────── */
+function AvatarImagePositioner({ imageUrl, position, onPositionChange }) {
+  const isDragging    = useRef(false);
+  const startPt       = useRef({ x: 0, y: 0 });
+  const startPos      = useRef({ ...DEFAULT_AVATAR_POS });
+  const onChangeRef   = useRef(onPositionChange);
+  onChangeRef.current = onPositionChange;
+
+  const SENS = 0.25;
+
+  const applyDelta = (clientX, clientY) => {
+    const dx = (startPt.current.x - clientX) * SENS;
+    const dy = (startPt.current.y - clientY) * SENS;
+    onChangeRef.current({
+      x: Math.max(0, Math.min(100, startPos.current.x + dx)),
+      y: Math.max(0, Math.min(100, startPos.current.y + dy)),
+    });
+  };
+
+  const onMouseDown = (e) => {
+    e.preventDefault();
+    isDragging.current = true;
+    startPt.current    = { x: e.clientX, y: e.clientY };
+    startPos.current   = { ...position };
+  };
+
+  useEffect(() => {
+    const onMove = (e) => { if (isDragging.current) applyDelta(e.clientX, e.clientY); };
+    const onUp   = ()  => { isDragging.current = false; };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup',   onUp);
+    return () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const onTouchStart = (e) => {
+    const t = e.touches[0];
+    isDragging.current = true;
+    startPt.current    = { x: t.clientX, y: t.clientY };
+    startPos.current   = { ...position };
+  };
+  const onTouchMove = (e) => {
+    if (!isDragging.current) return;
+    const t = e.touches[0];
+    applyDelta(t.clientX, t.clientY);
+  };
+  const onTouchEnd = () => { isDragging.current = false; };
+
+  if (!imageUrl) return null;
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between">
+        <span className="text-white/40 text-xs uppercase tracking-wider">Aperçu &amp; cadrage</span>
+        <button
+          onClick={() => onPositionChange({ ...DEFAULT_AVATAR_POS })}
+          className="text-white/25 text-xs hover:text-white/60 transition-colors"
+        >
+          Réinitialiser
+        </button>
+      </div>
+
+      <div className="flex justify-center">
+        <div
+          onMouseDown={onMouseDown}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+          className="relative overflow-hidden select-none"
+          style={{
+            width: 120,
+            height: 120,
+            borderRadius: '50%',
+            cursor: 'grab',
+            border: '3px solid rgba(201,169,110,0.5)',
+            boxShadow: '0 0 20px rgba(201,169,110,0.2)',
+          }}
+        >
+          <img
+            src={imageUrl}
+            draggable={false}
+            className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+            style={{ objectPosition: `${position.x}% ${position.y}%` }}
+            alt="aperçu"
+          />
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none"
+            style={{ background: 'rgba(0,0,0,0.1)' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" opacity="0.5">
+              <path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M12 12v.01" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <p className="text-center text-white/25 text-xs">Glisser pour cadrer</p>
+    </div>
+  );
+}
+
+function EditAvatarModal({ user, onClose }) {
+  const queryClient  = useQueryClient();
+  const { updateUser } = useAuthStore();
+
+  const { data: favorites = [] } = useQuery({
+    queryKey: ['favorites'],
+    queryFn:  () => api.get('/favorites').then(r => r.data),
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const [selectedUrl, setSelectedUrl] = useState(user?.avatarUrl ?? null);
+  const [position,    setPosition]    = useState(() => getAvatarPosition(user?.email));
+
+  const saveMut = useMutation({
+    mutationFn: () => api.put('/auth/me', {
+      username:           user?.username,
+      email:              user?.email,
+      bio:                user?.bio,
+      avatarUrl:          selectedUrl,
+      bannerTmdbId:       user?.bannerTmdbId       ?? null,
+      bannerMediaType:    user?.bannerMediaType     ?? null,
+      bannerBackdropPath: user?.bannerBackdropPath  ?? null,
+    }),
+    onSuccess: res => {
+      saveAvatarPosition(user?.email, position);
+      updateUser(res.data);
+      queryClient.invalidateQueries({ queryKey: ['me'] });
+      onClose();
+    },
+  });
+
+  /* Deduplicate favorites by tmdbId */
+  const uniqueMedia = favorites.reduce((acc, fav) => {
+    if (!acc.find(f => f.tmdbId === fav.tmdbId)) acc.push(fav);
+    return acc;
+  }, []);
+
+  const previewInitials = (user?.username ?? '?').slice(0, 2).toUpperCase();
+
+  return (
+    <ModalShell
+      title="Photo de profil"
+      onClose={onClose}
+      wide
+      headerRight={
+        <GoldButton onClick={() => saveMut.mutate()} disabled={saveMut.isPending}>
+          Enregistrer
+        </GoldButton>
+      }
+    >
+      <div className="px-6 py-5 max-h-[70vh] overflow-y-auto flex flex-col gap-6">
+
+        {/* ── Avatar preview + positionneur ── */}
+        {selectedUrl ? (
+          <AvatarImagePositioner
+            imageUrl={selectedUrl}
+            position={position}
+            onPositionChange={setPosition}
+          />
+        ) : (
+          <div className="flex items-center gap-4">
+            <div
+              className="w-20 h-20 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center font-bold text-white text-2xl"
+              style={{ background: 'linear-gradient(135deg, #C9A96E 0%, #8B6E42 100%)', border: '3px solid rgba(201,169,110,0.5)' }}
+            >
+              {previewInitials}
+            </div>
+            <div>
+              <p className="text-white text-sm font-medium">Aperçu</p>
+              <p className="text-white/40 text-xs mt-0.5">
+                Choisissez un poster parmi vos favoris
+              </p>
+            </div>
+          </div>
+        )}
+
+        {selectedUrl && (
+          <div className="flex justify-center">
+            <button
+              onClick={() => setSelectedUrl(null)}
+              className="text-white/30 text-xs hover:text-red-400 transition-colors"
+            >
+              Supprimer la photo
+            </button>
+          </div>
+        )}
+
+        <div className="h-px bg-white/8" />
+
+        {/* ── Media rows ── */}
+        {uniqueMedia.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-white/30">
+            <span className="text-5xl mb-3">🎬</span>
+            <p>Ajoutez des favoris pour choisir une photo de profil</p>
+          </div>
+        ) : (
+          uniqueMedia.map(fav => (
+            <MediaAvatarRow
+              key={fav.tmdbId}
+              tmdbId={fav.tmdbId}
+              mediaType={fav.mediaType}
+              selectedUrl={selectedUrl}
+              onSelect={setSelectedUrl}
+            />
+          ))
+        )}
+      </div>
+    </ModalShell>
+  );
+}
+
 /* ─── Profile Hero ───────────────────────────────────────────── */
-function ProfileHero({ user, onEditProfile, onEditBackground }) {
+function ProfileHero({ user, onEditProfile, onEditBackground, onEditAvatar }) {
   const { t } = useTranslation();
   const [dropOpen, setDropOpen] = useState(false);
   const dropRef = useRef(null);
@@ -751,7 +1076,8 @@ function ProfileHero({ user, onEditProfile, onEditBackground }) {
 
   /* Use the specific chosen backdrop path stored on the user profile */
   const backdropUrl = user?.bannerBackdropPath ? tmdbImg(user.bannerBackdropPath, 'w1280') : null;
-  const bannerPos   = getBannerPosition(user?.email); // { x, y } in %
+  const bannerPos   = getBannerPosition(user?.email);
+  const avatarPos   = getAvatarPosition(user?.email);
 
   return (
     <div className="relative w-full h-64 md:h-80 overflow-hidden">
@@ -804,6 +1130,7 @@ function ProfileHero({ user, onEditProfile, onEditBackground }) {
               {[
                 { label: t('userProfile.dropdownEditProfile'),    icon: '👤', action: onEditProfile },
                 { label: t('userProfile.dropdownEditBackground'), icon: '🖼️',  action: onEditBackground },
+                { label: 'Photo de profil',                        icon: '📸', action: onEditAvatar },
               ].map(({ label, icon, action }) => (
                 <button key={label}
                   onClick={() => { setDropOpen(false); action(); }}
@@ -819,7 +1146,7 @@ function ProfileHero({ user, onEditProfile, onEditBackground }) {
 
       {/* Avatar + info */}
       <div className="absolute bottom-0 left-0 right-0 px-4 md:px-8 pb-6 flex items-end gap-4">
-        <Avatar username={user?.username} avatarUrl={user?.avatarUrl} size="xl" />
+        <Avatar username={user?.username} avatarUrl={user?.avatarUrl} size="xl" avatarPos={avatarPos} />
         <div className="pb-1">
           <h1 className="font-display italic text-white text-2xl md:text-3xl font-bold leading-tight">
             {user?.username ?? '…'}
@@ -1179,6 +1506,7 @@ export default function UserProfile() {
   const { user: storeUser } = useAuthStore();
   const [editProfileOpen,    setEditProfileOpen]    = useState(false);
   const [editBackgroundOpen, setEditBackgroundOpen] = useState(false);
+  const [editAvatarOpen,     setEditAvatarOpen]     = useState(false);
 
   const { data: me } = useQuery({
     queryKey: ['me'],
@@ -1211,6 +1539,7 @@ export default function UserProfile() {
         user={user}
         onEditProfile={() => setEditProfileOpen(true)}
         onEditBackground={() => setEditBackgroundOpen(true)}
+        onEditAvatar={() => setEditAvatarOpen(true)}
       />
 
       <div className="max-w-5xl mx-auto px-4 md:px-6 py-8 flex flex-col gap-10">
@@ -1242,6 +1571,9 @@ export default function UserProfile() {
       </AnimatePresence>
       <AnimatePresence>
         {editBackgroundOpen && <EditBackgroundModal user={user} onClose={() => setEditBackgroundOpen(false)} />}
+      </AnimatePresence>
+      <AnimatePresence>
+        {editAvatarOpen && <EditAvatarModal user={user} onClose={() => setEditAvatarOpen(false)} />}
       </AnimatePresence>
     </div>
   );
