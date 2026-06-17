@@ -163,7 +163,7 @@ export default function Discovery() {
         </div>
 
         {/* ── Mood grid ── */}
-        <div className="grid grid-cols-4 gap-3 mb-10">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-10">
           {MOODS.map((mood) => (
             <motion.button
               key={mood.id}

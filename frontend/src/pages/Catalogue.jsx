@@ -316,16 +316,16 @@ function MobileDrawer({ open, onClose, isSearching, filters, onToggleGenre, onTo
           <motion.div
             initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-50 md:hidden rounded-t-3xl overflow-hidden"
+            className="fixed bottom-0 left-0 right-0 z-50 md:hidden rounded-t-3xl flex flex-col"
             style={{ backgroundColor: '#12122A', maxHeight: '85vh' }}
           >
             {/* Handle */}
-            <div className="flex justify-center pt-3 pb-1">
+            <div className="flex-shrink-0 flex justify-center pt-3 pb-1">
               <div className="w-10 h-1 rounded-full bg-clap-muted" />
             </div>
 
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-3 border-b border-clap-muted/30">
+            <div className="flex-shrink-0 flex items-center justify-between px-5 py-3 border-b border-clap-muted/30">
               <span className="font-display italic text-white text-lg">{t('catalogue.drawerTitle')}</span>
               <div className="flex items-center gap-3">
                 {activeCount > 0 && (
@@ -338,7 +338,7 @@ function MobileDrawer({ open, onClose, isSearching, filters, onToggleGenre, onTo
             </div>
 
             {/* Scrollable content */}
-            <div className="overflow-y-auto px-5 py-4" style={{ maxHeight: 'calc(85vh - 90px)' }}>
+            <div className="flex-1 overflow-y-auto px-5 py-4">
               <FilterContent
                 isSearching={isSearching}
                 filters={filters}
@@ -351,7 +351,7 @@ function MobileDrawer({ open, onClose, isSearching, filters, onToggleGenre, onTo
             </div>
 
             {/* Apply button */}
-            <div className="px-5 pb-6 pt-2 border-t border-clap-muted/30">
+            <div className="flex-shrink-0 px-5 pb-6 pt-2 border-t border-clap-muted/30">
               <button
                 onClick={onClose}
                 className="w-full py-3 rounded-full bg-clap-gold text-clap-bg font-bold text-sm tracking-wide hover:brightness-110 transition-all"
@@ -484,7 +484,7 @@ function RandomPick() {
           viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.35 }}
           whileHover={{ scale: loading ? 1 : 1.04 }} whileTap={{ scale: 0.97 }}
           onClick={handleFind} disabled={loading}
-          className="px-24 py-4 rounded-full text-white text-xl font-bold tracking-[0.25em] transition-all disabled:opacity-60"
+          className="px-10 md:px-24 py-4 rounded-full text-white text-xl font-bold tracking-[0.25em] transition-all disabled:opacity-60"
           style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.2)', cursor: loading ? 'wait' : 'pointer' }}
         >
           {loading ? '...' : t('catalogue.randomPickFind')}

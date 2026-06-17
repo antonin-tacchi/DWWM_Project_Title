@@ -198,7 +198,7 @@ function PhotoMosaic({ credits, personName }) {
         className="grid gap-1"
         style={{
           gridTemplateColumns: 'repeat(3, 1fr) 32px',
-          gridTemplateRows: 'repeat(3, 180px)',
+          gridTemplateRows: 'repeat(3, clamp(100px, 22vw, 180px))',
         }}
       >
         {/* Backdrop tiles — up to 9 */}
@@ -316,13 +316,11 @@ function PersonHero({ person, heroCredit }) {
 
         {/* Content positioned at bottom-left */}
         <div className="absolute bottom-0 left-0 right-0 px-6 md:px-16 pb-12">
-          <div className="max-w-7xl mx-auto flex items-end gap-8">
+          <div className="max-w-7xl mx-auto flex items-end gap-4 md:gap-8">
             {/* Avatar */}
             <div
-              className="flex-shrink-0 rounded-full overflow-hidden shadow-2xl border-2"
+              className="flex-shrink-0 w-20 h-20 md:w-36 md:h-36 rounded-full overflow-hidden shadow-2xl border-2"
               style={{
-                width: 140,
-                height: 140,
                 borderColor: 'rgba(201,169,110,0.4)',
                 boxShadow: '0 8px 40px rgba(0,0,0,0.6)',
               }}
