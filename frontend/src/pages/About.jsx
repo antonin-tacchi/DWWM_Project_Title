@@ -384,7 +384,7 @@ export default function About() {
       {/* ══════════════════════════════════════════════════
           LE PROJET
           ══════════════════════════════════════════════════ */}
-      <section className="relative py-28 px-6">
+      <section className="relative py-16 md:py-28 px-6">
         {/* Decorative left accent */}
         <div
           className="absolute left-0 top-0 bottom-0 w-px"
@@ -447,20 +447,20 @@ export default function About() {
                   whileInView="visible"
                   custom={i}
                   viewport={{ once: true }}
-                  className="flex flex-col items-center justify-center rounded-2xl py-10 px-4 text-center"
+                  className="flex flex-col items-center justify-center rounded-2xl py-6 md:py-10 px-1 sm:px-4 text-center"
                   style={{
                     border: `1px solid ${GOLD}20`,
                     background: 'rgba(201,169,110,0.04)',
                   }}
                 >
                   <span
-                    className="font-display italic text-5xl"
+                    className="font-display italic text-4xl md:text-5xl"
                     style={{ color: GOLD, lineHeight: 1 }}
                   >
                     {value}
                   </span>
                   <span
-                    className="mt-2 text-xs uppercase tracking-widest"
+                    className="mt-2 text-[9px] sm:text-xs uppercase tracking-normal sm:tracking-widest leading-tight"
                     style={{ color: 'rgba(232,220,191,0.45)' }}
                   >
                     {label}
@@ -501,7 +501,7 @@ export default function About() {
       {/* ══════════════════════════════════════════════════
           FONCTIONNALITÉS
           ══════════════════════════════════════════════════ */}
-      <section className="relative py-28 px-6">
+      <section className="relative py-16 md:py-28 px-6">
         {/* Background glow */}
         <div
           className="absolute inset-0 pointer-events-none"
@@ -538,7 +538,7 @@ export default function About() {
       {/* ══════════════════════════════════════════════════
           ARCHITECTURE TECHNIQUE
           ══════════════════════════════════════════════════ */}
-      <section className="relative py-28 px-6">
+      <section className="relative py-16 md:py-28 px-6">
         <div className="max-w-6xl mx-auto">
           <SectionLabel number="03" label={t('about.techTitle')} />
 
@@ -609,7 +609,7 @@ export default function About() {
       {/* ══════════════════════════════════════════════════
           LE CRÉATEUR
           ══════════════════════════════════════════════════ */}
-      <section className="relative py-28 px-6">
+      <section className="relative py-16 md:py-28 px-6">
         {/* Right accent */}
         <div
           className="absolute right-0 top-0 bottom-0 w-px"
@@ -735,7 +735,7 @@ export default function About() {
       {/* ══════════════════════════════════════════════════
           CLOSING QUOTE
           ══════════════════════════════════════════════════ */}
-      <section className="relative py-32 px-6 overflow-hidden">
+      <section className="relative py-16 md:py-32 px-6 overflow-hidden">
         {/* Background glow */}
         <div
           className="absolute inset-0 pointer-events-none"

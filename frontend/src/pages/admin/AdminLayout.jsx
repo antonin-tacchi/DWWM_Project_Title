@@ -18,22 +18,23 @@ export default function AdminLayout() {
   return (
     <div className="min-h-screen flex bg-clap-bg">
       {/* ── Sidebar ─────────────────────────────────────────────── */}
-      <aside className="w-56 shrink-0 bg-black/60 border-r border-white/5 flex flex-col">
+      <aside className="w-12 md:w-56 shrink-0 bg-black/60 border-r border-white/5 flex flex-col">
         {/* Logo */}
-        <div className="px-6 py-5 border-b border-white/5">
-          <span className="font-display text-clap-gold text-xl italic tracking-wide">Clap!</span>
-          <p className="text-white/30 text-xs mt-0.5 uppercase tracking-widest">{t('admin.sidebar.title')}</p>
+        <div className="px-3 md:px-6 py-5 border-b border-white/5 flex items-center justify-center md:block">
+          <span className="font-display text-clap-gold text-xl italic tracking-wide hidden md:inline">Clap!</span>
+          <span className="font-display text-clap-gold text-base italic md:hidden">C</span>
+          <p className="text-white/30 text-xs mt-0.5 uppercase tracking-widest hidden md:block">{t('admin.sidebar.title')}</p>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        <nav className="flex-1 px-1 md:px-3 py-4 space-y-1">
           {NAV_ITEMS.map(({ to, icon, key, end }) => (
             <NavLink
               key={to}
               to={to}
               end={end}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+                `flex items-center justify-center md:justify-start gap-3 px-2 md:px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
                   isActive
                     ? 'bg-clap-gold/10 text-clap-gold border border-clap-gold/20'
                     : 'text-white/50 hover:text-white hover:bg-white/5'
@@ -41,18 +42,20 @@ export default function AdminLayout() {
               }
             >
               <span className="text-base">{icon}</span>
-              {t(`admin.sidebar.${key}`)}
+              <span className="hidden md:inline">{t(`admin.sidebar.${key}`)}</span>
             </NavLink>
           ))}
         </nav>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-white/5">
+        <div className="px-2 md:px-6 py-4 border-t border-white/5 flex justify-center md:block">
           <NavLink
             to="/"
             className="text-white/30 hover:text-white/60 text-xs transition-colors"
+            title={t('admin.sidebar.backToSite')}
           >
-            ← {t('admin.sidebar.backToSite')}
+            <span className="hidden md:inline">← {t('admin.sidebar.backToSite')}</span>
+            <span className="md:hidden text-base">←</span>
           </NavLink>
         </div>
       </aside>
@@ -64,7 +67,7 @@ export default function AdminLayout() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25 }}
-          className="flex-1 p-8 overflow-auto"
+          className="flex-1 p-4 md:p-8 overflow-auto"
         >
           <Outlet />
         </motion.main>

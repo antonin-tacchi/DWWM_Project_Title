@@ -164,16 +164,15 @@ function Hero({ movies }) {
             <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent" />
 
             {/* Content */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6">
+            <div className="absolute bottom-0 left-0 right-0 p-4 pb-12 md:p-6">
               <h2 className="font-display italic text-white text-xl md:text-3xl font-bold mb-2 drop-shadow">
                 {title}
               </h2>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <Stars value={movie.vote_average} />
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Link
                     to={`/${type === 'tv' ? 'serie' : 'film'}/${movie.id}`}
-
                     className="text-xs md:text-sm px-3 md:px-4 py-1.5 rounded-full border border-white/60 text-white hover:bg-white/10 transition-colors whitespace-nowrap"
                   >
                     {t('home.watchTrailers')}

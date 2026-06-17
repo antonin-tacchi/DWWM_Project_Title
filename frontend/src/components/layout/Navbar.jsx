@@ -138,7 +138,7 @@ function NavSearch({ inputClassName = '', onClose }) {
             transition={{ duration: 0.18 }}
             className="absolute left-0 right-0 top-[calc(100%+8px)] bg-clap-card border border-clap-muted/40 rounded-2xl shadow-2xl overflow-hidden z-[200]"
           >
-            <div className="grid grid-cols-3 gap-0 divide-x divide-clap-muted/20">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-0 divide-x divide-clap-muted/20">
               {results.map((item) => {
                 const title    = item.title ?? item.name ?? 'Sans titre';
                 const type     = item.media_type === 'tv' ? 'tv' : 'movie';
@@ -253,7 +253,7 @@ function BellPanel() {
       animate={{ opacity: 1, y: 0,  scale: 1     }}
       exit={{    opacity: 0, y: -8, scale: 0.96, transition: { duration: 0.15 } }}
       transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-      className="absolute right-0 top-[calc(100%+10px)] w-80 rounded-2xl overflow-hidden"
+      className="absolute right-0 top-[calc(100%+10px)] w-80 max-w-[calc(100vw-16px)] rounded-2xl overflow-hidden"
       style={{
         background: 'rgba(12,12,20,0.98)',
         backdropFilter: 'blur(28px)',
@@ -541,7 +541,7 @@ export default function Navbar() {
                   <Link
                     to={link.to}
                     onClick={() => setMenuOpen(false)}
-                    className="font-display text-4xl md:text-5xl text-clap-light hover:text-clap-gold transition-colors duration-200 tracking-[0.15em]"
+                    className="font-display text-3xl sm:text-4xl md:text-5xl text-clap-light hover:text-clap-gold transition-colors duration-200 tracking-[0.15em]"
                   >
                     {t(`nav.${link.key}`).toUpperCase()}
                   </Link>
@@ -552,7 +552,7 @@ export default function Navbar() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1, transition: { delay: 0.55 } }}
-              className="absolute bottom-10 flex gap-8 text-clap-gray text-sm tracking-widest"
+              className="absolute bottom-6 flex flex-wrap justify-center gap-4 sm:gap-8 text-clap-gray text-sm tracking-widest px-4"
             >
               {/* Bouton langue */}
               <button

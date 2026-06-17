@@ -32,7 +32,7 @@ export default function Footer() {
       {/* ══════════════════════════════════════
           MOBILE  (< md) — vertical cinema layout
           ══════════════════════════════════════ */}
-      <div className="block md:hidden relative overflow-hidden min-h-[900px]">
+      <div className="block md:hidden relative overflow-hidden min-h-[600px]">
         {/* Mobile background */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -50,7 +50,7 @@ export default function Footer() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="font-display text-5xl italic text-center leading-tight mt-8 mb-6"
+            className="font-display text-3xl sm:text-5xl italic text-center leading-tight mt-8 mb-6"
             style={{ color: CREAM }}
           >
             {t('footer.tagline')}
@@ -69,7 +69,7 @@ export default function Footer() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.2 }}
-            className="flex items-center justify-center w-full mb-12"
+            className="flex flex-wrap items-center justify-center w-full mb-12 gap-y-4"
           >
             {NAV_LINKS.map((link, i) => (
               <div key={link.label} className="flex items-center">
