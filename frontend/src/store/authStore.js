@@ -19,14 +19,12 @@ const useAuthStore = create(
       isAuthenticated: false,
 
       login: (token, user) => {
-        localStorage.setItem('token', token);
         // Toujours lire le rôle depuis le JWT pour éviter les sessions périmées
         const role = extractRoleFromToken(token);
         set({ token, user: { ...user, role }, isAuthenticated: true });
       },
 
       logout: () => {
-        localStorage.removeItem('token');
         set({ token: null, user: null, isAuthenticated: false });
       },
 
