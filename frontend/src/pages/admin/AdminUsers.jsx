@@ -25,6 +25,8 @@ export default function AdminUsers() {
   const currentUser   = useAuthStore((s) => s.user);
   const [search, setSearch] = useState('');
   const [confirm, setConfirm] = useState(null); // { type: 'delete'|'role', user, newRole }
+  const [page,   setPage]   = useState(1);
+  const PAGE_SIZE = 10;
 
   const { data: rawUsers, isLoading } = useQuery({
     queryKey: ['admin-users'],
@@ -46,6 +48,8 @@ export default function AdminUsers() {
     u.username?.toLowerCase().includes(search.toLowerCase()) ||
     u.email?.toLowerCase().includes(search.toLowerCase())
   );
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paginated  = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <div className="max-w-5xl">
@@ -90,7 +94,7 @@ export default function AdminUsers() {
                     ))}
                   </tr>
                 ))
-              : filtered.map(u => (
+              : paginated.map(u => (
                   <motion.tr
                     key={u.id}
                     initial={{ opacity: 0 }}
@@ -151,6 +155,33 @@ export default function AdminUsers() {
           <div className="py-12 text-center text-white/30 text-sm">{t('admin.users.noResults')}</div>
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-4">
+          <button
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="px-3 py-1.5 rounded-lg border border-white/10 text-white/40 hover:text-white text-sm transition-colors disabled:opacity-30"
+          >←</button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+            <button
+              key={p}
+              onClick={() => setPage(p)}
+              className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                p === page
+                  ? 'bg-clap-gold/20 text-clap-gold border border-clap-gold/30'
+                  : 'border border-white/10 text-white/40 hover:text-white'
+              }`}
+            >{p}</button>
+          ))}
+          <button
+            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className="px-3 py-1.5 rounded-lg border border-white/10 text-white/40 hover:text-white text-sm transition-colors disabled:opacity-30"
+          >→</button>
+        </div>
+      )}
 
       {/* Confirmation modal */}
       <AnimatePresence>

@@ -54,7 +54,9 @@
     "tmdb": "TMDB",
     "errorDefault": "Erreur lors de l'inscription.",
     "googleNotAvailable": "Inscription Google — non disponible",
-    "tmdbNotAvailable": "Inscription TMDB — non disponible"
+    "tmdbNotAvailable": "Inscription TMDB — non disponible",
+    "consentText": "J'accepte la collecte et le traitement de mes données personnelles conformément à la",
+    "consentLink": "politique de confidentialité"
   },
   "catalogue": {
     "filterTitle": "Affiner votre\nexploration",
@@ -125,7 +127,12 @@
     "errorAddFavorite": "Erreur lors de l'ajout aux favoris.",
     "errorRemoveFavorite": "Erreur lors de la suppression des favoris.",
     "errorSendComment": "Erreur lors de l'envoi. Vérifiez votre connexion.",
-    "minutes": "min"
+    "minutes": "min",
+    "sectionRating": "Ma notation",
+    "ratingLabel": "Noter ce contenu",
+    "ratingAvg": "Moyenne : {{avg}}/10 ({{count}} note(s))",
+    "ratingDelete": "Supprimer ma note",
+    "ratingLogin": "Connecte-toi pour noter ce contenu"
   },
   "actorProfile": {
     "born": "Naissance",
@@ -219,7 +226,14 @@
       "cinephile":     { "label": "Grand cinéphile",  "desc": "50+ favoris au total" },
       "listMaster":    { "label": "Maître des listes","desc": "3+ playlists" },
       "completionist": { "label": "Complétiste",      "desc": "100+ favoris au total" }
-    }
+    },
+    "dangerZone": "Zone de danger",
+    "deleteAccount": "Supprimer mon compte",
+    "deleteAccountTitle": "Suppression du compte",
+    "deleteAccountWarning": "Cette action est irréversible. Toutes vos données (favoris, commentaires, notes, playlists) seront définitivement supprimées.",
+    "deleteAccountConfirmBtn": "Oui, supprimer mon compte",
+    "deleteAccountFinal": "Dernière confirmation — êtes-vous absolument sûr(e) ?",
+    "deleteAccountFinalBtn": "Supprimer définitivement"
   },
   "notFound": {
     "label": "Page introuvable",

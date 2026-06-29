@@ -54,9 +54,10 @@ function PasswordInput({ id, name, label, value, onChange, errorId }) {
 
 export default function Register() {
   const { t } = useTranslation();
-  const [form, setForm]       = useState({ username: '', email: '', password: '', confirmPassword: '' });
-  const [error, setError]     = useState('');
-  const [loading, setLoading] = useState(false);
+  const [form, setForm]         = useState({ username: '', email: '', password: '', confirmPassword: '' });
+  const [error, setError]       = useState('');
+  const [loading, setLoading]   = useState(false);
+  const [consent, setConsent]   = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) =>
@@ -77,15 +78,15 @@ export default function Register() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <div className="relative min-h-screen flex items-center justify-center overflow-y-auto pt-24 pb-8">
 
       {/* Background */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: "url('/BackgroundRegister.png')" }}
       />
-      <div aria-hidden="true" className="absolute inset-0 bg-black/40" />
+      <div aria-hidden="true" className="fixed inset-0 bg-black/40" />
 
       {/* Card */}
       <motion.div
@@ -169,13 +170,41 @@ export default function Register() {
               errorId={error ? 'register-error' : undefined}
             />
 
+            {/* Consent checkbox */}
+            <label htmlFor="register-consent" className="flex items-start gap-3 cursor-pointer group">
+              <div className={`mt-0.5 flex-shrink-0 w-4 h-4 rounded border transition-colors flex items-center justify-center ${
+                consent
+                  ? 'bg-clap-gold border-clap-gold'
+                  : 'border-white/30 bg-black/40 group-hover:border-clap-gold/50'
+              }`}>
+                {consent && (
+                  <svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="none">
+                    <path d="M2 5l2.5 2.5 3.5-4" stroke="#0a0a0f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
+              </div>
+              <input
+                id="register-consent"
+                type="checkbox"
+                checked={consent}
+                onChange={(e) => setConsent(e.target.checked)}
+                required
+                aria-required="true"
+                className="sr-only"
+              />
+              <span className="text-white/60 text-xs leading-relaxed">
+                {t('register.consentText')}{' '}
+                <a href="/legal" onClick={e => e.stopPropagation()} className="text-clap-gold hover:underline">{t('register.consentLink')}</a>.
+              </span>
+            </label>
+
             {error && (
               <p id="register-error" role="alert" className="text-clap-red text-sm text-center">{error}</p>
             )}
 
             <motion.button
               type="submit"
-              disabled={loading}
+              disabled={loading || !consent}
               aria-busy={loading}
               whileTap={{ scale: 0.97 }}
               className="mt-1 bg-clap-gold text-clap-bg font-semibold py-3 rounded-xl hover:brightness-110 transition-all disabled:opacity-60"

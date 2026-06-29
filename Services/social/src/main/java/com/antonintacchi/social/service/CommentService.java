@@ -1,6 +1,7 @@
 package com.antonintacchi.social.service;
 
 import com.antonintacchi.social.client.DbCommentClient;
+import com.antonintacchi.social.client.DbUserClient;
 import com.antonintacchi.social.dto.comment.CommentDto;
 import com.antonintacchi.social.dto.comment.CreateCommentRequest;
 import com.antonintacchi.social.dto.comment.UpdateCommentRequest;
@@ -17,6 +18,7 @@ import java.util.NoSuchElementException;
 public class CommentService {
 
     private final DbCommentClient dbCommentClient;
+    private final DbUserClient   dbUserClient;
 
     public List<CommentDto> getComments(Long tmdbId, String mediaType) {
         return dbCommentClient.findByMedia(tmdbId, mediaType);
@@ -29,7 +31,9 @@ public class CommentService {
                 "mediaType", request.getMediaType(),
                 "content",   request.getContent()
         );
-        return dbCommentClient.save(body);
+        CommentDto saved = dbCommentClient.save(body);
+        try { dbUserClient.awardXp(userId, 10); } catch (Exception ignored) {}
+        return saved;
     }
 
     public CommentDto updateComment(Long userId, Long commentId, UpdateCommentRequest request) {

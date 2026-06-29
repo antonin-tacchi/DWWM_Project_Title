@@ -71,14 +71,31 @@ function Avatar({ username, avatarUrl, size = 'xl', avatarPos }) {
   );
 }
 
-/* ─── Level badge ─────────────────────────────────────────────── */
-function LevelBadge({ level }) {
+/* ─── Level badge + XP bar ────────────────────────────────────── */
+function LevelBadge({ level, xp }) {
   const { t } = useTranslation();
+  const currentLevel = level ?? 1;
+  const currentXp    = xp ?? 0;
+  const xpInLevel    = currentXp % 100;          // XP dans le niveau actuel
+  const xpNeeded     = 100;                       // XP pour passer au niveau suivant
+  const progress     = (xpInLevel / xpNeeded) * 100;
+
   return (
-    <span className="px-3 py-0.5 rounded-full text-xs font-bold"
-      style={{ background: 'rgba(201,169,110,0.2)', border: '1px solid #C9A96E', color: '#C9A96E' }}>
-      {t('userProfile.level', { level: level ?? 1 })}
-    </span>
+    <div className="flex flex-col gap-1">
+      <span className="px-3 py-0.5 rounded-full text-xs font-bold self-start"
+        style={{ background: 'rgba(201,169,110,0.2)', border: '1px solid #C9A96E', color: '#C9A96E' }}>
+        {t('userProfile.level', { level: currentLevel })}
+      </span>
+      <div className="flex items-center gap-2">
+        <div className="w-24 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
+          <div
+            className="h-full rounded-full transition-all duration-700"
+            style={{ width: `${progress}%`, background: 'linear-gradient(90deg, #C9A96E, #e8c97a)' }}
+          />
+        </div>
+        <span className="text-white/30 text-xs">{xpInLevel}/{xpNeeded} XP</span>
+      </div>
+    </div>
   );
 }
 
@@ -153,7 +170,7 @@ function ModalShell({ title, onClose, children, wide = false, headerRight }) {
 function EditProfileModal({ user, onClose }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const { updateUser } = useAuthStore();
+  const { updateUser, logout } = useAuthStore();
 
   const [username,    setUsername]    = useState(user?.username  ?? '');
   const [email,       setEmail]       = useState(user?.email     ?? '');
@@ -166,6 +183,7 @@ function EditProfileModal({ user, onClose }) {
   const [showConf,    setShowConf]    = useState(false);
   const [error,       setError]       = useState('');
   const [success,     setSuccess]     = useState('');
+  const [deleteStep,  setDeleteStep]  = useState(0); // 0=hidden, 1=first confirm, 2=final confirm
 
   /* Avatar preview (read-only — modifiable via "Photo de profil" dans le dropdown) */
   const previewInitials = (username || '?').slice(0, 2).toUpperCase();
@@ -213,6 +231,14 @@ function EditProfileModal({ user, onClose }) {
     }
     Promise.all(saves).catch(() => {});
   };
+
+  const deleteMut = useMutation({
+    mutationFn: () => api.delete('/auth/me'),
+    onSuccess: () => {
+      queryClient.clear();
+      logout();
+    },
+  });
 
   const isPending = profileMut.isPending || passwordMut.isPending;
 
@@ -286,6 +312,79 @@ function EditProfileModal({ user, onClose }) {
 
         <div className="pt-1">
           <GoldButton type="submit" disabled={isPending} full>{t('userProfile.editProfileBtn')}</GoldButton>
+        </div>
+
+        {/* ── Danger zone ── */}
+        <div className="border-t border-red-500/15 pt-5 mt-2 flex flex-col gap-3">
+          <p className="text-red-400/60 text-xs uppercase tracking-wider font-semibold">{t('userProfile.dangerZone')}</p>
+
+          {deleteStep === 0 && (
+            <button
+              type="button"
+              onClick={() => setDeleteStep(1)}
+              className="self-start text-sm text-red-400/50 hover:text-red-400 border border-red-500/20 hover:border-red-400/40 rounded-lg px-4 py-2 transition-colors"
+            >
+              {t('userProfile.deleteAccount')}
+            </button>
+          )}
+
+          {deleteStep === 1 && (
+            <AnimatePresence>
+              <motion.div
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-red-500/8 border border-red-500/20 rounded-xl px-4 py-4 flex flex-col gap-3"
+              >
+                <p className="text-red-300 text-sm font-medium">{t('userProfile.deleteAccountTitle')}</p>
+                <p className="text-white/50 text-xs leading-relaxed">{t('userProfile.deleteAccountWarning')}</p>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setDeleteStep(0)}
+                    className="flex-1 py-2 rounded-lg border border-white/10 text-white/40 hover:text-white text-sm transition-colors"
+                  >
+                    {t('common.cancel')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDeleteStep(2)}
+                    className="flex-1 py-2 rounded-lg bg-red-500/15 text-red-400 hover:bg-red-500/25 border border-red-500/30 text-sm font-medium transition-colors"
+                  >
+                    {t('userProfile.deleteAccountConfirmBtn')}
+                  </button>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          )}
+
+          {deleteStep === 2 && (
+            <AnimatePresence>
+              <motion.div
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-red-500/12 border border-red-500/40 rounded-xl px-4 py-4 flex flex-col gap-3"
+              >
+                <p className="text-red-300 text-sm font-semibold">{t('userProfile.deleteAccountFinal')}</p>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setDeleteStep(0)}
+                    className="flex-1 py-2 rounded-lg border border-white/10 text-white/40 hover:text-white text-sm transition-colors"
+                  >
+                    {t('common.cancel')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteMut.mutate()}
+                    disabled={deleteMut.isPending}
+                    className="flex-1 py-2 rounded-lg bg-red-500/30 text-red-300 hover:bg-red-500/50 border border-red-400/50 text-sm font-bold transition-colors disabled:opacity-50"
+                  >
+                    {deleteMut.isPending ? '…' : t('userProfile.deleteAccountFinalBtn')}
+                  </button>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          )}
         </div>
       </form>
     </ModalShell>
@@ -1152,7 +1251,7 @@ function ProfileHero({ user, onEditProfile, onEditBackground, onEditAvatar }) {
             {user?.username ?? '…'}
           </h1>
           <div className="flex items-center gap-2 mt-1">
-            <LevelBadge level={user?.level} />
+            <LevelBadge level={user?.level} xp={user?.xp} />
             {user?.bio && <span className="text-white/50 text-xs truncate max-w-xs">{user.bio}</span>}
           </div>
         </div>
@@ -1509,9 +1608,10 @@ export default function UserProfile() {
   const [editAvatarOpen,     setEditAvatarOpen]     = useState(false);
 
   const { data: me } = useQuery({
-    queryKey: ['me'],
-    queryFn:  () => api.get('/auth/me').then((r) => r.data),
-    staleTime: 2 * 60 * 1000,
+    queryKey:       ['me'],
+    queryFn:        () => api.get('/auth/me').then((r) => r.data),
+    staleTime:      0,
+    refetchOnMount: true,
   });
 
   const user = me ?? storeUser;

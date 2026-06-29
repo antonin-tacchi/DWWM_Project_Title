@@ -1,6 +1,9 @@
 package com.antonintacchi.dbservice.controller;
 
 import com.antonintacchi.dbservice.entity.User;
+import com.antonintacchi.dbservice.repository.CommentRepository;
+import com.antonintacchi.dbservice.repository.FavoriteRepository;
+import com.antonintacchi.dbservice.repository.RatingRepository;
 import com.antonintacchi.dbservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +15,10 @@ import java.util.List;
 @RequestMapping("/db/users")
 @RequiredArgsConstructor
 public class UserController {
+
+    private final RatingRepository   ratingRepository;
+    private final CommentRepository  commentRepository;
+    private final FavoriteRepository favoriteRepository;
 
     private final UserRepository userRepository;
 
@@ -64,6 +71,33 @@ public class UserController {
         if (!userRepository.existsById(id)) return ResponseEntity.notFound().build();
         userRepository.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    /** Ajoute de l'XP à l'utilisateur et recalcule le niveau (100 XP par niveau). */
+    @PostMapping("/{id}/xp")
+    public ResponseEntity<User> awardXp(@PathVariable Long id, @RequestParam int amount) {
+        return userRepository.findById(id).map(user -> {
+            int newXp    = (user.getXp() == null ? 0 : user.getXp()) + amount;
+            int newLevel = 1 + newXp / 100;
+            user.setXp(newXp);
+            user.setLevel(newLevel);
+            return ResponseEntity.ok(userRepository.save(user));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    /** Recalcule l'XP depuis zéro en comptant toutes les actions existantes. */
+    @PostMapping("/{id}/xp/recalculate")
+    public ResponseEntity<User> recalculateXp(@PathVariable Long id) {
+        return userRepository.findById(id).map(user -> {
+            long ratings   = ratingRepository.countByUserId(id);
+            long comments  = commentRepository.countByUserId(id);
+            long favorites = favoriteRepository.findByUserId(id).size();
+            int totalXp    = (int) (ratings * 5 + comments * 10 + favorites * 2);
+            int newLevel   = 1 + totalXp / 100;
+            user.setXp(totalXp);
+            user.setLevel(newLevel);
+            return ResponseEntity.ok(userRepository.save(user));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
 }

@@ -45,6 +45,8 @@ export default function AdminRatings() {
   const qc     = useQueryClient();
   const [search,  setSearch]  = useState('');
   const [confirm, setConfirm] = useState(null);
+  const [page,    setPage]    = useState(1);
+  const PAGE_SIZE = 10;
 
   const { data: rawRatings, isLoading } = useQuery({
     queryKey: ['admin-ratings'],
@@ -65,6 +67,9 @@ export default function AdminRatings() {
       String(r.score   ?? '').includes(q)
     );
   });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paginated  = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   /* Score distribution */
   const avgScore = ratings.length
@@ -116,7 +121,7 @@ export default function AdminRatings() {
                     ))}
                   </tr>
                 ))
-              : filtered.map(r => (
+              : paginated.map(r => (
                   <motion.tr
                     key={r.id}
                     initial={{ opacity: 0 }}
@@ -158,6 +163,21 @@ export default function AdminRatings() {
           <div className="py-12 text-center text-white/30 text-sm">{t('admin.ratings.noResults')}</div>
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-4">
+          <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
+            className="px-3 py-1.5 rounded-lg border border-white/10 text-white/40 hover:text-white text-sm transition-colors disabled:opacity-30">←</button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+            <button key={p} onClick={() => setPage(p)}
+              className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${p === page ? 'bg-clap-gold/20 text-clap-gold border border-clap-gold/30' : 'border border-white/10 text-white/40 hover:text-white'}`}
+            >{p}</button>
+          ))}
+          <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+            className="px-3 py-1.5 rounded-lg border border-white/10 text-white/40 hover:text-white text-sm transition-colors disabled:opacity-30">→</button>
+        </div>
+      )}
 
       {/* Confirm modal */}
       <AnimatePresence>
