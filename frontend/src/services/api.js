@@ -14,8 +14,12 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  /* Auth header */
-  const token = localStorage.getItem('token');
+  /* Auth header — token is persisted by Zustand under key 'clap-auth' */
+  let token = null;
+  try {
+    const raw = localStorage.getItem('clap-auth');
+    if (raw) token = JSON.parse(raw)?.state?.token ?? null;
+  } catch { /* ignore parse errors */ }
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -44,8 +48,8 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      const hadToken = !!localStorage.getItem('token');
-      localStorage.removeItem('token');
+      const hadToken = !!localStorage.getItem('clap-auth');
+      localStorage.removeItem('clap-auth');
       if (hadToken) {
         /* Use i18n keys defined in locales (notifications.sessionExpired / sessionExpiredMsg) */
         const t = i18n.t.bind(i18n);
