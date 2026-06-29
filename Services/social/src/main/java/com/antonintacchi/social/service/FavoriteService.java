@@ -1,6 +1,7 @@
 package com.antonintacchi.social.service;
 
 import com.antonintacchi.social.client.DbFavoriteClient;
+import com.antonintacchi.social.client.DbUserClient;
 import com.antonintacchi.social.dto.favorite.AddFavoriteRequest;
 import com.antonintacchi.social.dto.favorite.FavoriteDto;
 import feign.FeignException;
@@ -16,6 +17,7 @@ import java.util.NoSuchElementException;
 public class FavoriteService {
 
     private final DbFavoriteClient dbFavoriteClient;
+    private final DbUserClient     dbUserClient;
 
     public List<FavoriteDto> getFavorites(Long userId) {
         return dbFavoriteClient.findByUser(userId);
@@ -30,7 +32,9 @@ public class FavoriteService {
                 "tmdbId",    request.getTmdbId(),
                 "mediaType", request.getMediaType()
         );
-        return dbFavoriteClient.save(body);
+        FavoriteDto saved = dbFavoriteClient.save(body);
+        try { dbUserClient.awardXp(userId, 2); } catch (Exception ignored) {}
+        return saved;
     }
 
     public void removeFavorite(Long userId, Long favoriteId) {

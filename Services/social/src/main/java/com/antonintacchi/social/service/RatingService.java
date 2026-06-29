@@ -1,6 +1,7 @@
 package com.antonintacchi.social.service;
 
 import com.antonintacchi.social.client.DbRatingClient;
+import com.antonintacchi.social.client.DbUserClient;
 import com.antonintacchi.social.dto.rating.CreateRatingRequest;
 import com.antonintacchi.social.dto.rating.RatingDto;
 import com.antonintacchi.social.dto.rating.UpdateRatingRequest;
@@ -17,6 +18,7 @@ import java.util.NoSuchElementException;
 public class RatingService {
 
     private final DbRatingClient dbRatingClient;
+    private final DbUserClient   dbUserClient;
 
     public List<RatingDto> getRatings(Long tmdbId, String mediaType) {
         return dbRatingClient.findByMedia(tmdbId, mediaType);
@@ -32,7 +34,9 @@ public class RatingService {
                 "mediaType", request.getMediaType(),
                 "score",     request.getScore()
         );
-        return dbRatingClient.save(body);
+        RatingDto saved = dbRatingClient.save(body);
+        try { dbUserClient.awardXp(userId, 5); } catch (Exception ignored) {}
+        return saved;
     }
 
     public RatingDto updateRating(Long userId, Long ratingId, UpdateRatingRequest request) {

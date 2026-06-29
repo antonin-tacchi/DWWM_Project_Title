@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import useAuthStore from './store/authStore';
+import api from './services/api';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import ProtectedRoute from './components/layout/ProtectedRoute';
@@ -41,21 +42,29 @@ export default function App() {
   const { pathname } = useLocation();
   const isAuth       = AUTH_ROUTES.includes(pathname);
   const isAdmin      = pathname.startsWith('/admin');
-  const { logout }   = useAuthStore();
+  const { logout, isAuthenticated, updateUser } = useAuthStore();
 
-  /* Check JWT expiry on every mount / page load */
+  /* Check JWT expiry + refresh user data (including id, xp, level) on app load */
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    let token = null;
+    try {
+      const raw = localStorage.getItem('clap-auth');
+      if (raw) token = JSON.parse(raw)?.state?.token ?? null;
+    } catch { /* ignore */ }
     if (!token) return;
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       if (payload.exp && payload.exp * 1000 < Date.now()) {
         logout();
+        return;
       }
     } catch {
       logout();
+      return;
     }
-  }, [logout]);
+    /* Sync store with fresh /auth/me so user.id, xp, level are always up-to-date */
+    api.get('/auth/me').then(r => updateUser(r.data)).catch(() => {});
+  }, [logout, updateUser]);
 
   return (
     <ErrorBoundary resetKey={pathname}>

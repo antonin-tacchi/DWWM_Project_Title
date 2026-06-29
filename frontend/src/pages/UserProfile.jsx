@@ -71,14 +71,31 @@ function Avatar({ username, avatarUrl, size = 'xl', avatarPos }) {
   );
 }
 
-/* ─── Level badge ─────────────────────────────────────────────── */
-function LevelBadge({ level }) {
+/* ─── Level badge + XP bar ────────────────────────────────────── */
+function LevelBadge({ level, xp }) {
   const { t } = useTranslation();
+  const currentLevel = level ?? 1;
+  const currentXp    = xp ?? 0;
+  const xpInLevel    = currentXp % 100;          // XP dans le niveau actuel
+  const xpNeeded     = 100;                       // XP pour passer au niveau suivant
+  const progress     = (xpInLevel / xpNeeded) * 100;
+
   return (
-    <span className="px-3 py-0.5 rounded-full text-xs font-bold"
-      style={{ background: 'rgba(201,169,110,0.2)', border: '1px solid #C9A96E', color: '#C9A96E' }}>
-      {t('userProfile.level', { level: level ?? 1 })}
-    </span>
+    <div className="flex flex-col gap-1">
+      <span className="px-3 py-0.5 rounded-full text-xs font-bold self-start"
+        style={{ background: 'rgba(201,169,110,0.2)', border: '1px solid #C9A96E', color: '#C9A96E' }}>
+        {t('userProfile.level', { level: currentLevel })}
+      </span>
+      <div className="flex items-center gap-2">
+        <div className="w-24 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
+          <div
+            className="h-full rounded-full transition-all duration-700"
+            style={{ width: `${progress}%`, background: 'linear-gradient(90deg, #C9A96E, #e8c97a)' }}
+          />
+        </div>
+        <span className="text-white/30 text-xs">{xpInLevel}/{xpNeeded} XP</span>
+      </div>
+    </div>
   );
 }
 
@@ -1234,7 +1251,7 @@ function ProfileHero({ user, onEditProfile, onEditBackground, onEditAvatar }) {
             {user?.username ?? '…'}
           </h1>
           <div className="flex items-center gap-2 mt-1">
-            <LevelBadge level={user?.level} />
+            <LevelBadge level={user?.level} xp={user?.xp} />
             {user?.bio && <span className="text-white/50 text-xs truncate max-w-xs">{user.bio}</span>}
           </div>
         </div>
@@ -1591,9 +1608,10 @@ export default function UserProfile() {
   const [editAvatarOpen,     setEditAvatarOpen]     = useState(false);
 
   const { data: me } = useQuery({
-    queryKey: ['me'],
-    queryFn:  () => api.get('/auth/me').then((r) => r.data),
-    staleTime: 2 * 60 * 1000,
+    queryKey:       ['me'],
+    queryFn:        () => api.get('/auth/me').then((r) => r.data),
+    staleTime:      0,
+    refetchOnMount: true,
   });
 
   const user = me ?? storeUser;

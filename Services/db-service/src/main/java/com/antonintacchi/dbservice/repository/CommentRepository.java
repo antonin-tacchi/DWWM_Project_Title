@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findByTmdbIdAndMediaType(Long tmdbId, String mediaType);
+    long countByUserId(Long userId);
 }
