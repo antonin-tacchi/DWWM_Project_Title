@@ -66,7 +66,7 @@ export default function App() {
       {/* Admin panel has its own sidebar layout — no global Navbar/Footer */}
       {!isAdmin && <Navbar />}
 
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         <Routes>
           {/* ── Admin (nested, own layout) ────────────────────────── */}
           <Route

@@ -34,11 +34,15 @@
     "otherLogin": "Other Login",
     "google": "Google",
     "tmdb": "TMDB",
-    "errorInvalidCredentials": "Invalid credentials."
+    "errorInvalidCredentials": "Invalid credentials.",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   },
   "register": {
     "tabLogin": "Login",
     "tab": "Register",
+    "tabsLabel": "Form selection",
+    "formLabel": "Registration form",
     "username": "Username",
     "email": "Email",
     "password": "Password",
@@ -48,7 +52,9 @@
     "otherRegister": "Other Register",
     "google": "Google",
     "tmdb": "TMDB",
-    "errorDefault": "Error during registration."
+    "errorDefault": "Error during registration.",
+    "googleNotAvailable": "Google sign-up — not available",
+    "tmdbNotAvailable": "TMDB sign-up — not available"
   },
   "catalogue": {
     "filterTitle": "Refine Your\nExperience",

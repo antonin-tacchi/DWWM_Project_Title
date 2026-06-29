@@ -1,0 +1,12 @@
+# Configuration de test — surcharge application.yaml principal
+# Désactive Consul et fournit une clé JWT fixe pour les tests unitaires
+spring:
+  cloud:
+    consul:
+      enabled: false
+      discovery:
+        enabled: false
+        register: false
+
+jwt:
+  secret: dGVzdFNlY3JldEtleUZvclVuaXRUZXN0c09ubHlOb3RGb3JQcm9kdWN0aW9u

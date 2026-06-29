@@ -34,11 +34,15 @@
     "otherLogin": "Autre connexion",
     "google": "Google",
     "tmdb": "TMDB",
-    "errorInvalidCredentials": "Identifiants incorrects."
+    "errorInvalidCredentials": "Identifiants incorrects.",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe"
   },
   "register": {
     "tabLogin": "Connexion",
     "tab": "Inscription",
+    "tabsLabel": "Choix du formulaire",
+    "formLabel": "Formulaire d'inscription",
     "username": "Pseudo",
     "email": "Email",
     "password": "Mot de passe",
@@ -48,7 +52,9 @@
     "otherRegister": "Autre inscription",
     "google": "Google",
     "tmdb": "TMDB",
-    "errorDefault": "Erreur lors de l'inscription."
+    "errorDefault": "Erreur lors de l'inscription.",
+    "googleNotAvailable": "Inscription Google — non disponible",
+    "tmdbNotAvailable": "Inscription TMDB — non disponible"
   },
   "catalogue": {
     "filterTitle": "Affiner votre\nexploration",

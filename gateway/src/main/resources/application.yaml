@@ -11,6 +11,9 @@ spring:
       discovery:
         service-name: gateway
     gateway:
+      # CORS global — autorise le frontend Vite (dev) et le conteneur nginx (prod)
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
       globalcors:
         cors-configurations:
           '[/**]':

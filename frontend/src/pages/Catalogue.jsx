@@ -272,7 +272,7 @@ function MobileBar({ query, onQueryChange, activeCount, onOpenDrawer }) {
       <SearchInput value={query} onChange={onQueryChange} className="flex-1" />
       <button
         onClick={onOpenDrawer}
-        className="relative flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full border border-clap-muted/50 bg-clap-card text-clap-light text-xs transition-colors hover:border-clap-gold"
+        className="relative flex-shrink-0 flex items-center c gap-1.5 px-3 py-2 rounded-full border border-clap-muted/50 bg-clap-card text-clap-light text-xs transition-colors hover:border-clap-gold"
       >
         {/* Filter icon */}
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

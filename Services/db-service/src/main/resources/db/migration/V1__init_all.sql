@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS ratings (
   user_id    BIGINT      NOT NULL,
   tmdb_id    BIGINT      NOT NULL,
   media_type VARCHAR(10) NOT NULL,
-  score      TINYINT     NOT NULL,
+  score      TINYINT     NOT NULL CHECK (score BETWEEN 1 AND 10),
   created_at DATETIME    DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT uq_rating UNIQUE (user_id, tmdb_id, media_type)
 );

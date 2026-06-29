@@ -11,7 +11,7 @@ import api from '../../services/api';
 
 /* ─── Icons ──────────────────────────────────────────────────── */
 const HamburgerDesktop = () => (
-  <svg width="26" height="18" viewBox="0 0 26 18" fill="none">
+  <svg width="26" height="18" viewBox="0 0 26 18" fill="none" aria-hidden="true">
     <rect y="0"    width="26" height="2.5" rx="1.25" fill="#C9A96E" />
     <rect y="7.75" width="26" height="2.5" rx="1.25" fill="#C9A96E" />
     <rect y="15.5" width="26" height="2.5" rx="1.25" fill="#C9A96E" />
@@ -19,7 +19,7 @@ const HamburgerDesktop = () => (
 );
 
 const HamburgerMobile = () => (
-  <div className="flex flex-col gap-[5px]">
+  <div className="flex flex-col gap-[5px]" aria-hidden="true">
     {[0, 1, 2].map((i) => (
       <div key={i} className="w-9 h-[10px] bg-clap-gold rounded-full" />
     ))}
@@ -386,11 +386,11 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-clap-bg/90 backdrop-blur-sm">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-clap-bg/90 backdrop-blur-sm" aria-label="Navigation principale">
         <div className="flex items-center h-16 px-4 md:px-5">
 
           {/* Logo — all screens */}
-          <Link to="/" className="flex-shrink-0">
+          <Link to="/" className="flex-shrink-0" aria-label="Clap! — Accueil">
             <Logo3D />
           </Link>
 
@@ -398,6 +398,9 @@ export default function Navbar() {
           <motion.button
             whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
             onClick={() => setMenuOpen(true)}
+            aria-label="Ouvrir le menu de navigation"
+            aria-expanded={menuOpen}
+            aria-controls="main-menu-overlay"
             className="hidden md:flex items-center ml-4 flex-shrink-0"
           >
             <HamburgerDesktop />
@@ -490,6 +493,9 @@ export default function Navbar() {
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={() => setMenuOpen(true)}
+            aria-label="Ouvrir le menu de navigation"
+            aria-expanded={menuOpen}
+            aria-controls="main-menu-overlay"
             className="md:hidden flex items-center"
           >
             <HamburgerMobile />
@@ -516,6 +522,10 @@ export default function Navbar() {
       <AnimatePresence>
         {menuOpen && (
           <motion.div
+            id="main-menu-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menu de navigation"
             variants={overlayVariants}
             initial="hidden" animate="visible" exit="exit"
             className="fixed inset-0 z-[100] bg-clap-bg/96 backdrop-blur-md flex flex-col items-center justify-center"
@@ -525,12 +535,13 @@ export default function Navbar() {
               animate={{ opacity: 1, rotate: 0, transition: { duration: 0.3 } }}
               exit={{ opacity: 0 }}
               onClick={() => setMenuOpen(false)}
+              aria-label="Fermer le menu"
               className="absolute top-5 right-6"
             >
               <CloseIcon />
             </motion.button>
 
-            <nav className="flex flex-col items-center gap-7">
+            <nav className="flex flex-col items-center gap-7" aria-label="Liens de navigation principaux">
               {NAV_LINKS.map((link, i) => (
                 <motion.div
                   key={link.key}

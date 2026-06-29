@@ -1,16 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/cine.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Clap! — Cinema is a dream we share together." />
+
+    <!-- SEO primaire -->
+    <meta name="description" content="Clap! — Découvrez, notez et commentez des films et séries. Gérez vos favoris, créez des listes personnalisées et rejoignez la communauté cinéphile." />
+    <meta name="keywords" content="films, séries, cinéma, TMDB, notation, commentaires, favoris, cinéphile" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#0D0D1A" />
+
+    <!-- Open Graph (partage réseaux sociaux) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Clap! — Votre référence cinématographique" />
+    <meta property="og:description" content="Découvrez, notez et commentez des films et séries. Gérez vos favoris et rejoignez la communauté cinéphile." />
+    <meta property="og:image" content="/og-image.png" />
+    <meta property="og:locale" content="fr_FR" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Clap! — Votre référence cinématographique" />
+    <meta name="twitter:description" content="Découvrez, notez et commentez des films et séries." />
+    <meta name="twitter:image" content="/og-image.png" />
+
     <title>Clap!</title>
+
+    <!-- Polices -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" />
   </head>
   <body>
+    <!-- Lien d'évitement pour les lecteurs d'écran (accessibilité RGAA) -->
+    <a
+      href="#main-content"
+      class="skip-link"
+      style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:9999;background:#C9A96E;color:#0D0D1A;padding:8px 16px;border-radius:4px;font-weight:600"
+      onfocus="this.style.left='16px';this.style.width='auto';this.style.height='auto'"
+      onblur="this.style.left='-9999px';this.style.width='1px';this.style.height='1px'"
+    >
+      Aller au contenu principal
+    </a>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

@@ -19,7 +19,11 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
 
     private final JwtUtil jwtUtil;
 
-    /** Routes accessibles sans token */
+    /**
+     * Routes accessibles sans token JWT.
+     * /favorites, /lists, /notifications sont intentionnellement absents :
+     * ce sont des données utilisateur qui requièrent une authentification.
+     */
     private static final List<String> PUBLIC_PATHS = List.of(
             "/auth/login",
             "/auth/register",
@@ -27,10 +31,7 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
             "/tv",
             "/actors",
             "/comments",
-            "/ratings",
-            "/favorites",
-            "/lists",
-            "/notifications"
+            "/ratings"
     );
 
     /** Routes réservées aux admins */
