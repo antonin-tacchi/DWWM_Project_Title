@@ -54,7 +54,9 @@
     "tmdb": "TMDB",
     "errorDefault": "Error during registration.",
     "googleNotAvailable": "Google sign-up — not available",
-    "tmdbNotAvailable": "TMDB sign-up — not available"
+    "tmdbNotAvailable": "TMDB sign-up — not available",
+    "consentText": "I agree to the collection and processing of my personal data in accordance with the",
+    "consentLink": "privacy policy"
   },
   "catalogue": {
     "filterTitle": "Refine Your\nExperience",

@@ -54,7 +54,9 @@
     "tmdb": "TMDB",
     "errorDefault": "Erreur lors de l'inscription.",
     "googleNotAvailable": "Inscription Google — non disponible",
-    "tmdbNotAvailable": "Inscription TMDB — non disponible"
+    "tmdbNotAvailable": "Inscription TMDB — non disponible",
+    "consentText": "J'accepte la collecte et le traitement de mes données personnelles conformément à la",
+    "consentLink": "politique de confidentialité"
   },
   "catalogue": {
     "filterTitle": "Affiner votre\nexploration",

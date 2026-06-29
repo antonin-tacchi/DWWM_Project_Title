@@ -1,4 +1,4 @@
-# ===========================
+﻿# ===========================
 # JAVA / MAVEN
 # ===========================
 target/
@@ -20,7 +20,7 @@ application-local.yml
 application-local.properties
 
 # ===========================
-# SECRETS — ne jamais committer
+# SECRETS â€” ne jamais committer
 # ===========================
 .env
 .env.*
