@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import i18nInstance from '../i18n';
 import api from '../services/api';
 import useAuthStore from '../store/authStore';
+import StarRating from '../components/ui/StarRating';
 
 /* ─── Helpers ────────────────────────────────────────────────── */
 const img = (path, size = 'original') =>
@@ -757,6 +758,12 @@ export default function MovieDetail({ mediaType = 'movie' }) {
             </ScrollRow>
           </section>
         )}
+
+        {/* ── Rating ── */}
+        <section>
+          <SectionTitle>{t('movieDetail.sectionRating')}</SectionTitle>
+          <StarRating tmdbId={tmdbId} mediaType={mediaType} />
+        </section>
 
         {/* ── Commentary ── */}
         <section>
