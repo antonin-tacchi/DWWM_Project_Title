@@ -153,7 +153,7 @@ function ModalShell({ title, onClose, children, wide = false, headerRight }) {
 function EditProfileModal({ user, onClose }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const { updateUser } = useAuthStore();
+  const { updateUser, logout } = useAuthStore();
 
   const [username,    setUsername]    = useState(user?.username  ?? '');
   const [email,       setEmail]       = useState(user?.email     ?? '');
@@ -166,6 +166,7 @@ function EditProfileModal({ user, onClose }) {
   const [showConf,    setShowConf]    = useState(false);
   const [error,       setError]       = useState('');
   const [success,     setSuccess]     = useState('');
+  const [deleteStep,  setDeleteStep]  = useState(0); // 0=hidden, 1=first confirm, 2=final confirm
 
   /* Avatar preview (read-only — modifiable via "Photo de profil" dans le dropdown) */
   const previewInitials = (username || '?').slice(0, 2).toUpperCase();
@@ -213,6 +214,14 @@ function EditProfileModal({ user, onClose }) {
     }
     Promise.all(saves).catch(() => {});
   };
+
+  const deleteMut = useMutation({
+    mutationFn: () => api.delete('/auth/me'),
+    onSuccess: () => {
+      queryClient.clear();
+      logout();
+    },
+  });
 
   const isPending = profileMut.isPending || passwordMut.isPending;
 
@@ -286,6 +295,79 @@ function EditProfileModal({ user, onClose }) {
 
         <div className="pt-1">
           <GoldButton type="submit" disabled={isPending} full>{t('userProfile.editProfileBtn')}</GoldButton>
+        </div>
+
+        {/* ── Danger zone ── */}
+        <div className="border-t border-red-500/15 pt-5 mt-2 flex flex-col gap-3">
+          <p className="text-red-400/60 text-xs uppercase tracking-wider font-semibold">{t('userProfile.dangerZone')}</p>
+
+          {deleteStep === 0 && (
+            <button
+              type="button"
+              onClick={() => setDeleteStep(1)}
+              className="self-start text-sm text-red-400/50 hover:text-red-400 border border-red-500/20 hover:border-red-400/40 rounded-lg px-4 py-2 transition-colors"
+            >
+              {t('userProfile.deleteAccount')}
+            </button>
+          )}
+
+          {deleteStep === 1 && (
+            <AnimatePresence>
+              <motion.div
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-red-500/8 border border-red-500/20 rounded-xl px-4 py-4 flex flex-col gap-3"
+              >
+                <p className="text-red-300 text-sm font-medium">{t('userProfile.deleteAccountTitle')}</p>
+                <p className="text-white/50 text-xs leading-relaxed">{t('userProfile.deleteAccountWarning')}</p>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setDeleteStep(0)}
+                    className="flex-1 py-2 rounded-lg border border-white/10 text-white/40 hover:text-white text-sm transition-colors"
+                  >
+                    {t('common.cancel')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDeleteStep(2)}
+                    className="flex-1 py-2 rounded-lg bg-red-500/15 text-red-400 hover:bg-red-500/25 border border-red-500/30 text-sm font-medium transition-colors"
+                  >
+                    {t('userProfile.deleteAccountConfirmBtn')}
+                  </button>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          )}
+
+          {deleteStep === 2 && (
+            <AnimatePresence>
+              <motion.div
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-red-500/12 border border-red-500/40 rounded-xl px-4 py-4 flex flex-col gap-3"
+              >
+                <p className="text-red-300 text-sm font-semibold">{t('userProfile.deleteAccountFinal')}</p>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setDeleteStep(0)}
+                    className="flex-1 py-2 rounded-lg border border-white/10 text-white/40 hover:text-white text-sm transition-colors"
+                  >
+                    {t('common.cancel')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteMut.mutate()}
+                    disabled={deleteMut.isPending}
+                    className="flex-1 py-2 rounded-lg bg-red-500/30 text-red-300 hover:bg-red-500/50 border border-red-400/50 text-sm font-bold transition-colors disabled:opacity-50"
+                  >
+                    {deleteMut.isPending ? '…' : t('userProfile.deleteAccountFinalBtn')}
+                  </button>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          )}
         </div>
       </form>
     </ModalShell>
