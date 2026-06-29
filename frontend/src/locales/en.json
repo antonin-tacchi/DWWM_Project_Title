@@ -125,7 +125,12 @@
     "errorAddFavorite": "Error adding to favorites.",
     "errorRemoveFavorite": "Error removing from favorites.",
     "errorSendComment": "Error sending. Please check your connection.",
-    "minutes": "min"
+    "minutes": "min",
+    "sectionRating": "My rating",
+    "ratingLabel": "Rate this content",
+    "ratingAvg": "Average: {{avg}}/10 ({{count}} rating(s))",
+    "ratingDelete": "Delete my rating",
+    "ratingLogin": "Log in to rate this content"
   },
   "actorProfile": {
     "born": "Born",
@@ -219,7 +224,14 @@
       "cinephile":     { "label": "Cinéphile",        "desc": "50+ total favorites" },
       "listMaster":    { "label": "List Master",      "desc": "3+ playlists" },
       "completionist": { "label": "Completionist",    "desc": "100+ total favorites" }
-    }
+    },
+    "dangerZone": "Danger zone",
+    "deleteAccount": "Delete my account",
+    "deleteAccountTitle": "Account deletion",
+    "deleteAccountWarning": "This action is irreversible. All your data (favorites, comments, ratings, playlists) will be permanently deleted.",
+    "deleteAccountConfirmBtn": "Yes, delete my account",
+    "deleteAccountFinal": "Final confirmation — are you absolutely sure?",
+    "deleteAccountFinalBtn": "Delete permanently"
   },
   "notFound": {
     "label": "Page not found",
