@@ -12,9 +12,16 @@
     "register": "Register",
     "logout": "Logout",
     "admin": "Admin",
+    "history": "History",
     "search": "Search films, series, actors…",
     "language": "Français",
     "seeAllResults": "See all results for « {{query}} » →"
+  },
+  "history": {
+    "title": "History",
+    "subtitle": "Movies and shows you've recently viewed.",
+    "empty": "You haven't viewed anything yet. Movies and shows you watch will show up here.",
+    "browseCatalogue": "Browse the catalogue →"
   },
   "home": {
     "addToFavorites": "Add to favorites",

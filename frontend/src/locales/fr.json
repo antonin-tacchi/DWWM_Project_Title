@@ -12,9 +12,16 @@
     "register": "Inscription",
     "logout": "Déconnexion",
     "admin": "Admin",
+    "history": "Historique",
     "search": "Rechercher films, séries, acteurs…",
     "language": "English",
     "seeAllResults": "Voir tous les résultats pour « {{query}} » →"
+  },
+  "history": {
+    "title": "Historique",
+    "subtitle": "Les films et séries que vous avez consultés récemment.",
+    "empty": "Vous n'avez encore rien consulté. Les films et séries que vous regarderez apparaîtront ici.",
+    "browseCatalogue": "Parcourir le catalogue →"
   },
   "home": {
     "addToFavorites": "Ajouter aux favoris",

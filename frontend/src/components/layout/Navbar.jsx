@@ -41,6 +41,14 @@ const BellIcon = () => (
   </svg>
 );
 
+const HistoryIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9A96E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 12a9 9 0 1 0 3-6.7" />
+    <path d="M3 4v4h4" />
+    <path d="M12 8v4l3 3" />
+  </svg>
+);
+
 const CloseIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
     <path d="M6 6L18 18M6 18L18 6" stroke="#C9A96E" strokeWidth="2" strokeLinecap="round" />
@@ -416,6 +424,16 @@ export default function Navbar() {
           {/* Bell + Admin + Avatar (desktop right) */}
           <div className="hidden md:flex items-center gap-4">
             {isAuthenticated && (
+              <Link
+                to="/history"
+                title={t('nav.history')}
+                aria-label={t('nav.history')}
+                className="flex items-center hover:opacity-80 transition-opacity"
+              >
+                <HistoryIcon />
+              </Link>
+            )}
+            {isAuthenticated && (
               <div ref={bellRef} className="relative">
                 <motion.button
                   whileHover={{ scale: 1.1 }}
@@ -585,6 +603,15 @@ export default function Navbar() {
                   className="hover:text-clap-gold transition-colors uppercase"
                 >
                   {t('nav.admin')}
+                </Link>
+              )}
+              {isAuthenticated && (
+                <Link
+                  to="/history"
+                  onClick={() => setMenuOpen(false)}
+                  className="hover:text-clap-gold transition-colors uppercase"
+                >
+                  {t('nav.history')}
                 </Link>
               )}
               {isAuthenticated ? (
