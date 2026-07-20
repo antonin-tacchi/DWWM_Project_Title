@@ -19,6 +19,7 @@ import TvDetail from './pages/TvDetail';
 import ActorProfile from './pages/ActorProfile';
 import CrewProfile from './pages/CrewProfile';
 import UserProfile from './pages/UserProfile';
+import History from './pages/History';
 import News from './pages/News';
 import Discovery from './pages/Discovery';
 import LegalNotice from './pages/legal/LegalNotice';
@@ -103,6 +104,7 @@ export default function App() {
           <Route path="/news"      element={<News />} />
           <Route path="/discover"  element={<Discovery />} />
           <Route path="/profile"   element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+          <Route path="/history"   element={<ProtectedRoute><History /></ProtectedRoute>} />
           <Route path="/legal"     element={<LegalNotice />} />
           <Route path="/terms"     element={<Terms />} />
           <Route path="/privacy"   element={<Privacy />} />

@@ -530,6 +530,14 @@ export default function MovieDetail({ mediaType = 'movie' }) {
     staleTime: 2 * 60 * 1000,
   });
 
+  /* ── Log this view to the user's history ── */
+  useEffect(() => {
+    if (!isAuthenticated || !tmdbId) return;
+    api.post('/movies/history', { tmdbId, mediaType })
+      .then(() => queryClient.invalidateQueries({ queryKey: ['history'] }))
+      .catch(() => {});
+  }, [isAuthenticated, tmdbId, mediaType, queryClient]);
+
   /* ── Favorites ── */
   const { data: favoritesData } = useQuery({
     queryKey: ['favorites'],
