@@ -5,6 +5,7 @@ import com.antonintacchi.social.client.DbUserClient;
 import com.antonintacchi.social.dto.comment.CommentDto;
 import com.antonintacchi.social.dto.comment.CreateCommentRequest;
 import com.antonintacchi.social.dto.comment.UpdateCommentRequest;
+import com.antonintacchi.social.dto.user.UserSummaryDto;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +23,15 @@ public class CommentService {
     private final DbUserClient   dbUserClient;
 
     public List<CommentDto> getComments(Long tmdbId, String mediaType) {
-        return dbCommentClient.findByMedia(tmdbId, mediaType);
+        List<CommentDto> comments = dbCommentClient.findByMedia(tmdbId, mediaType);
+
+        Map<Long, UserSummaryDto> authorsById = comments.stream()
+                .map(CommentDto::getUserId)
+                .distinct()
+                .collect(Collectors.toMap(id -> id, this::findUserOrNull));
+
+        comments.forEach(comment -> enrichWithAuthor(comment, authorsById.get(comment.getUserId())));
+        return comments;
     }
 
     public CommentDto createComment(Long userId, CreateCommentRequest request) {
@@ -33,6 +43,7 @@ public class CommentService {
         );
         CommentDto saved = dbCommentClient.save(body);
         try { dbUserClient.awardXp(userId, 10); } catch (Exception ignored) {}
+        enrichWithAuthor(saved, findUserOrNull(userId));
         return saved;
     }
 
@@ -41,7 +52,9 @@ public class CommentService {
         if (!comment.getUserId().equals(userId)) {
             throw new IllegalStateException("Not your comment");
         }
-        return dbCommentClient.update(commentId, Map.of("content", request.getContent()));
+        CommentDto updated = dbCommentClient.update(commentId, Map.of("content", request.getContent()));
+        enrichWithAuthor(updated, findUserOrNull(userId));
+        return updated;
     }
 
     public void deleteComment(Long userId, Long commentId) {
@@ -74,6 +87,20 @@ public class CommentService {
         } catch (FeignException.NotFound e) {
             throw new NoSuchElementException("Comment not found");
         }
+    }
+
+    private UserSummaryDto findUserOrNull(Long userId) {
+        try {
+            return dbUserClient.findById(userId);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private void enrichWithAuthor(CommentDto comment, UserSummaryDto author) {
+        if (author == null) return;
+        comment.setUsername(author.getUsername());
+        comment.setAvatarUrl(author.getAvatarUrl());
     }
 
 }
