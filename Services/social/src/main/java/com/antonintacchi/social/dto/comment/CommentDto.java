@@ -15,6 +15,8 @@ public class CommentDto {
 
     private Long id;
     private Long userId;
+    private String username;
+    private String avatarUrl;
     private Long tmdbId;
     private String mediaType;
     private String content;

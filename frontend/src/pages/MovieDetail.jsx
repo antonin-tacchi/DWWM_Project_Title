@@ -204,10 +204,11 @@ function CommentCard({ comment, currentUserId, onDelete }) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const text    = comment.content ?? '';
-  const long    = text.length > 200;
-  const shown   = expanded || !long ? text : text.slice(0, 200) + '…';
-  const isOwner = currentUserId && Number(currentUserId) === Number(comment.userId);
+  const text        = comment.content ?? '';
+  const long        = text.length > 200;
+  const shown       = expanded || !long ? text : text.slice(0, 200) + '…';
+  const isOwner     = currentUserId && Number(currentUserId) === Number(comment.userId);
+  const displayName = comment.username || `User${comment.userId}`;
 
   const handleDelete = async () => {
     if (!window.confirm(t('movieDetail.deleteCommentConfirm'))) return;
@@ -217,15 +218,16 @@ function CommentCard({ comment, currentUserId, onDelete }) {
 
   return (
     <div className="flex gap-3 py-5 border-b border-clap-muted/20 group">
-      <div className="w-10 h-10 rounded-full bg-clap-muted flex items-center justify-center flex-shrink-0 border border-clap-muted/40">
-        <span className="text-clap-gold text-sm font-bold">
-          {String(comment.userId ?? '?')[0]?.toUpperCase()}
-        </span>
+      <div className="w-10 h-10 rounded-full bg-clap-muted overflow-hidden flex items-center justify-center flex-shrink-0 border border-clap-muted/40">
+        {comment.avatarUrl
+          ? <img src={comment.avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+          : <span className="text-clap-gold text-sm font-bold">{displayName[0]?.toUpperCase()}</span>
+        }
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-1">
           <p className="text-clap-gold text-sm font-semibold font-display italic">
-            User{comment.userId}
+            {displayName}
           </p>
           {isOwner && (
             <button
