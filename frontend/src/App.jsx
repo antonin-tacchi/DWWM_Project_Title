@@ -10,6 +10,7 @@ import ErrorBoundary from './components/layout/ErrorBoundary';
 import NotFound from './pages/NotFound';
 import ScrollToTop from './components/layout/ScrollToTop';
 import NotificationContainer from './components/ui/NotificationToast';
+import useSeo from './hooks/useSeo';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -39,11 +40,98 @@ import AdminNotifications from './pages/admin/AdminNotifications';
 
 const AUTH_ROUTES  = ['/login', '/register'];
 
+const PRIVATE_ROUTES = ['/admin', '/profile', '/history', ...AUTH_ROUTES];
+
+const routeSeo = [
+  {
+    match: (pathname) => pathname === '/',
+    title: 'Clap! - Accueil',
+    description: 'Découvrez les tendances cinéma et séries, consultez les nouveautés et retrouvez vos prochains coups de cœur sur Clap!',
+  },
+  {
+    match: (pathname) => pathname === '/catalogue',
+    title: 'Catalogue films et séries - Clap!',
+    description: 'Explorez le catalogue Clap! avec des filtres par genre, plateforme, langue, note et année.',
+  },
+  {
+    match: (pathname) => pathname === '/news',
+    title: 'Actualités cinéma et séries - Clap!',
+    description: 'Suivez les sorties à venir, les tendances et les nouveautés films et séries sur Clap!',
+  },
+  {
+    match: (pathname) => pathname === '/discover',
+    title: 'Découverte personnalisée - Clap!',
+    description: 'Choisissez une humeur et laissez Clap! proposer un film ou une série adaptée à votre envie du moment.',
+  },
+  {
+    match: (pathname) => pathname === '/about',
+    title: 'À propos du projet - Clap!',
+    description: 'Découvrez la plateforme Clap!, son objectif, ses fonctionnalités et son architecture microservices.',
+  },
+  {
+    match: (pathname) => pathname === '/community',
+    title: 'Communauté - Clap!',
+    description: 'Retrouvez les fonctionnalités communautaires prévues pour connecter les cinéphiles autour de Clap!',
+  },
+  {
+    match: (pathname) => pathname.startsWith('/actors/'),
+    title: 'Profil acteur - Clap!',
+    description: 'Consultez la filmographie, les informations et les contenus associés à un acteur sur Clap!',
+  },
+  {
+    match: (pathname) => pathname.startsWith('/crew/'),
+    title: 'Profil équipe artistique - Clap!',
+    description: 'Consultez les informations et les œuvres associées à un membre de l’équipe artistique sur Clap!',
+  },
+  {
+    match: (pathname) => pathname === '/legal',
+    title: 'Mentions légales - Clap!',
+    description: 'Consultez les mentions légales de la plateforme Clap!',
+  },
+  {
+    match: (pathname) => pathname === '/terms',
+    title: 'Conditions d’utilisation - Clap!',
+    description: 'Consultez les conditions d’utilisation de la plateforme Clap!',
+  },
+  {
+    match: (pathname) => pathname === '/privacy',
+    title: 'Confidentialité - Clap!',
+    description: 'Consultez la politique de confidentialité et de protection des données personnelles de Clap!',
+  },
+  {
+    match: (pathname) => pathname === '/contact',
+    title: 'Contact - Clap!',
+    description: 'Contactez l’équipe Clap! pour une question, une remarque ou une demande liée à la plateforme.',
+  },
+];
+
+const getSeoForPath = (pathname) => {
+  if (pathname.startsWith('/film/') || pathname.startsWith('/serie/')) {
+    return { enabled: false };
+  }
+
+  if (PRIVATE_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`))) {
+    return {
+      title: 'Espace privé - Clap!',
+      description: 'Espace réservé aux utilisateurs de Clap!',
+      robots: 'noindex, nofollow',
+    };
+  }
+
+  return routeSeo.find(({ match }) => match(pathname)) ?? {
+    title: 'Page introuvable - Clap!',
+    description: 'La page demandée est introuvable sur Clap!',
+    robots: 'noindex, follow',
+  };
+};
+
 export default function App() {
   const { pathname } = useLocation();
   const isAuth       = AUTH_ROUTES.includes(pathname);
   const isAdmin      = pathname.startsWith('/admin');
   const { logout, isAuthenticated, updateUser } = useAuthStore();
+
+  useSeo(getSeoForPath(pathname));
 
   /* Check JWT expiry + refresh user data (including id, xp, level) on app load */
   useEffect(() => {

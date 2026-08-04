@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import i18nInstance from '../i18n';
 import api from '../services/api';
 import useAuthStore from '../store/authStore';
+import useSeo from '../hooks/useSeo';
 import StarRating from '../components/ui/StarRating';
 
 /* ─── Helpers ────────────────────────────────────────────────── */
@@ -633,6 +634,20 @@ export default function MovieDetail({ mediaType = 'movie' }) {
   const providers  = providersData?.results?.FR?.flatrate ?? [];
   const relatedMovies = similar?.results ?? [];
   const comments   = commentsData ?? [];
+  const fallbackMediaTitle = mediaType === 'tv' ? 'Série - Clap!' : 'Film - Clap!';
+  const fallbackDescription = mediaType === 'tv'
+    ? 'Consultez les informations, notes et commentaires de cette série sur Clap!'
+    : 'Consultez les informations, notes et commentaires de ce film sur Clap!';
+  const detailDescription = detail?.overview
+    ? (detail.overview.length > 155 ? `${detail.overview.slice(0, 152).trim()}...` : detail.overview)
+    : fallbackDescription;
+
+  useSeo({
+    title: title ? `${title} - Clap!` : fallbackMediaTitle,
+    description: detailDescription,
+    image: backdrop || '/og-image.png',
+    type: 'video.other',
+  });
 
   if (detailLoading) {
     return (
