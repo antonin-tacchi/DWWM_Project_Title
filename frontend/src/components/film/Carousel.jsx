@@ -1,9 +1,11 @@
 import { useRef } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import MovieCard from './MovieCard';
 import { MovieCardSkeleton } from '../ui/Skeleton';
 
 export default function Carousel({ title, items = [], type = 'movie', isLoading = false }) {
+  const { t } = useTranslation();
   const scrollRef = useRef(null);
 
   const scroll = (dir) => {
@@ -18,16 +20,20 @@ export default function Carousel({ title, items = [], type = 'movie', isLoading 
         <h2 className="section-title">{title}</h2>
         <div className="flex gap-2">
           <button
+            type="button"
             onClick={() => scroll(-1)}
+            aria-label={t('common.scrollSectionLeft', { section: title })}
             className="w-8 h-8 rounded-full bg-clap-card border border-clap-muted hover:border-clap-gold text-clap-light hover:text-clap-gold transition-colors flex items-center justify-center"
           >
-            ‹
+            <span aria-hidden="true">‹</span>
           </button>
           <button
+            type="button"
             onClick={() => scroll(1)}
+            aria-label={t('common.scrollSectionRight', { section: title })}
             className="w-8 h-8 rounded-full bg-clap-card border border-clap-muted hover:border-clap-gold text-clap-light hover:text-clap-gold transition-colors flex items-center justify-center"
           >
-            ›
+            <span aria-hidden="true">›</span>
           </button>
         </div>
       </div>

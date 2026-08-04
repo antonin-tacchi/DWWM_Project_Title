@@ -83,7 +83,7 @@ export default function StarRating({ tmdbId, mediaType }) {
                 whileTap={{ scale: 0.9 }}
                 onMouseEnter={() => isAuthenticated && setHovered(score)}
                 onClick={() => isAuthenticated && submitMutation.mutate(score)}
-                aria-label={`${score}/10`}
+                aria-label={t('movieDetail.ratingScore', { score })}
                 disabled={!isAuthenticated || submitMutation.isPending}
                 className="transition-colors disabled:cursor-default"
                 style={{ cursor: isAuthenticated ? 'pointer' : 'default' }}
@@ -110,7 +110,7 @@ export default function StarRating({ tmdbId, mediaType }) {
             className="text-white/25 text-xs hover:text-red-400 transition-colors"
             aria-label={t('movieDetail.ratingDelete')}
           >
-            ✕
+            <span aria-hidden="true">✕</span>
           </button>
         )}
       </div>

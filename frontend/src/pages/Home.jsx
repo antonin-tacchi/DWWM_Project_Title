@@ -16,7 +16,7 @@ function Stars({ value = 0, count = 10, size = 'sm' }) {
   const filled = Math.round(value);
   const sz = size === 'sm' ? 'text-xs' : 'text-sm';
   return (
-    <div className={`flex gap-px ${sz}`}>
+    <div className={`flex gap-px ${sz}`} aria-hidden="true">
       {Array.from({ length: count }).map((_, i) => (
         <span key={i} style={{ color: i < filled ? '#C9A96E' : '#3A3A5A' }}>★</span>
       ))}
@@ -206,7 +206,9 @@ function Hero({ movies }) {
         {movies.slice(0, 8).map((_, i) => (
           <button
             key={i}
+            type="button"
             onClick={() => goTo(i)}
+            aria-label={t('home.heroSlideLabel', { index: i + 1 })}
             className="rounded-full transition-all duration-300"
             style={{
               width:           i === current ? 20 : 6,
@@ -251,7 +253,8 @@ function MovieCard({ movie }) {
 }
 
 /* ─── Horizontal carousel ────────────────────────────────────── */
-function Carousel({ movies }) {
+function Carousel({ movies, label }) {
+  const { t } = useTranslation();
   const ref = useRef(null);
 
   const scroll = (dir) => {
@@ -262,10 +265,12 @@ function Carousel({ movies }) {
     <div className="relative group">
       {/* Left arrow */}
       <button
+        type="button"
         onClick={() => scroll(-1)}
+        aria-label={t('common.scrollSectionLeft', { section: label })}
         className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/60 text-clap-gold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2"
       >
-        ‹
+        <span aria-hidden="true">‹</span>
       </button>
 
       {/* Cards row */}
@@ -281,10 +286,12 @@ function Carousel({ movies }) {
 
       {/* Right arrow */}
       <button
+        type="button"
         onClick={() => scroll(1)}
+        aria-label={t('common.scrollSectionRight', { section: label })}
         className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/60 text-clap-gold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity translate-x-2"
       >
-        ›
+        <span aria-hidden="true">›</span>
       </button>
     </div>
   );
@@ -367,7 +374,7 @@ export default function Home() {
               {t('home.showMore')}
             </Link>
           </div>
-          {trendingLoading ? <CarouselSkeleton /> : <Carousel movies={trending} />}
+          {trendingLoading ? <CarouselSkeleton /> : <Carousel movies={trending} label={t('home.trendingNow')} />}
         </section>
 
         {/* ── Top Rated ── */}
@@ -383,7 +390,7 @@ export default function Home() {
               {t('home.showMore')}
             </Link>
           </div>
-          {popularLoading ? <CarouselSkeleton /> : <Carousel movies={popular} />}
+          {popularLoading ? <CarouselSkeleton /> : <Carousel movies={popular} label={t('home.topRated')} />}
         </section>
 
       </div>

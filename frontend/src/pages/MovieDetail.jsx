@@ -73,9 +73,9 @@ function TrailerModal({ videoKey, onClose }) {
           <button
             onClick={onClose}
             className="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/70 border border-clap-muted/40 flex items-center justify-center text-clap-gold hover:bg-clap-gold hover:text-black transition-all z-10"
-            aria-label={t('movieDetail.close')}
+            aria-label={t('movieDetail.closeTrailer')}
           >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <svg aria-hidden="true" width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </button>
@@ -127,7 +127,7 @@ function SectionTitle({ children }) {
 function Stars({ value = 0 }) {
   const filled = Math.round(value);
   return (
-    <div className="flex gap-px text-xs">
+    <div className="flex gap-px text-xs" aria-hidden="true">
       {Array.from({ length: 10 }).map((_, i) => (
         <span key={i} style={{ color: i < filled ? '#C9A96E' : '#3A3A5A' }}>★</span>
       ))}
@@ -154,15 +154,20 @@ function CastCard({ member }) {
 }
 
 /* ─── Scroll row with arrow buttons ─────────────────────────── */
-function ScrollRow({ children, gap = 'gap-6' }) {
+function ScrollRow({ children, gap = 'gap-6', label }) {
+  const { t } = useTranslation();
   const ref = useRef(null);
   const scroll = (dir) => ref.current?.scrollBy({ left: dir * 220, behavior: 'smooth' });
   return (
     <div className="relative group">
       <button
+        type="button"
         onClick={() => scroll(-1)}
+        aria-label={t('movieDetail.scrollRowLeft', { section: label })}
         className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/70 text-clap-gold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity -translate-x-3 text-xl leading-none border border-clap-muted/30"
-      >‹</button>
+      >
+        <span aria-hidden="true">‹</span>
+      </button>
       <div
         ref={ref}
         className={`flex ${gap} overflow-x-auto pb-2 scroll-smooth`}
@@ -171,9 +176,13 @@ function ScrollRow({ children, gap = 'gap-6' }) {
         {children}
       </div>
       <button
+        type="button"
         onClick={() => scroll(1)}
+        aria-label={t('movieDetail.scrollRowRight', { section: label })}
         className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/70 text-clap-gold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity translate-x-3 text-xl leading-none border border-clap-muted/30"
-      >›</button>
+      >
+        <span aria-hidden="true">›</span>
+      </button>
     </div>
   );
 }
@@ -236,8 +245,9 @@ function CommentCard({ comment, currentUserId, onDelete }) {
               disabled={deleting}
               className="opacity-0 group-hover:opacity-100 transition-opacity text-clap-gray hover:text-red-400 text-xs flex items-center gap-1 disabled:opacity-30"
               title={t('movieDetail.deleteCommentTitle')}
+              aria-label={t('movieDetail.deleteCommentBy', { user: displayName })}
             >
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <svg aria-hidden="true" width="12" height="12" viewBox="0 0 12 12" fill="none">
                 <path d="M1 3h10M4 3V2h4v1M5 5.5v3M7 5.5v3M2 3l.8 7.2A.8.8 0 003.6 11h4.8a.8.8 0 00.8-.8L10 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
               </svg>
               {deleting ? '…' : t('movieDetail.deleteComment')}
@@ -350,6 +360,7 @@ function PlaylistDropdown({ tmdbId, mediaType, isFavorited, currentFavorite, onT
     <AnimatePresence>
       {open && isAuthenticated && (
         <motion.div
+          id="playlist-dropdown"
           ref={dropRef}
           initial={{ opacity: 0, y: -8, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -372,12 +383,15 @@ function PlaylistDropdown({ tmdbId, mediaType, isFavorited, currentFavorite, onT
             <div className="px-4 pt-3 pb-1">
               <p className="text-clap-gray text-[10px] uppercase tracking-widest mb-2">{t('movieDetail.playlistSectionFavorites')}</p>
               <button
+                type="button"
                 onClick={() => { onToggleFav(); }}
                 disabled={favPending}
+                aria-pressed={isFavorited}
+                aria-label={isFavorited ? t('movieDetail.removeFromFavorites') : t('movieDetail.addToFavorites')}
                 className="w-full flex items-center justify-between py-2 px-3 rounded-xl hover:bg-clap-muted/30 transition-colors group"
               >
                 <div className="flex items-center gap-2.5">
-                  <svg width="15" height="15" viewBox="0 0 18 18"
+                  <svg aria-hidden="true" width="15" height="15" viewBox="0 0 18 18"
                     fill={isFavorited ? '#e05555' : 'none'}
                     stroke={isFavorited ? '#e05555' : '#C9A96E'}
                     strokeWidth="1.5">
@@ -387,7 +401,7 @@ function PlaylistDropdown({ tmdbId, mediaType, isFavorited, currentFavorite, onT
                   <span className="text-clap-light text-sm">{t('movieDetail.myFavorites')}</span>
                 </div>
                 {isFavorited && (
-                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                  <svg aria-hidden="true" width="13" height="13" viewBox="0 0 13 13" fill="none">
                     <circle cx="6.5" cy="6.5" r="6" stroke="#4ade80"/>
                     <path d="M3.5 6.5l2 2 4-4" stroke="#4ade80" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
@@ -412,12 +426,18 @@ function PlaylistDropdown({ tmdbId, mediaType, isFavorited, currentFavorite, onT
                     return (
                       <button
                         key={list.id}
+                        type="button"
                         onClick={() => handleList(list)}
                         disabled={addToList.isPending || removeFromList.isPending}
+                        aria-label={
+                          inList
+                            ? t('movieDetail.removeFromList', { name: list.name })
+                            : t('movieDetail.addToList', { name: list.name })
+                        }
                         className="w-full flex items-center justify-between py-2 px-3 rounded-xl hover:bg-clap-muted/30 transition-colors disabled:opacity-50"
                       >
                         <div className="flex items-center gap-2.5">
-                          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#C9A96E" strokeWidth="1.5">
+                          <svg aria-hidden="true" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#C9A96E" strokeWidth="1.5">
                             <path d="M3 2.5A1.5 1.5 0 014.5 1h7A1.5 1.5 0 0113 2.5v12l-5-3-5 3v-12z"
                               strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>
@@ -427,7 +447,7 @@ function PlaylistDropdown({ tmdbId, mediaType, isFavorited, currentFavorite, onT
                           {fb === 'exists'  && <span className="text-yellow-400">{t('movieDetail.alreadyAdded')}</span>}
                           {fb === 'added'   && <span className="text-green-400">{t('movieDetail.added')}</span>}
                           {fb === 'removed' && <span className="text-clap-gray">{t('movieDetail.removed')}</span>}
-                          {!fb && inList    && <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                          {!fb && inList    && <svg aria-hidden="true" width="13" height="13" viewBox="0 0 13 13" fill="none">
                             <circle cx="6.5" cy="6.5" r="6" stroke="#4ade80"/>
                             <path d="M3.5 6.5l2 2 4-4" stroke="#4ade80" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>}
@@ -459,14 +479,19 @@ function PlaylistDropdown({ tmdbId, mediaType, isFavorited, currentFavorite, onT
         whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.95 }}
         onClick={isAuthenticated ? handleToggle : undefined}
         title={isAuthenticated ? t('movieDetail.addToPlaylistTitle') : t('movieDetail.loginToSave')}
+        aria-label={isAuthenticated ? t('movieDetail.openPlaylistMenu') : t('movieDetail.loginToSaveContent')}
+        aria-expanded={isAuthenticated ? open : undefined}
+        aria-controls="playlist-dropdown"
+        aria-disabled={!isAuthenticated}
+        tabIndex={isAuthenticated ? undefined : -1}
         className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold text-clap-gold transition-all"
         style={btnStyle}
       >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6">
+        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6">
           <path d="M3 2.5A1.5 1.5 0 014.5 1h7A1.5 1.5 0 0113 2.5v12l-5-3-5 3v-12z" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
         {t('movieDetail.save')}
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.6"
+        <svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.6"
           style={{ transform: open ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}>
           <path d="M2 3.5l3 3 3-3" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
@@ -474,7 +499,7 @@ function PlaylistDropdown({ tmdbId, mediaType, isFavorited, currentFavorite, onT
 
       {/* Non connecté → lien login par-dessus */}
       {!isAuthenticated && (
-        <Link to="/login" className="absolute inset-0" aria-label={t('movieDetail.loginToSave')} />
+        <Link to="/login" className="absolute inset-0" aria-label={t('movieDetail.loginToSaveContent')} />
       )}
 
       {/* Dropdown rendu dans le body via portal (bypass overflow-hidden du hero) */}
@@ -776,7 +801,7 @@ export default function MovieDetail({ mediaType = 'movie' }) {
         {cast.length > 0 && (
           <section>
             <SectionTitle>{t('movieDetail.sectionCast')}</SectionTitle>
-            <ScrollRow gap="gap-6">
+            <ScrollRow gap="gap-6" label={t('movieDetail.sectionCast')}>
               {cast.map((member) => (
                 <CastCard key={member.id} member={member} />
               ))}
@@ -870,7 +895,7 @@ export default function MovieDetail({ mediaType = 'movie' }) {
         {relatedMovies.length > 0 && (
           <section>
             <SectionTitle>{t('movieDetail.sectionRelated')}</SectionTitle>
-            <ScrollRow gap="gap-4">
+            <ScrollRow gap="gap-4" label={t('movieDetail.sectionRelated')}>
               {relatedMovies.slice(0, 12).map((movie) => (
                 <RelatedCard key={movie.id} movie={{ ...movie, media_type: mediaType }} />
               ))}

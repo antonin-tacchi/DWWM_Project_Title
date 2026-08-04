@@ -72,7 +72,7 @@ export default function Login() {
         <div className="bg-black/50 backdrop-blur-md rounded-2xl px-8 py-8">
 
           {/* Tabs */}
-          <div className="flex mb-8" role="tablist" aria-label={t('login.tab')}>
+          <div className="flex mb-8" role="tablist" aria-label={t('login.tabsLabel')}>
             <div
               className="flex-1 text-center py-2 rounded-lg border border-white/40 text-white font-medium text-lg cursor-default"
               role="tab"
@@ -95,7 +95,7 @@ export default function Login() {
           <form
             onSubmit={handleSubmit}
             className="flex flex-col gap-5"
-            aria-label={t('login.tab')}
+            aria-label={t('login.formLabel')}
             noValidate
           >
             <div className="flex flex-col gap-1.5">
@@ -172,7 +172,7 @@ export default function Login() {
           <div className="flex gap-3">
             <button
               className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 transition-colors rounded-xl py-2.5 border border-white/10"
-              aria-label="Se connecter avec Google (bientôt disponible)"
+              aria-label={t('login.googleNotAvailable')}
               disabled
             >
               <GoogleIcon />
@@ -180,7 +180,7 @@ export default function Login() {
             </button>
             <button
               className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 transition-colors rounded-xl py-2.5 border border-white/10"
-              aria-label="Se connecter avec TMDB (bientôt disponible)"
+              aria-label={t('login.tmdbNotAvailable')}
               disabled
             >
               <span className="text-[#01B4E4] font-bold text-sm tracking-tight">TMDB</span>

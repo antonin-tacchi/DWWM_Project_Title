@@ -13,12 +13,12 @@ const tmdbImg = (path, size = 'w1280') =>
 /* ─── Icons ──────────────────────────────────────────────────── */
 function EyeIcon({ show }) {
   return show ? (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
       <circle cx="12" cy="12" r="3"/>
     </svg>
   ) : (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/>
       <path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/>
       <line x1="1" y1="1" x2="23" y2="23"/>
@@ -27,21 +27,21 @@ function EyeIcon({ show }) {
 }
 function CloseIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
     </svg>
   );
 }
 function PlusIcon({ size = 16 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
     </svg>
   );
 }
 function TrashIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
       <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
     </svg>
@@ -137,6 +137,7 @@ function GoldButton({ children, onClick, disabled, type = 'button', full = false
 
 /* ─── Modal shell ─────────────────────────────────────────────── */
 function ModalShell({ title, onClose, children, wide = false, headerRight }) {
+  const { t } = useTranslation();
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
@@ -153,7 +154,12 @@ function ModalShell({ title, onClose, children, wide = false, headerRight }) {
           <h2 className="font-display italic text-white text-xl font-bold">{title}</h2>
           <div className="flex items-center gap-3">
             {headerRight}
-            <button onClick={onClose} className="text-white/40 hover:text-white transition-colors">
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label={t('common.closeModal')}
+              className="text-white/40 hover:text-white transition-colors"
+            >
               <CloseIcon />
             </button>
           </div>
@@ -274,7 +280,12 @@ function EditProfileModal({ user, onClose }) {
             value={currentPw} onChange={(e) => setCurrentPw(e.target.value)}
             placeholder="••••••••"
             rightEl={
-              <button type="button" onClick={() => setShowCur(!showCur)} className="text-white/40 hover:text-white transition-colors">
+              <button
+                type="button"
+                onClick={() => setShowCur(!showCur)}
+                aria-label={showCur ? t('userProfile.hideCurrentPassword') : t('userProfile.showCurrentPassword')}
+                className="text-white/40 hover:text-white transition-colors"
+              >
                 <EyeIcon show={showCur} />
               </button>
             } />
@@ -283,7 +294,12 @@ function EditProfileModal({ user, onClose }) {
             value={newPw} onChange={(e) => setNewPw(e.target.value)}
             placeholder="••••••••"
             rightEl={
-              <button type="button" onClick={() => setShowNew(!showNew)} className="text-white/40 hover:text-white transition-colors">
+              <button
+                type="button"
+                onClick={() => setShowNew(!showNew)}
+                aria-label={showNew ? t('userProfile.hideNewPassword') : t('userProfile.showNewPassword')}
+                className="text-white/40 hover:text-white transition-colors"
+              >
                 <EyeIcon show={showNew} />
               </button>
             } />
@@ -292,7 +308,12 @@ function EditProfileModal({ user, onClose }) {
             value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)}
             placeholder="••••••••"
             rightEl={
-              <button type="button" onClick={() => setShowConf(!showConf)} className="text-white/40 hover:text-white transition-colors">
+              <button
+                type="button"
+                onClick={() => setShowConf(!showConf)}
+                aria-label={showConf ? t('userProfile.hideConfirmNewPassword') : t('userProfile.showConfirmNewPassword')}
+                className="text-white/40 hover:text-white transition-colors"
+              >
                 <EyeIcon show={showConf} />
               </button>
             } />
@@ -396,13 +417,14 @@ function EditProfileModal({ user, onClose }) {
 /* ─────────────────────────────────────────────────────────────── */
 
 /* One backdrop thumbnail inside the per-media carousel */
-function BackdropThumb({ filePath, isSelected, onSelect }) {
+function BackdropThumb({ filePath, isSelected, onSelect, label }) {
   if (!filePath) return null;
   return (
     <motion.button
       whileHover={{ scale: 1.04 }}
       whileTap={{ scale: 0.96 }}
       onClick={onSelect}
+      aria-label={label}
       className="relative flex-shrink-0 rounded-xl overflow-hidden"
       style={{
         width: 200,
@@ -419,7 +441,7 @@ function BackdropThumb({ filePath, isSelected, onSelect }) {
       {isSelected && (
         <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full flex items-center justify-center"
           style={{ background: '#C9A96E' }}>
-          <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+          <svg aria-hidden="true" width="10" height="10" viewBox="0 0 12 12" fill="none">
             <path d="M2 6l3 3 5-5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </div>
@@ -492,9 +514,13 @@ function MediaBackdropRow({ tmdbId, mediaType, selectedPath, onSelect }) {
       {/* Horizontal image carousel */}
       <div className="relative group">
         <button
+          type="button"
           onClick={() => scroll(-1)}
+          aria-label={t('common.scrollSectionLeft', { section: title })}
           className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity -translate-x-1 text-lg leading-none"
-        >‹</button>
+        >
+          <span aria-hidden="true">‹</span>
+        </button>
         <div
           ref={scrollRef}
           className="flex gap-3 overflow-x-auto pb-1"
@@ -506,13 +532,18 @@ function MediaBackdropRow({ tmdbId, mediaType, selectedPath, onSelect }) {
               filePath={b.file_path}
               isSelected={selectedPath === b.file_path}
               onSelect={() => onSelect(b.file_path, tmdbId, mediaType)}
+              label={t('userProfile.selectBackgroundImage', { index: i + 1, title })}
             />
           ))}
         </div>
         <button
+          type="button"
           onClick={() => scroll(1)}
+          aria-label={t('common.scrollSectionRight', { section: title })}
           className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity translate-x-1 text-lg leading-none"
-        >›</button>
+        >
+          <span aria-hidden="true">›</span>
+        </button>
       </div>
     </div>
   );
@@ -828,6 +859,7 @@ function AvatarThumb({ url, isSelected, onSelect, label }) {
       whileTap={{ scale: 0.94 }}
       onClick={onSelect}
       title={label}
+      aria-label={label}
       className="relative flex-shrink-0 rounded-xl overflow-hidden"
       style={{
         width: 72,
@@ -836,11 +868,11 @@ function AvatarThumb({ url, isSelected, onSelect, label }) {
         boxShadow: isSelected ? '0 0 14px rgba(201,169,110,0.45)' : 'none',
       }}
     >
-      <img src={url} alt={label ?? ''} className="w-full h-full object-cover" />
+      <img src={url} alt="" className="w-full h-full object-cover" />
       {isSelected && (
         <div className="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center"
           style={{ background: '#C9A96E' }}>
-          <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+          <svg aria-hidden="true" width="10" height="10" viewBox="0 0 12 12" fill="none">
             <path d="M2 6l3 3 5-5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </div>
@@ -850,6 +882,7 @@ function AvatarThumb({ url, isSelected, onSelect, label }) {
 }
 
 function MediaAvatarRow({ tmdbId, mediaType, selectedUrl, onSelect }) {
+  const { t } = useTranslation();
   const scrollRef = useRef(null);
 
   const { data: detail } = useQuery({
@@ -907,9 +940,13 @@ function MediaAvatarRow({ tmdbId, mediaType, selectedUrl, onSelect }) {
 
       <div className="relative group">
         <button
+          type="button"
           onClick={() => scroll(-1)}
+          aria-label={t('common.scrollSectionLeft', { section: title })}
           className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity -translate-x-1 text-lg leading-none"
-        >‹</button>
+        >
+          <span aria-hidden="true">‹</span>
+        </button>
         <div
           ref={scrollRef}
           className="flex gap-3 overflow-x-auto pb-1"
@@ -919,16 +956,20 @@ function MediaAvatarRow({ tmdbId, mediaType, selectedUrl, onSelect }) {
             <AvatarThumb
               key={i}
               url={opt.url}
-              label={opt.label}
+              label={t('userProfile.selectAvatarImage', { index: i + 1, title: opt.label })}
               isSelected={selectedUrl === opt.url}
               onSelect={() => onSelect(opt.url)}
             />
           ))}
         </div>
         <button
+          type="button"
           onClick={() => scroll(1)}
+          aria-label={t('common.scrollSectionRight', { section: title })}
           className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity translate-x-1 text-lg leading-none"
-        >›</button>
+        >
+          <span aria-hidden="true">›</span>
+        </button>
       </div>
     </div>
   );
@@ -1340,7 +1381,7 @@ function FavMediaCard({ tmdbId, mediaType }) {
   );
 }
 
-function FavCarousel({ items }) {
+function FavCarousel({ items, label }) {
   const { t } = useTranslation();
   const ref = useRef(null);
   const scroll = (dir) => ref.current?.scrollBy({ left: dir * 200, behavior: 'smooth' });
@@ -1354,14 +1395,26 @@ function FavCarousel({ items }) {
   }
   return (
     <div className="relative group">
-      <button onClick={() => scroll(-1)}
-        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/60 text-clap-gold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 text-lg">‹</button>
+      <button
+        type="button"
+        onClick={() => scroll(-1)}
+        aria-label={t('common.scrollSectionLeft', { section: label })}
+        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/60 text-clap-gold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 text-lg"
+      >
+        <span aria-hidden="true">‹</span>
+      </button>
       <div ref={ref} className="flex gap-3 overflow-x-auto pb-2 scroll-smooth"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
         {items.map((fav) => <FavMediaCard key={fav.id} tmdbId={fav.tmdbId} mediaType={fav.mediaType} />)}
       </div>
-      <button onClick={() => scroll(1)}
-        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/60 text-clap-gold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity translate-x-2 text-lg">›</button>
+      <button
+        type="button"
+        onClick={() => scroll(1)}
+        aria-label={t('common.scrollSectionRight', { section: label })}
+        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/60 text-clap-gold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity translate-x-2 text-lg"
+      >
+        <span aria-hidden="true">›</span>
+      </button>
     </div>
   );
 }
@@ -1469,9 +1522,11 @@ function PlaylistSection({ lists }) {
                 </div>
                 {!activeList.isDefault && (
                   <button
+                    type="button"
                     onClick={() => { if (window.confirm(t('userProfile.deletePlaylistConfirm', { name: activeList.name }))) deleteMut.mutate(activeList.id); }}
                     className="text-white/25 hover:text-red-400 transition-colors p-1 rounded-lg hover:bg-red-400/10"
                     title={t('userProfile.deletePlaylistTitle')}
+                    aria-label={t('userProfile.deletePlaylistLabel', { name: activeList.name })}
                   >
                     <TrashIcon />
                   </button>
@@ -1485,16 +1540,28 @@ function PlaylistSection({ lists }) {
               </div>
             ) : (
               <div className="relative group">
-                <button onClick={() => scroll(-1)}
-                  className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/60 text-clap-gold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 text-lg">‹</button>
+                <button
+                  type="button"
+                  onClick={() => scroll(-1)}
+                  aria-label={t('common.scrollSectionLeft', { section: activeList?.name ?? t('userProfile.sectionMySelections') })}
+                  className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/60 text-clap-gold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 text-lg"
+                >
+                  <span aria-hidden="true">‹</span>
+                </button>
                 <div ref={ref} className="flex gap-3 overflow-x-auto pb-2"
                   style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                   {items.map((item) => (
                     <PlaylistItemCard key={item.id} tmdbId={item.tmdbId} mediaType={item.mediaType} />
                   ))}
                 </div>
-                <button onClick={() => scroll(1)}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/60 text-clap-gold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity translate-x-2 text-lg">›</button>
+                <button
+                  type="button"
+                  onClick={() => scroll(1)}
+                  aria-label={t('common.scrollSectionRight', { section: activeList?.name ?? t('userProfile.sectionMySelections') })}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/60 text-clap-gold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity translate-x-2 text-lg"
+                >
+                  <span aria-hidden="true">›</span>
+                </button>
               </div>
             )}
           </div>
@@ -1651,7 +1718,7 @@ export default function UserProfile() {
             <h2 className="font-display italic text-xl md:text-2xl text-white">{t('userProfile.sectionFavoriteMovies')}</h2>
             <Link to="/catalogue" className="text-xs text-clap-gold hover:text-white transition-colors">{t('userProfile.exploreLink')}</Link>
           </div>
-          <FavCarousel items={favMovies} />
+          <FavCarousel items={favMovies} label={t('userProfile.sectionFavoriteMovies')} />
         </section>
 
         <section>
@@ -1659,7 +1726,7 @@ export default function UserProfile() {
             <h2 className="font-display italic text-xl md:text-2xl text-white">{t('userProfile.sectionFavoriteTVShows')}</h2>
             <Link to="/catalogue" className="text-xs text-clap-gold hover:text-white transition-colors">{t('userProfile.exploreLink')}</Link>
           </div>
-          <FavCarousel items={favTV} />
+          <FavCarousel items={favTV} label={t('userProfile.sectionFavoriteTVShows')} />
         </section>
 
         <PlaylistSection lists={lists} />

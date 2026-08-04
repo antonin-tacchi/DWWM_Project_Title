@@ -74,20 +74,26 @@ export default function AdminSearch() {
 
       {/* Search input */}
       <div className="relative mb-8">
-        <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <svg aria-hidden="true" className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
           <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
         </svg>
         <input
           type="text"
           autoFocus
           placeholder={t('admin.search.placeholder')}
+          aria-label={t('admin.search.placeholder')}
           value={query}
           onChange={e => setQuery(e.target.value)}
           className="w-full bg-white/[0.03] border border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-white placeholder-white/25 outline-none focus:border-clap-gold/40 transition-colors text-sm"
         />
         {query && (
-          <button onClick={() => setQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors text-lg leading-none">
-            ×
+          <button
+            type="button"
+            onClick={() => setQuery('')}
+            aria-label={t('common.clearSearch')}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors text-lg leading-none"
+          >
+            <span aria-hidden="true">×</span>
           </button>
         )}
       </div>

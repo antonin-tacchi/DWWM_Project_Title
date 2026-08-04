@@ -333,7 +333,14 @@ function MobileDrawer({ open, onClose, isSearching, filters, onToggleGenre, onTo
                     {t('catalogue.reset', { count: activeCount })}
                   </button>
                 )}
-                <button onClick={onClose} className="text-clap-gray hover:text-white text-xl leading-none">×</button>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  aria-label={t('common.closeModal')}
+                  className="text-clap-gray hover:text-white text-xl leading-none"
+                >
+                  <span aria-hidden="true">×</span>
+                </button>
               </div>
             </div>
 
@@ -368,6 +375,7 @@ function MobileDrawer({ open, onClose, isSearching, filters, onToggleGenre, onTo
 
 /* ─── Pagination ─────────────────────────────────────────────── */
 function Pagination({ page, totalPages, onPageChange }) {
+  const { t } = useTranslation();
   const clamped = Math.min(totalPages, 237);
 
   // Build sliding window: always show 1st, last, current ±2, with '…' gaps
@@ -389,23 +397,26 @@ function Pagination({ page, totalPages, onPageChange }) {
 
   return (
     <div className="flex items-center justify-center gap-1 mt-10 flex-wrap font-display italic">
-      <PageBtn onClick={() => onPageChange(1)}        disabled={page === 1}>«</PageBtn>
-      <PageBtn onClick={() => onPageChange(page - 1)} disabled={page === 1}>‹</PageBtn>
+      <PageBtn label={t('common.firstPage')} onClick={() => onPageChange(1)}        disabled={page === 1}>«</PageBtn>
+      <PageBtn label={t('common.previousPage')} onClick={() => onPageChange(page - 1)} disabled={page === 1}>‹</PageBtn>
       {pages.map((p, i) =>
         p === '...'
           ? <span key={`d${i}`} className="px-1 text-clap-gray text-sm">...</span>
-          : <PageBtn key={p} onClick={() => onPageChange(p)} active={p === page}>{p}</PageBtn>
+          : <PageBtn key={p} label={t('common.goToPage', { page: p })} onClick={() => onPageChange(p)} active={p === page}>{p}</PageBtn>
       )}
-      <PageBtn onClick={() => onPageChange(page + 1)} disabled={page === clamped}>›</PageBtn>
-      <PageBtn onClick={() => onPageChange(clamped)}  disabled={page === clamped}>»</PageBtn>
+      <PageBtn label={t('common.nextPage')} onClick={() => onPageChange(page + 1)} disabled={page === clamped}>›</PageBtn>
+      <PageBtn label={t('common.lastPage')} onClick={() => onPageChange(clamped)}  disabled={page === clamped}>»</PageBtn>
     </div>
   );
 }
 
-function PageBtn({ children, onClick, disabled, active }) {
+function PageBtn({ children, onClick, disabled, active, label }) {
   return (
     <button
+      type="button"
       onClick={onClick} disabled={disabled}
+      aria-label={label}
+      aria-current={active ? 'page' : undefined}
       className="w-8 h-8 flex items-center justify-center text-sm rounded transition-colors"
       style={{
         color:      active ? '#C9A96E' : disabled ? '#3A3A5A' : 'rgba(255,255,255,0.65)',
@@ -413,7 +424,9 @@ function PageBtn({ children, onClick, disabled, active }) {
         cursor:     disabled ? 'not-allowed' : 'pointer',
       }}
     >
-      {children}
+      <span aria-hidden={typeof children === 'string' && /[«‹›»]/.test(children) ? 'true' : undefined}>
+        {children}
+      </span>
     </button>
   );
 }
