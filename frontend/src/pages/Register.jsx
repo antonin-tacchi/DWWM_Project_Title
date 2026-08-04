@@ -20,8 +20,7 @@ const EyeOffIcon = () => (
 );
 
 /* ── Password field with toggle ── */
-function PasswordInput({ id, name, label, value, onChange, errorId }) {
-  const { t } = useTranslation();
+function PasswordInput({ id, name, label, value, onChange, errorId, showLabel, hideLabel }) {
   const [show, setShow] = useState(false);
   return (
     <div className="flex flex-col gap-1.5">
@@ -42,7 +41,7 @@ function PasswordInput({ id, name, label, value, onChange, errorId }) {
         <button
           type="button"
           onClick={() => setShow((v) => !v)}
-          aria-label={show ? t('login.hidePassword') : t('login.showPassword')}
+          aria-label={show ? hideLabel : showLabel}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 transition-colors"
         >
           {show ? <EyeOffIcon /> : <EyeIcon />}
@@ -159,6 +158,8 @@ export default function Register() {
               value={form.password}
               onChange={handleChange}
               errorId={error ? 'register-error' : undefined}
+              showLabel={t('register.showPassword')}
+              hideLabel={t('register.hidePassword')}
             />
 
             <PasswordInput
@@ -168,6 +169,8 @@ export default function Register() {
               value={form.confirmPassword}
               onChange={handleChange}
               errorId={error ? 'register-error' : undefined}
+              showLabel={t('register.showConfirmPassword')}
+              hideLabel={t('register.hideConfirmPassword')}
             />
 
             {/* Consent checkbox */}

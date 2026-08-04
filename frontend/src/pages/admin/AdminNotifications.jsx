@@ -56,6 +56,7 @@ function TypeSelector({ value, onChange }) {
 }
 
 function FeedbackBanner({ result, error, onDismiss }) {
+  const { t } = useTranslation();
   if (!result && !error) return null;
   return (
     <AnimatePresence>
@@ -70,7 +71,14 @@ function FeedbackBanner({ result, error, onDismiss }) {
         }`}
       >
         <span>{error ? `❌ ${error}` : `✅ ${result}`}</span>
-        <button onClick={onDismiss} className="shrink-0 opacity-50 hover:opacity-100">✕</button>
+        <button
+          type="button"
+          onClick={onDismiss}
+          aria-label={t('common.dismissMessage')}
+          className="shrink-0 opacity-50 hover:opacity-100"
+        >
+          <span aria-hidden="true">✕</span>
+        </button>
       </motion.div>
     </AnimatePresence>
   );

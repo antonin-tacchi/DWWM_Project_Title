@@ -27,14 +27,14 @@ const HamburgerMobile = () => (
 );
 
 const SearchIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+  <svg aria-hidden="true" width="22" height="22" viewBox="0 0 22 22" fill="none">
     <circle cx="9.5" cy="9.5" r="7.5" stroke="#C9A96E" strokeWidth="2" />
     <path d="M15 15L20.5 20.5" stroke="#C9A96E" strokeWidth="2" strokeLinecap="round" />
   </svg>
 );
 
 const BellIcon = () => (
-  <svg width="20" height="24" viewBox="0 0 20 24" fill="none">
+  <svg aria-hidden="true" width="20" height="24" viewBox="0 0 20 24" fill="none">
     <path d="M10 0C10 0 2 4.5 2 12V18H18V12C18 4.5 10 0 10 0Z" fill="#C9A96E" />
     <rect x="7.5" y="18" width="5" height="3" rx="1.5" fill="#C9A96E" />
     <circle cx="10" cy="1.5" r="1.5" fill="#C9A96E" />
@@ -42,7 +42,7 @@ const BellIcon = () => (
 );
 
 const HistoryIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9A96E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9A96E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M3 12a9 9 0 1 0 3-6.7" />
     <path d="M3 4v4h4" />
     <path d="M12 8v4l3 3" />
@@ -50,7 +50,7 @@ const HistoryIcon = () => (
 );
 
 const CloseIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+  <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none">
     <path d="M6 6L18 18M6 18L18 6" stroke="#C9A96E" strokeWidth="2" strokeLinecap="round" />
   </svg>
 );
@@ -61,7 +61,7 @@ const IMG_BASE = 'https://image.tmdb.org/t/p/w92';
 function StarRating({ score }) {
   const stars = Math.round((score / 10) * 5);
   return (
-    <div className="flex gap-0.5">
+    <div className="flex gap-0.5" aria-hidden="true">
       {Array.from({ length: 5 }).map((_, i) => (
         <svg key={i} width="10" height="10" viewBox="0 0 10 10" fill="none">
           <path
@@ -134,6 +134,7 @@ function NavSearch({ inputClassName = '', onClose }) {
         onChange={(e) => setQuery(e.target.value)}
         onFocus={() => debounced.trim().length >= 2 && setOpen(true)}
         placeholder={t('nav.search')}
+        aria-label={t('nav.searchLabel')}
         className={`w-full bg-clap-card border border-clap-muted/50 rounded-full py-2 pl-11 pr-4 text-sm text-clap-light placeholder-clap-gray outline-none transition-all duration-300 focus:border-clap-gold focus:ring-1 focus:ring-clap-gold/40 ${inputClassName}`}
       />
 
@@ -156,7 +157,9 @@ function NavSearch({ inputClassName = '', onClose }) {
                 return (
                   <button
                     key={item.id}
+                    type="button"
                     onClick={() => handleSelect(item)}
+                    aria-label={t('nav.searchResultLabel', { title })}
                     className="flex flex-col items-center gap-2 p-3 hover:bg-clap-muted/30 transition-colors text-center group"
                   >
                     {/* Poster */}
@@ -194,6 +197,7 @@ function NavSearch({ inputClassName = '', onClose }) {
             {/* Footer link */}
             <div className="border-t border-clap-muted/20 px-4 py-2 text-center">
               <button
+                type="button"
                 onClick={() => {
                   navigate(`/catalogue?q=${encodeURIComponent(query)}`);
                   setQuery('');
@@ -257,6 +261,7 @@ function BellPanel() {
 
   return (
     <motion.div
+      id="notifications-panel"
       initial={{ opacity: 0, y: -8, scale: 0.96 }}
       animate={{ opacity: 1, y: 0,  scale: 1     }}
       exit={{    opacity: 0, y: -8, scale: 0.96, transition: { duration: 0.15 } }}
@@ -335,9 +340,9 @@ function BellPanel() {
                   <button
                     onClick={() => remove(n.id)}
                     className="flex-shrink-0 text-white/20 hover:text-white/60 transition-colors mt-0.5"
-                    aria-label={t('notifications.delete')}
+                    aria-label={t('notifications.deleteItem', { title })}
                   >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                       <path d="M18 6L6 18M6 6l12 12" />
                     </svg>
                   </button>
@@ -394,11 +399,11 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-clap-bg/90 backdrop-blur-sm" aria-label="Navigation principale">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-clap-bg/90 backdrop-blur-sm" aria-label={t('nav.mainNavigation')}>
         <div className="flex items-center h-16 px-4 md:px-5">
 
           {/* Logo — all screens */}
-          <Link to="/" className="flex-shrink-0" aria-label="Clap! — Accueil">
+          <Link to="/" className="flex-shrink-0" aria-label={t('nav.homeLink')}>
             <Logo3D />
           </Link>
 
@@ -406,7 +411,7 @@ export default function Navbar() {
           <motion.button
             whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
             onClick={() => setMenuOpen(true)}
-            aria-label="Ouvrir le menu de navigation"
+            aria-label={t('nav.openMenu')}
             aria-expanded={menuOpen}
             aria-controls="main-menu-overlay"
             className="hidden md:flex items-center ml-4 flex-shrink-0"
@@ -427,7 +432,7 @@ export default function Navbar() {
               <Link
                 to="/history"
                 title={t('nav.history')}
-                aria-label={t('nav.history')}
+                aria-label={t('nav.historyLabel')}
                 className="flex items-center hover:opacity-80 transition-opacity"
               >
                 <HistoryIcon />
@@ -440,7 +445,13 @@ export default function Navbar() {
                   whileTap={{ scale: 0.9 }}
                   onClick={() => { setBellOpen((v) => !v); if (!bellOpen) markAllRead(); }}
                   className="relative"
-                  aria-label="Notifications"
+                  aria-label={
+                    unreadCount > 0
+                      ? t('notifications.openPanelWithUnread', { count: unreadCount })
+                      : t('notifications.openPanel')
+                  }
+                  aria-expanded={bellOpen}
+                  aria-controls="notifications-panel"
                 >
                   <BellIcon />
                   {unreadCount > 0 && (
@@ -467,7 +478,7 @@ export default function Navbar() {
               </Link>
             )}
             {isAuthenticated ? (
-              <Link to="/profile">
+              <Link to="/profile" aria-label={t('nav.profileLink')}>
                 <motion.div
                   whileHover={{ scale: 1.06 }}
                   className="w-9 h-9 rounded-full bg-clap-muted border-2 border-clap-gold overflow-hidden flex items-center justify-center flex-shrink-0"
@@ -502,7 +513,9 @@ export default function Navbar() {
             whileTap={{ scale: 0.9 }}
             onClick={() => setMobileSearchOpen((v) => !v)}
             className="md:hidden flex items-center mr-4"
-            aria-label="Rechercher"
+            aria-label={mobileSearchOpen ? t('nav.closeSearch') : t('nav.openSearch')}
+            aria-expanded={mobileSearchOpen}
+            aria-controls="mobile-search-panel"
           >
             <SearchIcon />
           </motion.button>
@@ -511,7 +524,7 @@ export default function Navbar() {
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={() => setMenuOpen(true)}
-            aria-label="Ouvrir le menu de navigation"
+            aria-label={t('nav.openMenu')}
             aria-expanded={menuOpen}
             aria-controls="main-menu-overlay"
             className="md:hidden flex items-center"
@@ -524,6 +537,7 @@ export default function Navbar() {
         <AnimatePresence>
           {mobileSearchOpen && (
             <motion.div
+              id="mobile-search-panel"
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
@@ -543,7 +557,7 @@ export default function Navbar() {
             id="main-menu-overlay"
             role="dialog"
             aria-modal="true"
-            aria-label="Menu de navigation"
+            aria-label={t('nav.menuDialog')}
             variants={overlayVariants}
             initial="hidden" animate="visible" exit="exit"
             className="fixed inset-0 z-[100] bg-clap-bg/96 backdrop-blur-md flex flex-col items-center justify-center"
@@ -553,13 +567,13 @@ export default function Navbar() {
               animate={{ opacity: 1, rotate: 0, transition: { duration: 0.3 } }}
               exit={{ opacity: 0 }}
               onClick={() => setMenuOpen(false)}
-              aria-label="Fermer le menu"
+              aria-label={t('nav.closeMenu')}
               className="absolute top-5 right-6"
             >
               <CloseIcon />
             </motion.button>
 
-            <nav className="flex flex-col items-center gap-7" aria-label="Liens de navigation principaux">
+            <nav className="flex flex-col items-center gap-7" aria-label={t('nav.mainLinks')}>
               {NAV_LINKS.map((link, i) => (
                 <motion.div
                   key={link.key}
@@ -585,10 +599,12 @@ export default function Navbar() {
             >
               {/* Bouton langue */}
               <button
+                type="button"
                 onClick={toggleLanguage}
+                aria-label={i18n.language === 'fr' ? t('nav.switchToEnglish') : t('nav.switchToFrench')}
                 className="flex items-center gap-2 hover:text-clap-gold transition-colors uppercase font-semibold"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10"/>
                   <line x1="2" y1="12" x2="22" y2="12"/>
                   <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>

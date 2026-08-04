@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import useNotificationStore from '../../store/notificationStore';
 
 /* ─── Type config ─────────────────────────────────────────────── */
@@ -28,6 +29,7 @@ function TypeIcon({ type, color }) {
 
 /* ─── Single toast ────────────────────────────────────────────── */
 function Toast({ notification }) {
+  const { t } = useTranslation();
   const remove = useNotificationStore((s) => s.remove);
   const { id, type, title, message, duration } = notification;
   const cfg = NOTIF_TYPES[type] ?? NOTIF_TYPES.info;
@@ -64,6 +66,7 @@ function Toast({ notification }) {
       {/* Icône */}
       <div
         className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-0.5"
+        aria-hidden="true"
         style={{ background: cfg.bg }}
       >
         <TypeIcon type={type} color={cfg.color} />
@@ -81,9 +84,9 @@ function Toast({ notification }) {
       <button
         onClick={() => remove(id)}
         className="flex-shrink-0 text-white/25 hover:text-white/70 transition-colors mt-0.5 ml-1"
-        aria-label="Fermer"
+        aria-label={t('notifications.closeToast')}
       >
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+        <svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
           <path d="M18 6L6 18M6 6l12 12" />
         </svg>
       </button>
