@@ -400,7 +400,7 @@ export default function Navbar() {
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 z-50 bg-clap-bg/90 backdrop-blur-sm" aria-label={t('nav.mainNavigation')}>
-        <div className="flex items-center h-16 px-4 md:px-5">
+        <div className="ultrawide-shell flex items-center h-16">
 
           {/* Logo — all screens */}
           <Link to="/" className="flex-shrink-0" aria-label={t('nav.homeLink')}>
