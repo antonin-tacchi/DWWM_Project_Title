@@ -12,7 +12,8 @@ import org.springframework.test.context.TestPropertySource;
 @SpringBootTest
 @TestPropertySource(properties = {
     "JWT_SECRET=dGVzdFNlY3JldEtleUZvckpXVFRva2VuU2lnbmluZzEyMzQ1",
-    "JWT_EXPIRATION=86400000"
+    "JWT_EXPIRATION=86400000",
+    "TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA"
 })
 class AuthApplicationTests {
 

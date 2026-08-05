@@ -23,6 +23,12 @@ jwt:
   secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION}
 
+turnstile:
+  secret-key: ${TURNSTILE_SECRET_KEY}
+  siteverify-url: ${TURNSTILE_SITEVERIFY_URL:https://challenges.cloudflare.com/turnstile/v0/siteverify}
+  expected-action: ${TURNSTILE_EXPECTED_ACTION:register}
+  expected-hostname: ${TURNSTILE_EXPECTED_HOSTNAME:}
+
 feign:
   client:
     config:

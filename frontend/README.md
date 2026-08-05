@@ -68,6 +68,18 @@ Install dependencies:
 npm install
 ```
 
+Create a local environment file from `.env.example` and set the public Turnstile site key:
+
+```env
+VITE_TURNSTILE_SITE_KEY=your_cloudflare_turnstile_site_key
+```
+
+For local tests, Cloudflare's visible dummy site key is:
+
+```env
+VITE_TURNSTILE_SITE_KEY=1x00000000000000000000AA
+```
+
 Run development server:
 
 ```bash

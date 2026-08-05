@@ -87,7 +87,12 @@
     "showConfirmPassword": "Show password confirmation",
     "hideConfirmPassword": "Hide password confirmation",
     "consentText": "I agree to the collection and processing of my personal data in accordance with the",
-    "consentLink": "privacy policy"
+    "consentLink": "privacy policy",
+    "captchaLabel": "Anti-bot verification",
+    "captchaRequired": "Please validate the CAPTCHA.",
+    "captchaLoadError": "Unable to load the CAPTCHA. Please try again.",
+    "captchaExpired": "CAPTCHA expired. Please try again.",
+    "captchaConfigError": "CAPTCHA is not configured."
   },
   "catalogue": {
     "filterTitle": "Refine Your\nExperience",

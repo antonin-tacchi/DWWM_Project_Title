@@ -17,19 +17,27 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil         jwtUtil;
     private final UserMapper      userMapper;
+    private final TurnstileService turnstileService;
 
     public AuthService(DbUserClient dbUserClient, PasswordEncoder passwordEncoder,
-                       JwtUtil jwtUtil, UserMapper userMapper) {
+                       JwtUtil jwtUtil, UserMapper userMapper, TurnstileService turnstileService) {
         this.dbUserClient    = dbUserClient;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil         = jwtUtil;
         this.userMapper      = userMapper;
+        this.turnstileService = turnstileService;
     }
 
     /**
      * Inscrit un nouvel utilisateur.
      */
     public AuthResponse register(RegisterRequest request) {
+        return register(request, null);
+    }
+
+    public AuthResponse register(RegisterRequest request, String remoteIp) {
+
+        turnstileService.validateRegistrationToken(request.getTurnstileToken(), remoteIp);
 
         // Vérification : email déjà pris ?
         if (Boolean.TRUE.equals(dbUserClient.existsByEmail(request.getEmail()))) {
