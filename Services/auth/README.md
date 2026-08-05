@@ -71,12 +71,24 @@ The service communicates with the database indirectly.
 |---|---|
 | JWT_SECRET | JWT signing secret |
 | JWT_EXPIRATION | Token lifetime |
+| TURNSTILE_SECRET_KEY | Cloudflare Turnstile secret key |
+| TURNSTILE_EXPECTED_ACTION | Expected Turnstile action, defaults to `register` |
+| TURNSTILE_EXPECTED_HOSTNAME | Optional hostname check |
 
 Example:
 
 ```env
 JWT_SECRET=your_secret
 JWT_EXPIRATION=86400000
+TURNSTILE_SECRET_KEY=your_cloudflare_turnstile_secret_key
+TURNSTILE_EXPECTED_ACTION=register
+```
+
+Local Turnstile test values:
+
+```env
+TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
+TURNSTILE_EXPECTED_ACTION=test
 ```
 
 ---
@@ -87,7 +99,7 @@ Main endpoints:
 
 | Method | Endpoint | Description |
 |---|---|---|
-| POST | /auth/register | Create account |
+| POST | /auth/register | Create account after Turnstile validation |
 | POST | /auth/login | Login |
 | GET | /admin/** | Admin endpoints |
 

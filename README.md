@@ -158,6 +158,9 @@ Edit `.env`:
 ```env
 JWT_SECRET=your_256bit_base64_secret
 JWT_EXPIRATION=86400000
+VITE_TURNSTILE_SITE_KEY=your_cloudflare_turnstile_site_key
+TURNSTILE_SECRET_KEY=your_cloudflare_turnstile_secret_key
+TURNSTILE_EXPECTED_ACTION=register
 TMDB_API_KEY=your_tmdb_api_key
 ```
 
@@ -165,6 +168,14 @@ Generate a secure JWT secret:
 
 ```bash
 openssl rand -base64 32
+```
+
+For local Turnstile testing, Cloudflare provides dummy keys. Use them only in development:
+
+```env
+VITE_TURNSTILE_SITE_KEY=1x00000000000000000000AA
+TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
+TURNSTILE_EXPECTED_ACTION=test
 ```
 
 ### 3. Launch the Platform
@@ -213,6 +224,10 @@ docker compose down -v
 |---|---|---|
 | `JWT_SECRET` | auth-service, gateway | Base64 JWT signing secret |
 | `JWT_EXPIRATION` | auth-service | Token validity in milliseconds |
+| `VITE_TURNSTILE_SITE_KEY` | frontend | Public Cloudflare Turnstile site key injected during Vite build |
+| `TURNSTILE_SECRET_KEY` | auth-service | Cloudflare Turnstile secret key used for server-side CAPTCHA validation |
+| `TURNSTILE_EXPECTED_ACTION` | auth-service | Expected Turnstile action, defaults to `register` |
+| `TURNSTILE_EXPECTED_HOSTNAME` | auth-service | Optional hostname check for production deployments |
 | `TMDB_API_KEY` | movies-service | TMDB API key |
 
 ---

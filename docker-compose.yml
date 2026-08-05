@@ -63,6 +63,9 @@ services:
     environment:
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION: ${JWT_EXPIRATION}
+      TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY}
+      TURNSTILE_EXPECTED_ACTION: ${TURNSTILE_EXPECTED_ACTION:-register}
+      TURNSTILE_EXPECTED_HOSTNAME: ${TURNSTILE_EXPECTED_HOSTNAME:-}
       JAVA_TOOL_OPTIONS: >-
         -XX:TieredStopAtLevel=1
         -XX:+UseContainerSupport
@@ -152,7 +155,10 @@ services:
         condition: service_started
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        VITE_TURNSTILE_SITE_KEY: ${VITE_TURNSTILE_SITE_KEY}
     container_name: clap-frontend
     restart: on-failure
     ports:

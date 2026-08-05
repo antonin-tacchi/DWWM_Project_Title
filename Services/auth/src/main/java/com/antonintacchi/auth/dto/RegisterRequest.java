@@ -23,4 +23,7 @@ public class RegisterRequest {
     @NotBlank(message = "La confirmation du mot de passe est obligatoire")
     private String confirmPassword;
 
+    @NotBlank(message = "La validation CAPTCHA est obligatoire")
+    private String turnstileToken;
+
 }

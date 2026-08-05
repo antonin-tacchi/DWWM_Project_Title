@@ -1,8 +1,42 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
+
+const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY ?? '';
+const TURNSTILE_SCRIPT_ID = 'cloudflare-turnstile-script';
+const TURNSTILE_SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+
+let turnstileScriptPromise;
+
+function loadTurnstileScript() {
+  if (window.turnstile) {
+    return Promise.resolve(window.turnstile);
+  }
+
+  if (!turnstileScriptPromise) {
+    turnstileScriptPromise = new Promise((resolve, reject) => {
+      const existingScript = document.getElementById(TURNSTILE_SCRIPT_ID);
+      if (existingScript) {
+        existingScript.addEventListener('load', () => resolve(window.turnstile), { once: true });
+        existingScript.addEventListener('error', reject, { once: true });
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.id = TURNSTILE_SCRIPT_ID;
+      script.src = TURNSTILE_SCRIPT_SRC;
+      script.async = true;
+      script.defer = true;
+      script.addEventListener('load', () => resolve(window.turnstile), { once: true });
+      script.addEventListener('error', reject, { once: true });
+      document.head.appendChild(script);
+    });
+  }
+
+  return turnstileScriptPromise;
+}
 
 /* ── Eye icons ── */
 const EyeIcon = () => (
@@ -51,13 +85,76 @@ function PasswordInput({ id, name, label, value, onChange, errorId, showLabel, h
   );
 }
 
+function TurnstileWidget({ siteKey, resetKey, onVerify, onExpire, onError, errorId }) {
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    let mounted = true;
+    let widgetId = null;
+
+    if (!siteKey) {
+      onError();
+      return undefined;
+    }
+
+    loadTurnstileScript()
+      .then((turnstile) => {
+        if (!mounted || !containerRef.current) return;
+
+        widgetId = turnstile.render(containerRef.current, {
+          sitekey: siteKey,
+          theme: 'dark',
+          size: 'compact',
+          action: 'register',
+          callback: onVerify,
+          'expired-callback': onExpire,
+          'error-callback': onError,
+        });
+      })
+      .catch(onError);
+
+    return () => {
+      mounted = false;
+      if (window.turnstile && widgetId != null) {
+        window.turnstile.remove(widgetId);
+      }
+    };
+  }, [siteKey, resetKey, onVerify, onExpire, onError]);
+
+  return (
+    <div
+      ref={containerRef}
+      aria-describedby={errorId}
+      className="flex min-h-[144px] items-center justify-center"
+    />
+  );
+}
+
 export default function Register() {
   const { t } = useTranslation();
   const [form, setForm]         = useState({ username: '', email: '', password: '', confirmPassword: '' });
   const [error, setError]       = useState('');
   const [loading, setLoading]   = useState(false);
   const [consent, setConsent]   = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState('');
+  const [turnstileError, setTurnstileError] = useState('');
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0);
   const navigate = useNavigate();
+
+  const handleTurnstileVerify = useCallback((token) => {
+    setTurnstileToken(token);
+    setTurnstileError('');
+  }, []);
+
+  const handleTurnstileExpire = useCallback(() => {
+    setTurnstileToken('');
+    setTurnstileError(t('register.captchaExpired'));
+  }, [t]);
+
+  const handleTurnstileError = useCallback(() => {
+    setTurnstileToken('');
+    setTurnstileError(TURNSTILE_SITE_KEY ? t('register.captchaLoadError') : t('register.captchaConfigError'));
+  }, [t]);
 
   const handleChange = (e) =>
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
@@ -65,12 +162,23 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (!turnstileToken) {
+      setError(t('register.captchaRequired'));
+      return;
+    }
+
     setLoading(true);
     try {
-      await api.post('/auth/register', form);
+      await api.post('/auth/register', {
+        ...form,
+        turnstileToken,
+      });
       navigate('/login');
     } catch (err) {
       setError(err.response?.data?.message || t('register.errorDefault'));
+      setTurnstileToken('');
+      setTurnstileResetKey((key) => key + 1);
     } finally {
       setLoading(false);
     }
@@ -173,6 +281,32 @@ export default function Register() {
               hideLabel={t('register.hideConfirmPassword')}
             />
 
+            <div className="flex flex-col gap-1.5">
+              <span className="text-white/80 text-sm">{t('register.captchaLabel')}</span>
+              <div className="rounded-lg border border-white/10 bg-black/60 px-3 py-3">
+                {TURNSTILE_SITE_KEY ? (
+                  <TurnstileWidget
+                    key={turnstileResetKey}
+                    siteKey={TURNSTILE_SITE_KEY}
+                    resetKey={turnstileResetKey}
+                    onVerify={handleTurnstileVerify}
+                    onExpire={handleTurnstileExpire}
+                    onError={handleTurnstileError}
+                    errorId={turnstileError ? 'register-captcha-error' : undefined}
+                  />
+                ) : (
+                  <p id="register-captcha-error" role="alert" className="py-4 text-center text-sm text-clap-red">
+                    {t('register.captchaConfigError')}
+                  </p>
+                )}
+              </div>
+              {turnstileError && TURNSTILE_SITE_KEY && (
+                <p id="register-captcha-error" role="alert" className="text-xs text-clap-red">
+                  {turnstileError}
+                </p>
+              )}
+            </div>
+
             {/* Consent checkbox */}
             <label htmlFor="register-consent" className="flex items-start gap-3 cursor-pointer group">
               <div className={`mt-0.5 flex-shrink-0 w-4 h-4 rounded border transition-colors flex items-center justify-center ${
@@ -207,7 +341,7 @@ export default function Register() {
 
             <motion.button
               type="submit"
-              disabled={loading || !consent}
+              disabled={loading || !consent || !turnstileToken}
               aria-busy={loading}
               whileTap={{ scale: 0.97 }}
               className="mt-1 bg-clap-gold text-clap-bg font-semibold py-3 rounded-xl hover:brightness-110 transition-all disabled:opacity-60"

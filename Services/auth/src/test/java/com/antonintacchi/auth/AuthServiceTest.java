@@ -8,6 +8,7 @@ import com.antonintacchi.auth.mapper.UserMapper;
 import com.antonintacchi.auth.model.UserModel;
 import com.antonintacchi.auth.security.JwtUtil;
 import com.antonintacchi.auth.service.AuthService;
+import com.antonintacchi.auth.service.TurnstileService;
 import feign.FeignException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,7 @@ class AuthServiceTest {
     @Mock private PasswordEncoder passwordEncoder;
     @Mock private JwtUtil         jwtUtil;
     @Mock private UserMapper      userMapper;
+    @Mock private TurnstileService turnstileService;
 
     @InjectMocks
     private AuthService authService;
@@ -44,6 +46,7 @@ class AuthServiceTest {
         req.setUsername("newUser");
         req.setPassword("pass123");
         req.setConfirmPassword("pass123");
+        req.setTurnstileToken("turnstile-token");
 
         UserModel saved = new UserModel();
         saved.setId(1L);
@@ -64,6 +67,7 @@ class AuthServiceTest {
 
         assertThat(result).isNotNull();
         assertThat(result.getToken()).isEqualTo("token123");
+        verify(turnstileService).validateRegistrationToken("turnstile-token", null);
         verify(dbUserClient).save(any(UserModel.class));
     }
 
@@ -74,6 +78,7 @@ class AuthServiceTest {
         req.setEmail("taken@clap.fr");
         req.setPassword("pass");
         req.setConfirmPassword("pass");
+        req.setTurnstileToken("turnstile-token");
 
         when(dbUserClient.existsByEmail("taken@clap.fr")).thenReturn(true);
 
@@ -91,12 +96,34 @@ class AuthServiceTest {
         req.setEmail("user@clap.fr");
         req.setPassword("pass1");
         req.setConfirmPassword("pass2");
+        req.setTurnstileToken("turnstile-token");
 
         when(dbUserClient.existsByEmail(any())).thenReturn(false);
 
         assertThatThrownBy(() -> authService.register(req))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Passwords don't match");
+    }
+
+    @Test
+    @DisplayName("register — bloque l'inscription si le CAPTCHA est invalide")
+    void register_shouldThrowWhenCaptchaIsInvalid() {
+        RegisterRequest req = new RegisterRequest();
+        req.setEmail("user@clap.fr");
+        req.setPassword("pass");
+        req.setConfirmPassword("pass");
+        req.setTurnstileToken("invalid-turnstile-token");
+
+        doThrow(new IllegalArgumentException("CAPTCHA invalide. Merci de réessayer."))
+                .when(turnstileService)
+                .validateRegistrationToken("invalid-turnstile-token", null);
+
+        assertThatThrownBy(() -> authService.register(req))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("CAPTCHA invalide");
+
+        verify(dbUserClient, never()).existsByEmail(any());
+        verify(dbUserClient, never()).save(any());
     }
 
     /* ── Login ───────────────────────────────────────────────────── */

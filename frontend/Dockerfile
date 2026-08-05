@@ -9,6 +9,8 @@ RUN npm ci --prefer-offline --no-audit --no-fund
 
 # Copie le reste du code source
 COPY . .
+ARG VITE_TURNSTILE_SITE_KEY
+ENV VITE_TURNSTILE_SITE_KEY=$VITE_TURNSTILE_SITE_KEY
 RUN npm run build
 
 # ── Stage 2 : runtime (Nginx) ─────────────────────────────────────

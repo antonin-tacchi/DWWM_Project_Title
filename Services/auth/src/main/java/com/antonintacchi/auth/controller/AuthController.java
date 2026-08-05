@@ -2,10 +2,10 @@ package com.antonintacchi.auth.controller;
 
 import com.antonintacchi.auth.dto.*;
 import com.antonintacchi.auth.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.validation.annotation.Validated;
 
 @RestController
 @RequestMapping("/auth")
@@ -17,10 +17,11 @@ public class AuthController {
         this.authService = authService;
     }
 
-
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody @Valid RegisterRequest request) {
-        AuthResponse result = authService.register(request);
+    public ResponseEntity<AuthResponse> register(@RequestBody @Valid RegisterRequest request,
+                                                 @RequestHeader(value = "X-Forwarded-For", required = false) String forwardedFor,
+                                                 HttpServletRequest httpRequest) {
+        AuthResponse result = authService.register(request, resolveClientIp(forwardedFor, httpRequest));
         return ResponseEntity.status(201).body(result);
     }
 
@@ -52,6 +53,13 @@ public class AuthController {
     public ResponseEntity<Void> changePassword(@RequestHeader("X-User-Email") String email, @RequestBody @Valid ChangePasswordRequest request) {
         authService.changePassword(email, request);
         return ResponseEntity.noContent().build();
+    }
+
+    private String resolveClientIp(String forwardedFor, HttpServletRequest httpRequest) {
+        if (forwardedFor != null && !forwardedFor.isBlank()) {
+            return forwardedFor.split(",")[0].trim();
+        }
+        return httpRequest.getRemoteAddr();
     }
 
 }

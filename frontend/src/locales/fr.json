@@ -87,7 +87,12 @@
     "showConfirmPassword": "Afficher la confirmation du mot de passe",
     "hideConfirmPassword": "Masquer la confirmation du mot de passe",
     "consentText": "J'accepte la collecte et le traitement de mes données personnelles conformément à la",
-    "consentLink": "politique de confidentialité"
+    "consentLink": "politique de confidentialité",
+    "captchaLabel": "Vérification anti-robot",
+    "captchaRequired": "Merci de valider le CAPTCHA.",
+    "captchaLoadError": "Impossible de charger le CAPTCHA. Réessayez.",
+    "captchaExpired": "CAPTCHA expiré. Merci de recommencer.",
+    "captchaConfigError": "CAPTCHA non configuré."
   },
   "catalogue": {
     "filterTitle": "Affiner votre\nexploration",
