@@ -617,7 +617,7 @@ export default function Catalogue() {
 
   return (
     <div className="pt-16 min-h-screen bg-clap-bg">
-      <div className="flex gap-6 px-4 md:px-6 py-8">
+      <div className="ultrawide-shell flex gap-6 py-8">
 
         {/* ── Desktop sidebar ── */}
         <Sidebar query={query} onQueryChange={handleQueryChange} {...filterProps} />
@@ -640,7 +640,7 @@ export default function Catalogue() {
           )}
 
           <div
-            className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-3 gap-y-6 transition-opacity duration-200"
+            className="poster-grid-fluid transition-opacity duration-200"
             style={{ opacity: isFetching && !isLoading ? 0.5 : 1 }}
           >
             {isLoading

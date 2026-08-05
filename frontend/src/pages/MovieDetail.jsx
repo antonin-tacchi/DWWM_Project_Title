@@ -678,7 +678,7 @@ export default function MovieDetail({ mediaType = 'movie' }) {
     return (
       <div className="pt-16 min-h-screen bg-clap-bg">
         <div className="h-[420px] bg-clap-card animate-pulse" />
-        <div className="px-4 md:px-8 py-8 flex flex-col gap-4">
+        <div className="ultrawide-shell-narrow py-8 flex flex-col gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="h-4 bg-clap-card animate-pulse rounded" />
           ))}
@@ -711,7 +711,7 @@ export default function MovieDetail({ mediaType = 'movie' }) {
         </div>
 
         {/* Content (bottom) */}
-        <div className="absolute bottom-0 left-0 right-0 px-4 md:px-8 pb-6">
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 ultrawide-shell pb-6">
           <h1 className="font-display italic text-white text-3xl md:text-5xl font-bold mb-3 drop-shadow-lg">
             {title}
           </h1>
@@ -787,7 +787,7 @@ export default function MovieDetail({ mediaType = 'movie' }) {
       </div>
 
       {/* ══ SECTIONS ══════════════════════════════════════════════ */}
-      <div className="px-4 md:px-8 py-8 flex flex-col gap-12">
+      <div className="ultrawide-shell-narrow py-8 flex flex-col gap-12">
 
         {/* ── Overview ── */}
         {detail?.overview && (

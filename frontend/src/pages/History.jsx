@@ -22,9 +22,6 @@ function Stars({ value = 0 }) {
 
 /* ─── One history entry — fetches its own movie/tv detail ─────── */
 function HistoryCard({ entry }) {
-  const { t, i18n } = useTranslation();
-  const locale = i18n.language === 'en' ? 'en-US' : 'fr-FR';
-
   const { data: detail, isLoading } = useQuery({
     queryKey: ['detail', entry.mediaType, entry.tmdbId],
     queryFn:  () => api.get(`/movies/${entry.tmdbId}?mediaType=${entry.mediaType}`).then((r) => r.data),
@@ -34,9 +31,6 @@ function HistoryCard({ entry }) {
   const title  = detail?.title || detail?.name;
   const poster = tmdbImg(detail?.poster_path);
   const href   = `/${entry.mediaType === 'tv' ? 'serie' : 'film'}/${entry.tmdbId}`;
-  const watchedAt = entry.consultedAt
-    ? new Date(entry.consultedAt).toLocaleDateString(locale, { day: '2-digit', month: '2-digit', year: 'numeric' })
-    : null;
 
   if (isLoading) {
     return (
@@ -58,12 +52,7 @@ function HistoryCard({ entry }) {
         </div>
         <div className="mt-2 px-0.5">
           <p className="text-white text-xs font-semibold truncate mb-1">{title}</p>
-          <div className="flex items-center justify-between gap-2">
-            <Stars value={detail?.vote_average} />
-            {watchedAt && (
-              <span className="text-clap-gray text-[10px] flex-shrink-0">{watchedAt}</span>
-            )}
-          </div>
+          <Stars value={detail?.vote_average} />
         </div>
       </motion.div>
     </Link>
@@ -81,15 +70,15 @@ export default function History() {
   });
 
   return (
-    <div className="pt-16 min-h-screen bg-clap-bg px-4 md:px-8 py-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="pt-16 min-h-screen bg-clap-bg py-8">
+      <div className="ultrawide-shell">
         <h1 className="font-display italic text-white text-3xl md:text-4xl mb-2">
           {t('history.title')}
         </h1>
         <p className="text-clap-gray text-sm mb-8">{t('history.subtitle')}</p>
 
         {isLoading ? (
-          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-3 gap-y-6">
+          <div className="poster-grid-fluid">
             {Array.from({ length: 12 }).map((_, i) => (
               <div key={i}>
                 <div className="rounded-xl overflow-hidden aspect-[2/3] bg-clap-card animate-pulse" />
@@ -106,7 +95,7 @@ export default function History() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-3 gap-y-6">
+          <div className="poster-grid-fluid">
             {history.map((entry) => (
               <HistoryCard key={entry.id} entry={entry} />
             ))}

@@ -127,23 +127,23 @@ function Hero({ movies }) {
   };
 
   return (
-    <div className="relative flex items-center justify-center gap-2 md:gap-4 px-2 md:px-6 overflow-hidden">
+    <div className="home-hero-shell relative flex items-center justify-center gap-2 md:gap-4 px-2 md:px-0 overflow-hidden">
 
       {/* Prev card peek */}
       <motion.div
         whileHover={{ scale: 1.02 }}
         onClick={() => goTo(prev)}
-        className="flex-shrink-0 w-16 md:w-28 cursor-pointer rounded-xl overflow-hidden opacity-50 hover:opacity-70 transition-opacity"
+        className="home-hero-peek flex-shrink-0 cursor-pointer rounded-xl overflow-hidden opacity-50 hover:opacity-70 transition-opacity"
       >
         <img
           src={tmdbImg(movies[prev].backdrop_path, 'w500')}
           alt=""
-          className="w-full h-52 md:h-80 object-cover"
+          className="w-full h-full object-cover"
         />
       </motion.div>
 
       {/* Main card */}
-      <div className="flex-1 relative rounded-2xl overflow-hidden min-h-[300px] md:min-h-[460px]">
+      <div className="home-hero-main flex-1 relative rounded-2xl overflow-hidden">
         <AnimatePresence custom={direction} mode="wait">
           <motion.div
             key={movie.id}
@@ -192,12 +192,12 @@ function Hero({ movies }) {
       <motion.div
         whileHover={{ scale: 1.02 }}
         onClick={() => goTo(next)}
-        className="flex-shrink-0 w-16 md:w-28 cursor-pointer rounded-xl overflow-hidden opacity-50 hover:opacity-70 transition-opacity"
+        className="home-hero-peek flex-shrink-0 cursor-pointer rounded-xl overflow-hidden opacity-50 hover:opacity-70 transition-opacity"
       >
         <img
           src={tmdbImg(movies[next].backdrop_path, 'w500')}
           alt=""
-          className="w-full h-52 md:h-80 object-cover"
+          className="w-full h-full object-cover"
         />
       </motion.div>
 
@@ -231,7 +231,7 @@ function MovieCard({ movie }) {
     <motion.div
       whileHover={{ scale: 1.04 }}
       transition={{ duration: 0.2 }}
-      className="flex-shrink-0 w-36 md:w-44 cursor-pointer"
+      className="poster-card cursor-pointer"
     >
       <Link to={`/${type === 'tv' ? 'serie' : 'film'}/${movie.id}`}>
         <div className="relative rounded-xl overflow-hidden aspect-[2/3]">
@@ -302,7 +302,7 @@ function CarouselSkeleton() {
   return (
     <div className="flex gap-3 overflow-hidden">
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="flex-shrink-0 w-36 md:w-44 aspect-[2/3] rounded-xl bg-clap-card animate-pulse" />
+        <div key={i} className="poster-card aspect-[2/3] rounded-xl bg-clap-card animate-pulse" />
       ))}
     </div>
   );
@@ -310,10 +310,10 @@ function CarouselSkeleton() {
 
 function HeroSkeleton() {
   return (
-    <div className="flex items-center gap-2 md:gap-4 px-2 md:px-6">
-      <div className="flex-shrink-0 w-16 md:w-28 h-52 md:h-80 rounded-xl bg-clap-card animate-pulse" />
-      <div className="flex-1 h-[300px] md:h-[460px] rounded-2xl bg-clap-card animate-pulse" />
-      <div className="flex-shrink-0 w-16 md:w-28 h-52 md:h-80 rounded-xl bg-clap-card animate-pulse" />
+    <div className="home-hero-shell flex items-center gap-2 md:gap-4 px-2 md:px-0">
+      <div className="home-hero-peek flex-shrink-0 rounded-xl bg-clap-card animate-pulse" />
+      <div className="home-hero-main flex-1 rounded-2xl bg-clap-card animate-pulse" />
+      <div className="home-hero-peek flex-shrink-0 rounded-xl bg-clap-card animate-pulse" />
     </div>
   );
 }
@@ -362,7 +362,7 @@ export default function Home() {
         </section>
 
         {/* ── Trending Now ── */}
-        <section className="px-4 md:px-6">
+        <section className="ultrawide-shell">
           <div className="flex items-baseline justify-between mb-4">
             <h2 className="font-display italic text-2xl md:text-3xl text-white">
               {t('home.trendingNow')}
@@ -378,7 +378,7 @@ export default function Home() {
         </section>
 
         {/* ── Top Rated ── */}
-        <section className="px-4 md:px-6">
+        <section className="ultrawide-shell">
           <div className="flex items-baseline justify-between mb-4">
             <h2 className="font-display italic text-2xl md:text-3xl text-white">
               {t('home.topRated')}
